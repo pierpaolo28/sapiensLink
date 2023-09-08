@@ -63,7 +63,7 @@ def home(request):
     lists = List.objects.filter(
         Q(topic__name__icontains=q) |
         Q(name__icontains=q) |
-        Q(description__icontains=q)
+        Q(content__icontains=q)
     )
 
     topics = Topic.objects.all()[0:5]
@@ -117,7 +117,7 @@ def createList(request):
             host=request.user,
             topic=topic,
             name=request.POST.get('name'),
-            description=request.POST.get('description'),
+            content=request.POST.get('content'),
         )
         return redirect('home')
 
@@ -138,7 +138,7 @@ def updateList(request, pk):
         topic, created = Topic.objects.get_or_create(name=topic_name)
         list.name = request.POST.get('name')
         list.topic = topic
-        list.description = request.POST.get('description')
+        list.content = request.POST.get('content')
         list.save()
         return redirect('home')
 
@@ -183,7 +183,7 @@ def updateUser(request):
             form.save()
             return redirect('user-profile', pk=user.id)
 
-    return render(request, 'pages/update-user.html', {'form': form})
+    return render(request, 'pages/update_user.html', {'form': form})
 
 
 def topicsPage(request):
