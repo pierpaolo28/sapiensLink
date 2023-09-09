@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib.auth import authenticate, login, logout
 from .models import List, Topic, Message, User
-from .forms import ListForm, UserForm
+from .forms import ListForm, UserForm, MyUserCreationForm
 
 # Create your views here.
 
@@ -41,10 +41,10 @@ def logoutUser(request):
 
 
 def registerPage(request):
-    form = UserForm()
+    form = MyUserCreationForm()
 
     if request.method == 'POST':
-        form = UserForm(request.POST)
+        form = MyUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.email = user.email.lower()
