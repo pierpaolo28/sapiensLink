@@ -15,10 +15,10 @@
 
     {% include 'navbar.html' %}
 
-    {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li>{{ message }}</li>
+    {% if comments %}
+    <ul class="comments">
+        {% for comment in comments %}
+        <li>{{ comment }}</li>
         {% endfor %}
     </ul>
     {% endif %}

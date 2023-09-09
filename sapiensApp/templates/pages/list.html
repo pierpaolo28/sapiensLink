@@ -62,7 +62,7 @@
               <div class="avatar avatar--small">
                 <img src="{{list.host.avatar.url}}" />
               </div>
-              <span>@{{list.host.name}}</span>
+              <span>{{list.host.name}}</span>
             </a>
           </div>
           <div class="list__content">
@@ -75,21 +75,21 @@
           <div class="threads scroll">
 
 
-            {% for message in list_messages %}
+            {% for comment in list_comments %}
             <div class="thread">
               <div class="thread__top">
                 <div class="thread__author">
-                  <a href="{% url 'profile' message.user.id %}" class="thread__authorInfo">
+                  <a href="{% url 'profile' comment.user.id %}" class="thread__authorInfo">
                     <div class="avatar avatar--small">
-                      <img src="{{message.user.avatar.url}}" />
+                      <img src="{{comment.user.avatar.url}}" />
                     </div>
-                    <span>@{{message.user.name}}</span>
+                    <span>{{comment.user.name}}</span>
                   </a>
-                  <span class="thread__date">{{message.created|timesince}} ago</span>
+                  <span class="thread__date">{{comment.created|timesince}} ago</span>
                 </div>
 
-                {% if request.user == message.user %}
-                <a href="{% url 'delete_message' message.id %}">
+                {% if request.user == comment.user %}
+                <a href="{% url 'delete_comment' comment.id %}">
                   <div class="thread__delete">
                     <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
                       <title>Delete</title>
@@ -102,7 +102,7 @@
                 {% endif %}
               </div>
               <div class="thread__details">
-                {{message.body}}
+                {{comment.body}}
               </div>
             </div>
             {% endfor %}
@@ -110,14 +110,14 @@
         </div>
 
       </div>
-      <div class="list__message">
+      <div class="list__comment">
         {% if request.user.is_authenticated %}
           <form action="" method="POST">
             {% csrf_token %}
-            <input name="body" placeholder="Write your message here..." />
+            <input name="body" placeholder="Write your comment here..." />
           </form>
         {% else %}
-        <p class="room__login__message"> <a href="{% url 'login' %}">Log in </a> to write your message </p>
+        <p class="room__login__comment"> <a href="{% url 'login' %}">Log in </a> to write your comment </p>
         {% endif %}
       </div>
     </div>

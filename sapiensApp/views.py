@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib.auth import authenticate, login, logout
-from .models import List, Topic, Message, User
+from .models import List, Topic, Comment, User
 from .forms import ListForm, UserForm, MyUserCreationForm
 
 # Create your views here.
@@ -68,21 +68,21 @@ def home(request):
 
     topics = Topic.objects.all()[0:5]
     list_count = lists.count()
-    list_messages = Message.objects.filter(
+    list_comments = Comment.objects.filter(
         Q(list__topic__name__icontains=q))[0:3]
 
     context = {'lists': lists, 'topics': topics,
-               'list_count': list_count, 'list_messages': list_messages}
+               'list_count': list_count, 'list_comments': list_comments}
     return render(request, 'pages/home.html', context)
 
 
 def list(request, pk):
     list = List.objects.get(id=pk)
-    list_messages = list.message_set.all()
+    list_comments = list.comment_set.all()
     participants = list.participants.all()
 
     if request.method == 'POST':
-        message = Message.objects.create(
+        comment = Comment.objects.create(
             user=request.user,
             list=list,
             body=request.POST.get('body')
@@ -90,7 +90,7 @@ def list(request, pk):
         list.participants.add(request.user)
         return redirect('list', pk=list.id)
 
-    context = {'list': list, 'list_messages': list_messages,
+    context = {'list': list, 'list_comments': list_comments,
                'participants': participants}
     return render(request, 'pages/list.html', context)
 
@@ -98,10 +98,10 @@ def list(request, pk):
 def userProfile(request, pk):
     user = User.objects.get(id=pk)
     lists = user.list_set.all()
-    list_messages = user.message_set.all()
+    list_comments = user.comment_set.all()
     topics = Topic.objects.all()
     context = {'user': user, 'lists': lists,
-               'list_messages': list_messages, 'topics': topics}
+               'list_comments': list_comments, 'topics': topics}
     return render(request, 'pages/profile.html', context)
 
 
@@ -160,16 +160,16 @@ def deleteList(request, pk):
 
 
 @login_required(login_url='login')
-def deleteMessage(request, pk):
-    message = Message.objects.get(id=pk)
+def deleteComment(request, pk):
+    comment = Comment.objects.get(id=pk)
 
-    if request.user != message.user:
+    if request.user != comment.user:
         return HttpResponse('Your are not allowed here!!')
 
     if request.method == 'POST':
-        message.delete()
+        comment.delete()
         return redirect('home')
-    return render(request, 'pages/delete.html', {'obj': message})
+    return render(request, 'pages/delete.html', {'obj': comment})
 
 
 @login_required(login_url='login')
