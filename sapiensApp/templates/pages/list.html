@@ -62,7 +62,7 @@
               <div class="avatar avatar--small">
                 <img src="{{list.host.avatar.url}}" />
               </div>
-              <span>@{{list.host.username}}</span>
+              <span>@{{list.host.name}}</span>
             </a>
           </div>
           <div class="list__content">
@@ -83,7 +83,7 @@
                     <div class="avatar avatar--small">
                       <img src="{{message.user.avatar.url}}" />
                     </div>
-                    <span>@{{message.user.username}}</span>
+                    <span>@{{message.user.name}}</span>
                   </a>
                   <span class="thread__date">{{message.created|timesince}} ago</span>
                 </div>
@@ -111,10 +111,14 @@
 
       </div>
       <div class="list__message">
-        <form action="" method="POST">
-          {% csrf_token %}
-          <input name="body" placeholder="Write your message here..." />
-        </form>
+        {% if request.user.is_authenticated %}
+          <form action="" method="POST">
+            {% csrf_token %}
+            <input name="body" placeholder="Write your message here..." />
+          </form>
+        {% else %}
+        <p class="room__login__message"> <a href="{% url 'login' %}">Log in </a> to write your message </p>
+        {% endif %}
       </div>
     </div>
     <!-- List End -->
@@ -130,7 +134,6 @@
           </div>
           <p>
             {{user.name}}
-            <span>@{{user.username}}</span>
           </p>
         </a>
         {% endfor %}

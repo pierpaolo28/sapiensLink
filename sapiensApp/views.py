@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib.auth import authenticate, login, logout
 from .models import List, Topic, Message, User
-from .forms import ListForm, UserForm, MyUserCreationForm
+from .forms import ListForm, UserForm
 
 # Create your views here.
 
@@ -29,7 +29,7 @@ def loginPage(request):
             login(request, user)
             return redirect('home')
         else:
-            messages.error(request, 'Username OR password does not exit')
+            messages.error(request, 'Email OR password does not exit')
 
     context = {'page': page}
     return render(request, 'pages/login_register.html', context)
@@ -41,13 +41,13 @@ def logoutUser(request):
 
 
 def registerPage(request):
-    form = MyUserCreationForm()
+    form = UserForm()
 
     if request.method == 'POST':
-        form = MyUserCreationForm(request.POST)
+        form = UserForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.username = user.username.lower()
+            user.email = user.email.lower()
             user.save()
             login(request, user)
             return redirect('home')
