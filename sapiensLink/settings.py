@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'sapiensApp.apps.SapiensappConfig',
-    'rest_framework',
 ]
 
 AUTH_USER_MODEL = 'sapiensApp.User'
