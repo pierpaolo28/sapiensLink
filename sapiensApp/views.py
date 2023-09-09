@@ -179,8 +179,17 @@ def updateUser(request):
 
     if request.method == 'POST':
         form = UserForm(request.POST, request.FILES, instance=user)
+        password = request.POST.get('password')
         if form.is_valid():
             form.save()
+            if password:
+                user.set_password(password)
+                user.save()
+            return redirect('profile', pk=user.id)
+        else:
+            if password:
+                user.set_password(password)
+                user.save()
             return redirect('profile', pk=user.id)
 
     return render(request, 'pages/update_user.html', {'form': form})

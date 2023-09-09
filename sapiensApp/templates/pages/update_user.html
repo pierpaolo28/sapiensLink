@@ -27,7 +27,11 @@
             {{field}}
           </div>
           {% endfor %}
-
+          <div class=" form__group">
+            <label for="password">Update Password</label>
+            <input id="password" name="password" type="password"
+              placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" />
+          </div>
 
           <div class="form__action">
             <a class="btn btn--dark" href="{% url 'home' %}">Cancel</a>
