@@ -62,6 +62,7 @@
         <form class="form" action="" method="POST">
           {% csrf_token %}
 
+          <!-- TODO: Add in form that different password requirements needs to be met: 8 characters at least and etc as in: settings.py AUTH_PASSWORD_VALIDATORS -->
           {% for field in form %}
           <div class="form__group form__group">
             <label for="list_name">{{field.label}}</label>
