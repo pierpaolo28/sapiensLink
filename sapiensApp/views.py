@@ -97,11 +97,41 @@ def list(request, pk):
 
 def userProfile(request, pk):
     user = User.objects.get(id=pk)
+    lists_count = List.objects.filter(host_id = pk).count()
     lists = user.list_set.all()
     list_comments = user.comment_set.all()
     topics = Topic.objects.all()
-    context = {'user': user, 'lists': lists,
-               'list_comments': list_comments, 'topics': topics}
+    if request.user.following.filter(pk=pk).exists():
+        is_following = True
+    else:
+        is_following = False
+    if request.method == "POST":
+        current_user_profile = request.user
+        if pk != request.user.id:
+            if request.user.following.filter(pk=pk).exists():
+                current_user_profile.following.remove(user)
+                is_following = False
+            else:
+                current_user_profile.following.add(user)
+                is_following = True
+            context = {
+                "user": user,
+                "lists_count": lists_count,
+                'lists': lists,
+                'list_comments': list_comments, 
+                'topics': topics,
+                "is_following": is_following
+            }
+            current_user_profile.save()
+            return render(request, 'pages/profile.html', context)
+    context = {
+        "user": user,
+        "lists_count": lists_count,
+        'lists': lists,
+        'list_comments': list_comments, 
+        'topics': topics,
+        'is_following': is_following
+    }
     return render(request, 'pages/profile.html', context)
 
 
