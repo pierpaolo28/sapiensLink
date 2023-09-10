@@ -236,3 +236,6 @@ def whoToFollowPage(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
     users = User.objects.filter(name__icontains=q).annotate(followers_count=Count('followers')).order_by('-followers_count')
     return render(request, 'pages/who_to_follow.html', {'users': users})
+
+def custom_404(request, exception):
+    return render(request, 'pages/404.html', status=404)
