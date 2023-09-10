@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.contrib.auth import authenticate, login, logout
 from .models import List, Topic, Comment, User
 from .forms import ListForm, UserForm, MyUserCreationForm
@@ -66,12 +66,13 @@ def home(request):
         Q(content__icontains=q)
     )
 
-    topics = Topic.objects.all()[0:5]
+    topics = Topic.objects.annotate(names_count=Count('name')).order_by('-names_count')[0:4]
+    users = User.objects.annotate(followers_count=Count('followers')).order_by('-followers_count')[0:5]
     list_count = lists.count()
     list_comments = Comment.objects.filter(
         Q(list__topic__name__icontains=q))[0:3]
 
-    context = {'lists': lists, 'topics': topics,
+    context = {'lists': lists, 'topics': topics, 'users': users,
                'list_count': list_count, 'list_comments': list_comments}
     return render(request, 'pages/home.html', context)
 
@@ -227,12 +228,11 @@ def updateUser(request):
 
 def topicsPage(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
-    topics = Topic.objects.filter(name__icontains=q)
+    topics = Topic.objects.filter(name__icontains=q).annotate(names_count=Count('name')).order_by('-names_count')
     return render(request, 'pages/topics.html', {'topics': topics})
 
 
 def whoToFollowPage(request):
-    # TODO
-    # Single page to show list of top creators
-    # Can be opened using the short list on the main list homepage (on the right hand side)
-    pass
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+    users = User.objects.filter(name__icontains=q).annotate(followers_count=Count('followers')).order_by('-followers_count')
+    return render(request, 'pages/who_to_follow.html', {'users': users})

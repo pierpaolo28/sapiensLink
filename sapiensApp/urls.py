@@ -14,5 +14,5 @@ urlpatterns = [
     path('delete_comment/<str:pk>/', views.deleteComment, name="delete_comment"),
     path('update_user/', views.updateUser, name="update_user"),
     path('topics/', views.topicsPage, name="topics"),
-    path('who_to_follow/', views.whoToFollowPage, name="whotofollow"),
+    path('who_to_follow/', views.whoToFollowPage, name="who_to_follow"),
 ]

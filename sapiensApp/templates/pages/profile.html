@@ -37,10 +37,10 @@
         </form>
         <div class="profile__about">
           <ul class="about">
-            {% if user.follows.count <= 1 %}
-                <li><span>{{ user.follows.count }}</span> Follower</li>
+            {% if user.followers.count <= 1 %}
+                <li><span>{{ user.followers.count }}</span> Follower</li>
             {% else %}
-                <li><span>{{ user.follows.count }}</span> Followers</li>
+                <li><span>{{ user.followers.count }}</span> Followers</li>
             {% endif %}
             <li><span>{{ user.following.count }} </span>Following</li>
             {% if post_count <= 1 %}
