@@ -37,7 +37,7 @@ def loginPage(request):
 
 def logoutUser(request):
     logout(request)
-    return redirect('home')
+    return redirect('index')
 
 
 def registerPage(request):
@@ -75,6 +75,10 @@ def home(request):
     context = {'lists': lists, 'topics': topics, 'users': users,
                'list_count': list_count, 'list_comments': list_comments}
     return render(request, 'pages/home.html', context)
+
+
+def index(request):
+    return render(request, 'pages/index.html')
 
 
 def list(request, pk):
