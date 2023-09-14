@@ -177,10 +177,13 @@ def userProfile(request, pk):
 @login_required(login_url='login')
 def createList(request):
     form = ListForm()
-    topics = Topic.objects.all()
+    topics = ["Economics", "Finance", "Management", "Tech", "Education"]
     if request.method == 'POST':
         topic_name = request.POST.get('topic')
-        topic, created = Topic.objects.get_or_create(name=topic_name)
+        if topic_name in topics:
+            topic, created = Topic.objects.get_or_create(name=topic_name)
+        else:
+            return HttpResponse('The provided topic is not valid, only dropdown options are available.')
 
         List.objects.create(
             author=request.user,
@@ -200,7 +203,7 @@ def updateList(request, pk):
     form = ListForm(instance=list)
     topics = Topic.objects.all()
     if request.user != list.author:
-        return HttpResponse('Your are not allowed here!!')
+        return HttpResponse('Not authorized to proceed.')
 
     if request.method == 'POST':
         topic_name = request.POST.get('topic')
@@ -220,7 +223,7 @@ def deleteList(request, pk):
     list = List.objects.get(id=pk)
 
     if request.user != list.author:
-        return HttpResponse('Your are not allowed here!!')
+        return HttpResponse('Not authorized to proceed.')
 
     if request.method == 'POST':
         list.delete()
@@ -233,7 +236,7 @@ def deleteComment(request, pk):
     comment = Comment.objects.get(id=pk)
 
     if request.user != comment.user:
-        return HttpResponse('Your are not allowed here!!')
+        return HttpResponse('Not authorized to proceed.')
 
     if request.method == 'POST':
         comment.delete()
