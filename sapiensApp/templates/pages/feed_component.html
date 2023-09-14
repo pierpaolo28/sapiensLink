@@ -1,11 +1,11 @@
 {% for list in lists %}
 <div class="listListList">
     <div class="listListList__header">
-        <a href="{% url 'profile' list.host.id %}" class="listListList__author">
+        <a href="{% url 'profile' list.author.id %}" class="listListList__author">
             <div class="avatar avatar--small">
-                <img src="{{list.host.avatar.url}}" />
+                <img src="{{list.author.avatar.url}}" />
             </div>
-            <span>{{list.host.name}}</span>
+            <span>{{list.author.name}}</span>
         </a>
         <div class="listListList__actions">
             <span>{{list.created|timesince}} ago</span>

@@ -7,7 +7,7 @@ class ListForm(ModelForm):
     class Meta:
         model = List
         fields = '__all__'
-        exclude = ['host', 'participants']
+        exclude = ['author', 'participants']
 
 class MyUserCreationForm(UserCreationForm):
     class Meta:

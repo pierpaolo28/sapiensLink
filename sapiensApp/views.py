@@ -102,7 +102,7 @@ def list(request, pk):
 
 def userProfile(request, pk):
     user = User.objects.get(id=pk)
-    lists_count = List.objects.filter(host_id = pk).count()
+    lists_count = List.objects.filter(author_id = pk).count()
     lists = user.list_set.all()
     list_comments = user.comment_set.all()
     topics = Topic.objects.all()
@@ -149,7 +149,7 @@ def createList(request):
         topic, created = Topic.objects.get_or_create(name=topic_name)
 
         List.objects.create(
-            host=request.user,
+            author=request.user,
             topic=topic,
             name=request.POST.get('name'),
             content=request.POST.get('content'),
@@ -165,7 +165,7 @@ def updateList(request, pk):
     list = List.objects.get(id=pk)
     form = ListForm(instance=list)
     topics = Topic.objects.all()
-    if request.user != list.host:
+    if request.user != list.author:
         return HttpResponse('Your are not allowed here!!')
 
     if request.method == 'POST':
@@ -185,7 +185,7 @@ def updateList(request, pk):
 def deleteList(request, pk):
     list = List.objects.get(id=pk)
 
-    if request.user != list.host:
+    if request.user != list.author:
         return HttpResponse('Your are not allowed here!!')
 
     if request.method == 'POST':
