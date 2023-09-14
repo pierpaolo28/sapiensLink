@@ -69,7 +69,7 @@ def home(request, follow='follow_false', top_voted='top_voted_false'):
     topics = Topic.objects.annotate(names_count=Count('name')).order_by('-names_count')[0:4]
     users = User.objects.annotate(followers_count=Count('followers')).order_by('-followers_count')[0:5]
     list_count = lists.count()
-    ## TODO List Comments to remove?
+    ## TODO List Comments to remove? (no longer used in home but individual lists)
     list_comments = Comment.objects.filter(
         Q(list__topic__name__icontains=q))[0:3]
     
