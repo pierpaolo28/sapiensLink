@@ -57,7 +57,7 @@ def registerPage(request):
     return render(request, 'pages/login_register.html', {'form': form})
 
 
-def home(request, follow='false', top_voted='false'):
+def home(request, follow='follow_false', top_voted='top_voted_false'):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
 
     lists = List.objects.filter(
@@ -72,13 +72,13 @@ def home(request, follow='false', top_voted='false'):
     list_comments = Comment.objects.filter(
         Q(list__topic__name__icontains=q))[0:3]
     
-    if follow=='true':
+    if follow=='follow_true':
         f_list = request.user.following.all()
         lists = lists.filter(
                     author__in=f_list
                 )
         list_count = lists.count()
-    elif top_voted=='true':
+    elif top_voted=='top_voted_true':
         lists = lists.order_by('-score')
 
     context = {'lists': lists, 'topics': topics, 'users': users,
