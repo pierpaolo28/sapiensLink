@@ -72,12 +72,22 @@ class List(models.Model):
         User, related_name='participants', blank=True)
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
+    score = models.IntegerField(default=0)
 
     class Meta:
         ordering = ['-updated', '-created']
 
     def __str__(self):
         return self.name
+    
+
+class Vote(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    list = models.ForeignKey(List, on_delete=models.CASCADE)
+    action = models.CharField(default='neutral', max_length=15) 
+
+    def __str__(self):
+        return self.value
 
 
 class Comment(models.Model):

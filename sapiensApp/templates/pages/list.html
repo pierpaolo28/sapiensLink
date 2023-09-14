@@ -65,6 +65,17 @@
               <span>{{list.author.name}}</span>
             </a>
           </div>
+          <div class="list__score">
+            {{list.score}}
+          </div>
+          <form method="post" action="{% url 'vote' list.id 'upvote' %}">
+            {% csrf_token %}
+            <button type="submit">Upvote</button>
+          </form>
+          <form method="post" action="{% url 'vote' list.id 'downvote' %}">
+            {% csrf_token %}
+            <button type="submit">Downvote</button>
+          </form>
           <div class="list__content">
             {{list.content}}
           </div>

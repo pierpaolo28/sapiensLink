@@ -1,10 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count
 from django.contrib.auth import authenticate, login, logout
-from .models import List, Topic, Comment, User
+from .models import List, Topic, Comment, User, Vote
 from .forms import ListForm, UserForm, MyUserCreationForm
 
 # Create your views here.
@@ -98,6 +98,31 @@ def list(request, pk):
     context = {'list': list, 'list_comments': list_comments,
                'participants': participants}
     return render(request, 'pages/list.html', context)
+
+
+@login_required(login_url='login')
+def vote(request, pk, action):
+    list = get_object_or_404(List, pk=pk)
+    user = request.user
+    try:
+        vote = Vote.objects.get(user=user, list=list)
+        if vote.action == action:
+            return redirect('../../../list/' + pk)
+        elif vote.action == 'upvote' or vote.action == 'downvote':
+            vote.action = 'neutral'
+            vote.save()
+        else:
+            vote.action = action
+            vote.save()
+    except Vote.DoesNotExist:
+        if action in ('upvote', 'downvote'):
+            Vote.objects.create(user=user, list=list, action=action)
+    if action == 'upvote':
+        list.score += 1
+    elif action == 'downvote':
+        list.score -= 1
+    list.save()
+    return redirect('../../../list/' + pk)
 
 
 def userProfile(request, pk):

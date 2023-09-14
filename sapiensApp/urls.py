@@ -16,4 +16,5 @@ urlpatterns = [
     path('update_user/', views.updateUser, name="update_user"),
     path('topics/', views.topicsPage, name="topics"),
     path('who_to_follow/', views.whoToFollowPage, name="who_to_follow"),
+    path('vote/<str:pk>/<str:action>/', views.vote, name='vote'),
 ]
