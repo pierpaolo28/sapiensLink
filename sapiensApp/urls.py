@@ -7,6 +7,7 @@ urlpatterns = [
     path('register/', views.registerPage, name="register"),
     path('', views.index, name="index"),
     path('home', views.home, name="home"),
+    path('home/<str:follow>/<str:top_voted>', views.home, name="custom_home"),
     path('list/<str:pk>/', views.list, name="list"),
     path('profile/<str:pk>/', views.userProfile, name="profile"),
     path('create_list/', views.createList, name="create_list"),
