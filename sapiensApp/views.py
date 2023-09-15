@@ -1,10 +1,10 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count
 from django.contrib.auth import authenticate, login, logout
-from .models import List, Topic, Comment, User
+from .models import List, Topic, Comment, User, Vote
 from .forms import ListForm, UserForm, MyUserCreationForm
 
 # Create your views here.
@@ -37,7 +37,7 @@ def loginPage(request):
 
 def logoutUser(request):
     logout(request)
-    return redirect('home')
+    return redirect('index')
 
 
 def registerPage(request):
@@ -57,7 +57,7 @@ def registerPage(request):
     return render(request, 'pages/login_register.html', {'form': form})
 
 
-def home(request):
+def home(request, follow='follow_false', top_voted='top_voted_false'):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
 
     lists = List.objects.filter(
@@ -69,12 +69,26 @@ def home(request):
     topics = Topic.objects.annotate(names_count=Count('name')).order_by('-names_count')[0:4]
     users = User.objects.annotate(followers_count=Count('followers')).order_by('-followers_count')[0:5]
     list_count = lists.count()
+    ## TODO List Comments to remove? (no longer used in home but individual lists)
     list_comments = Comment.objects.filter(
         Q(list__topic__name__icontains=q))[0:3]
+    
+    if follow=='follow_true':
+        f_list = request.user.following.all()
+        lists = lists.filter(
+                    author__in=f_list
+                )
+        list_count = lists.count()
+    elif top_voted=='top_voted_true':
+        lists = lists.order_by('-score')
 
     context = {'lists': lists, 'topics': topics, 'users': users,
                'list_count': list_count, 'list_comments': list_comments}
     return render(request, 'pages/home.html', context)
+
+
+def index(request):
+    return render(request, 'pages/index.html')
 
 
 def list(request, pk):
@@ -96,9 +110,34 @@ def list(request, pk):
     return render(request, 'pages/list.html', context)
 
 
+@login_required(login_url='login')
+def vote(request, pk, action):
+    list = get_object_or_404(List, pk=pk)
+    user = request.user
+    try:
+        vote = Vote.objects.get(user=user, list=list)
+        if vote.action == action:
+            return redirect('../../../list/' + pk)
+        elif vote.action == 'upvote' or vote.action == 'downvote':
+            vote.action = 'neutral'
+            vote.save()
+        else:
+            vote.action = action
+            vote.save()
+    except Vote.DoesNotExist:
+        if action in ('upvote', 'downvote'):
+            Vote.objects.create(user=user, list=list, action=action)
+    if action == 'upvote':
+        list.score += 1
+    elif action == 'downvote':
+        list.score -= 1
+    list.save()
+    return redirect('../../../list/' + pk)
+
+
 def userProfile(request, pk):
     user = User.objects.get(id=pk)
-    lists_count = List.objects.filter(host_id = pk).count()
+    lists_count = List.objects.filter(author_id = pk).count()
     lists = user.list_set.all()
     list_comments = user.comment_set.all()
     topics = Topic.objects.all()
@@ -139,13 +178,16 @@ def userProfile(request, pk):
 @login_required(login_url='login')
 def createList(request):
     form = ListForm()
-    topics = Topic.objects.all()
+    topics = ["Economics", "Finance", "Management", "Tech", "Education"]
     if request.method == 'POST':
         topic_name = request.POST.get('topic')
-        topic, created = Topic.objects.get_or_create(name=topic_name)
+        if topic_name in topics:
+            topic, created = Topic.objects.get_or_create(name=topic_name)
+        else:
+            return HttpResponse('The provided topic is not valid, only dropdown options are available.')
 
         List.objects.create(
-            host=request.user,
+            author=request.user,
             topic=topic,
             name=request.POST.get('name'),
             content=request.POST.get('content'),
@@ -161,8 +203,8 @@ def updateList(request, pk):
     list = List.objects.get(id=pk)
     form = ListForm(instance=list)
     topics = Topic.objects.all()
-    if request.user != list.host:
-        return HttpResponse('Your are not allowed here!!')
+    if request.user != list.author:
+        return HttpResponse('Not authorized to proceed.')
 
     if request.method == 'POST':
         topic_name = request.POST.get('topic')
@@ -181,8 +223,8 @@ def updateList(request, pk):
 def deleteList(request, pk):
     list = List.objects.get(id=pk)
 
-    if request.user != list.host:
-        return HttpResponse('Your are not allowed here!!')
+    if request.user != list.author:
+        return HttpResponse('Not authorized to proceed.')
 
     if request.method == 'POST':
         list.delete()
@@ -195,7 +237,7 @@ def deleteComment(request, pk):
     comment = Comment.objects.get(id=pk)
 
     if request.user != comment.user:
-        return HttpResponse('Your are not allowed here!!')
+        return HttpResponse('Not authorized to proceed.')
 
     if request.method == 'POST':
         comment.delete()

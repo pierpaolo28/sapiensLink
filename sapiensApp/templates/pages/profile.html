@@ -43,9 +43,9 @@
                 <li><span>{{ user.followers.count }}</span> Followers</li>
             {% endif %}
             <li><span>{{ user.following.count }} </span>Following</li>
-            {% if post_count <= 1 %}
+            {% if lists_count <= 1 %}
                 <li><span>{{ lists_count }} </span>List</li>
-            {% elif post_count >= 2 %}
+            {% elif lists_count >= 2 %}
                 <li><span>{{ lists_count }} </span>Lists</li>
             {% endif %}
           </ul> 

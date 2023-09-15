@@ -17,7 +17,7 @@
           </a>
           <h3>Thread</h3>
         </div>
-        {% if list.host == request.user %}
+        {% if list.author == request.user %}
         <div class="list__topRight">
           <a href="{% url 'update_list' list.id %}">
             <svg enable-background="new 0 0 24 24" height="32" viewBox="0 0 24 24" width="32"
@@ -56,15 +56,26 @@
             <h3>{{list.name}}</h3>
             <span>{{list.created|timesince}} ago</span>
           </div>
-          <div class="list__hosted">
+          <div class="list__author">
             <p>Created By</p>
-            <a href="{% url 'profile' list.host.id %}" class="list__author">
+            <a href="{% url 'profile' list.author.id %}" class="list__author">
               <div class="avatar avatar--small">
-                <img src="{{list.host.avatar.url}}" />
+                <img src="{{list.author.avatar.url}}" />
               </div>
-              <span>{{list.host.name}}</span>
+              <span>{{list.author.name}}</span>
             </a>
           </div>
+          <div class="list__score">
+            {{list.score}}
+          </div>
+          <form method="post" action="{% url 'vote' list.id 'upvote' %}">
+            {% csrf_token %}
+            <button type="submit">Upvote</button>
+          </form>
+          <form method="post" action="{% url 'vote' list.id 'downvote' %}">
+            {% csrf_token %}
+            <button type="submit">Downvote</button>
+          </form>
           <div class="list__content">
             {{list.content}}
           </div>

@@ -5,7 +5,9 @@ urlpatterns = [
     path('login/', views.loginPage, name="login"),
     path('logout/', views.logoutUser, name="logout"),
     path('register/', views.registerPage, name="register"),
-    path('', views.home, name="home"),
+    path('', views.index, name="index"),
+    path('home', views.home, name="home"),
+    path('home/<str:follow>/<str:top_voted>', views.home, name="custom_home"),
     path('list/<str:pk>/', views.list, name="list"),
     path('profile/<str:pk>/', views.userProfile, name="profile"),
     path('create_list/', views.createList, name="create_list"),
@@ -15,4 +17,5 @@ urlpatterns = [
     path('update_user/', views.updateUser, name="update_user"),
     path('topics/', views.topicsPage, name="topics"),
     path('who_to_follow/', views.whoToFollowPage, name="who_to_follow"),
+    path('vote/<str:pk>/<str:action>/', views.vote, name='vote'),
 ]
