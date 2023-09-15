@@ -6,6 +6,7 @@ from django.db.models import Q, Count
 from django.contrib.auth import authenticate, login, logout
 from .models import List, Topic, Comment, User, Vote
 from .forms import ListForm, UserForm, MyUserCreationForm
+from django.core.paginator import Paginator
 
 # Create your views here.
 
@@ -69,9 +70,6 @@ def home(request, follow='follow_false', top_voted='top_voted_false'):
     topics = Topic.objects.annotate(names_count=Count('name')).order_by('-names_count')[0:4]
     users = User.objects.annotate(followers_count=Count('followers')).order_by('-followers_count')[0:5]
     list_count = lists.count()
-    ## TODO List Comments to remove? (no longer used in home but individual lists)
-    list_comments = Comment.objects.filter(
-        Q(list__topic__name__icontains=q))[0:3]
     
     if follow=='follow_true':
         f_list = request.user.following.all()
@@ -82,8 +80,17 @@ def home(request, follow='follow_false', top_voted='top_voted_false'):
     elif top_voted=='top_voted_true':
         lists = lists.order_by('-score')
 
-    context = {'lists': lists, 'topics': topics, 'users': users,
-               'list_count': list_count, 'list_comments': list_comments}
+    # Create a paginator instance
+    paginator = Paginator(lists, 20)
+    
+    # Get the current page number from the request's GET parameters
+    page_number = request.GET.get('page')
+
+    # Get the Page object for the current page
+    page = paginator.get_page(page_number)
+
+    context = {'page': page, 'topics': topics, 'users': users,
+               'list_count': list_count}
     return render(request, 'pages/home.html', context)
 
 
