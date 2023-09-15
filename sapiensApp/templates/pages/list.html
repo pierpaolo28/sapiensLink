@@ -7,7 +7,7 @@
     <div class="list">
       <div class="list__top">
         <div class="list__topLeft">
-          <a href="{% url 'home' %}">
+          <a  href="javascript:history.back()">
             <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
               <title>Left Arrow</title>
               <path
@@ -54,7 +54,7 @@
         <div class="list__header scroll">
           <div class="list__info">
             <h3>{{list.name}}</h3>
-            <span>{{list.created|timesince}} ago</span>
+            <span>Last activity: {{list.updated|timesince}} ago</span>
           </div>
           <div class="list__author">
             <p>Created By</p>
@@ -96,7 +96,7 @@
                     </div>
                     <span>{{comment.user.name}}</span>
                   </a>
-                  <span class="thread__date">{{comment.created|timesince}} ago</span>
+                  <span class="thread__date">{{comment.updated|timesince}} ago</span>
                 </div>
 
                 {% if request.user == comment.user %}

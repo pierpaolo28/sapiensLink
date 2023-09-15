@@ -98,7 +98,7 @@ class Comment(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['updated', 'created']
+        ordering = ['created', 'updated']
 
     def __str__(self):
         return self.body[0:50]
