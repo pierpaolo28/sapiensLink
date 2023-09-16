@@ -4,8 +4,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count
 from django.contrib.auth import authenticate, login, logout
-from .models import List, Topic, Comment, User, Vote
-from .forms import ListForm, UserForm, MyUserCreationForm
+from .models import List, Topic, Comment, User, Vote, Report
+from .forms import ListForm, UserForm, MyUserCreationForm, ReportForm
 from django.core.paginator import Paginator
 
 # Create your views here.
@@ -286,5 +286,26 @@ def whoToFollowPage(request):
     users = User.objects.filter(name__icontains=q).annotate(followers_count=Count('followers')).order_by('-followers_count')
     return render(request, 'pages/who_to_follow.html', {'users': users})
 
+
 def custom_404(request, exception):
     return render(request, 'pages/404.html', status=404)
+
+
+def report_list(request, pk):
+    # Retrieve the back_url parameter from GET parameters
+    back_url = request.GET.get('back_url')
+    list = get_object_or_404(List, id=pk)
+    if request.method == 'POST':
+        form = ReportForm(request.POST)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.list = list
+            report.user = request.user
+            report.save()
+            # Redirect or return a success response
+            # TODO: Fix redirect
+            return redirect(back_url)
+    else:
+        form = ReportForm()
+
+    return render(request, 'pages/report.html', {'form': form, 'list': list})

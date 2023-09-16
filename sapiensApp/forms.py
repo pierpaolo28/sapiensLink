@@ -1,6 +1,6 @@
 from django.forms import ModelForm
 from django.contrib.auth.forms import UserCreationForm
-from .models import List, User
+from .models import List, User, Report
 
 
 class ListForm(ModelForm):
@@ -18,3 +18,8 @@ class UserForm(ModelForm):
     class Meta:
         model = User
         fields = ['avatar', 'name', 'email', 'bio']
+
+class ReportForm(ModelForm):
+    class Meta:
+        model = Report
+        fields = ['reason']

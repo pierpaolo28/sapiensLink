@@ -102,3 +102,13 @@ class Comment(models.Model):
 
     def __str__(self):
         return self.body[0:50]
+    
+
+class Report(models.Model):
+    list = models.ForeignKey(List, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    reason = models.TextField()
+
+    def __str__(self):
+        return f"Report by {self.user} on {self.list} at {self.timestamp}"

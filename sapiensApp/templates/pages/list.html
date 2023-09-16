@@ -80,6 +80,7 @@
             {{list.content}}
           </div>
           <span class="list__topics">{{list.topic}}</span>
+          <a href="{% url 'report_list' list.id %}?back_url={{ request.path }}">Report</a>
         </div>
 
         <div class="list__conversation">
