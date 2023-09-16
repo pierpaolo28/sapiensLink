@@ -106,7 +106,7 @@ class Comment(models.Model):
 
 class Report(models.Model):
     list = models.ForeignKey(List, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     reason = models.TextField()
 
