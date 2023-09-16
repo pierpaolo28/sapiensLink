@@ -9,6 +9,7 @@ from .forms import ListForm, UserForm, MyUserCreationForm, ReportForm
 from django.core.paginator import Paginator
 
 # Create your views here.
+LISTS_PER_PAGE = 20
 
 def loginPage(request):
     page = 'login'
@@ -81,7 +82,7 @@ def home(request, follow='follow_false', top_voted='top_voted_false'):
         lists = lists.order_by('-score')
 
     # Create a paginator instance
-    paginator = Paginator(lists, 20)
+    paginator = Paginator(lists, LISTS_PER_PAGE)
     
     # Get the current page number from the request's GET parameters
     page_number = request.GET.get('page')
@@ -149,7 +150,18 @@ def userProfile(request, pk):
     lists_count = List.objects.filter(author_id = pk).count()
     lists = user.list_set.all()
     list_comments = user.comment_set.all()
-    topics = Topic.objects.all()
+    topics = Topic.objects.annotate(names_count=Count('name')).order_by('-names_count')[0:4]
+    users = User.objects.annotate(followers_count=Count('followers')).order_by('-followers_count')[0:5]
+
+    # Create a paginator instance
+    paginator = Paginator(lists, LISTS_PER_PAGE)
+    
+    # Get the current page number from the request's GET parameters
+    page_number = request.GET.get('page')
+
+    # Get the Page object for the current page
+    page = paginator.get_page(page_number)
+
     if request.user.following.filter(pk=pk).exists():
         is_following = True
     else:
@@ -165,8 +177,9 @@ def userProfile(request, pk):
                 is_following = True
             context = {
                 "user": user,
+                "users": users,
                 "lists_count": lists_count,
-                'lists': lists,
+                'page': page,
                 'list_comments': list_comments, 
                 'topics': topics,
                 "is_following": is_following
@@ -175,8 +188,9 @@ def userProfile(request, pk):
             return render(request, 'pages/profile.html', context)
     context = {
         "user": user,
+        "users": users,
         "lists_count": lists_count,
-        'lists': lists,
+        'page': page,
         'list_comments': list_comments, 
         'topics': topics,
         'is_following': is_following
