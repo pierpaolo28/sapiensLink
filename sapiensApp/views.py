@@ -102,6 +102,8 @@ def list(request, pk):
     list = List.objects.get(id=pk)
     list_comments = list.comment_set.all()
     participants = list.participants.all()
+    # Check if the user has already reported this post
+    has_reported = Report.objects.filter(user=request.user, list=list).exists()
 
     if request.method == 'POST':
         comment = Comment.objects.create(
@@ -113,7 +115,7 @@ def list(request, pk):
         return redirect('list', pk=list.id)
 
     context = {'list': list, 'list_comments': list_comments,
-               'participants': participants}
+               'participants': participants, 'has_reported': has_reported}
     return render(request, 'pages/list.html', context)
 
 
@@ -291,6 +293,7 @@ def custom_404(request, exception):
     return render(request, 'pages/404.html', status=404)
 
 
+@login_required(login_url='login')
 def report_list(request, pk):
     # Retrieve the back_url parameter from GET parameters
     back_url = request.GET.get('back_url')
@@ -302,8 +305,6 @@ def report_list(request, pk):
             report.list = list
             report.user = request.user
             report.save()
-            # Redirect or return a success response
-            # TODO: Fix redirect
             return redirect(back_url)
     else:
         form = ReportForm()

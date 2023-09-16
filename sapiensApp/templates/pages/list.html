@@ -80,7 +80,11 @@
             {{list.content}}
           </div>
           <span class="list__topics">{{list.topic}}</span>
-          <a href="{% url 'report_list' list.id %}?back_url={{ request.path }}">Report</a>
+          {% if request.user.is_authenticated %}
+            {% if not has_reported %}
+              <a href="{% url 'report_list' list.id %}?back_url={{ request.path }}">Report</a>
+            {% endif %}
+          {% endif %}
         </div>
 
         <div class="list__conversation">
