@@ -1,7 +1,9 @@
 {% for list in page %}
 <div class="listListList">
     <div class="listListList__header">
+        {% if list.author.id != None %}
         <a href="{% url 'profile' list.author.id %}" class="listListList__author">
+        {% endif %}
             <div class="avatar avatar--small">
                 <img src="{{list.author.avatar.url}}" />
             </div>

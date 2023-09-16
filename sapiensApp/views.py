@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count
 from django.contrib.auth import authenticate, login, logout
-from .models import List, Topic, Comment, User, Vote, Report
+from .models import List, Topic, Comment, User, Vote, Report, Feedback
 from .forms import ListForm, UserForm, MyUserCreationForm, ReportForm
 from django.core.paginator import Paginator
 
@@ -68,7 +68,7 @@ def home(request, follow='follow_false', top_voted='top_voted_false'):
         Q(content__icontains=q)
     )
 
-    topics = Topic.objects.annotate(names_count=Count('name')).order_by('-names_count')[0:4]
+    topics = Topic.objects.annotate(names_count=Count('name')).order_by('-names_count')
     users = User.objects.annotate(followers_count=Count('followers')).order_by('-followers_count')[0:5]
     list_count = lists.count()
     
@@ -103,8 +103,12 @@ def list(request, pk):
     list = List.objects.get(id=pk)
     list_comments = list.comment_set.all()
     participants = list.participants.all()
+    user = request.user
     # Check if the user has already reported this post
-    has_reported = Report.objects.filter(user=request.user, list=list).exists()
+    if user.is_authenticated:
+        has_reported = Report.objects.filter(user=user, list=list).exists()
+    else:
+        has_reported = False
 
     if request.method == 'POST':
         comment = Comment.objects.create(
@@ -150,7 +154,7 @@ def userProfile(request, pk):
     lists_count = List.objects.filter(author_id = pk).count()
     lists = user.list_set.all()
     list_comments = user.comment_set.all()
-    topics = Topic.objects.annotate(names_count=Count('name')).order_by('-names_count')[0:4]
+    topics = Topic.objects.annotate(names_count=Count('name')).order_by('-names_count')
     users = User.objects.annotate(followers_count=Count('followers')).order_by('-followers_count')[0:5]
 
     # Create a paginator instance
@@ -162,8 +166,11 @@ def userProfile(request, pk):
     # Get the Page object for the current page
     page = paginator.get_page(page_number)
 
-    if request.user.following.filter(pk=pk).exists():
-        is_following = True
+    if request.user.is_authenticated:
+        if request.user.following.filter(pk=pk).exists():
+            is_following = True
+        else:
+            is_following = False
     else:
         is_following = False
     if request.method == "POST":
@@ -324,3 +331,26 @@ def report_list(request, pk):
         form = ReportForm()
 
     return render(request, 'pages/report.html', {'form': form, 'list': list})
+
+
+@login_required(login_url='login')
+def delete_account(request):
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        confirm_delete = request.POST.get('confirm_delete')
+        feedback = request.POST.get('feedback')
+        Feedback.objects.create(
+            feedback=feedback
+        )
+
+        user = authenticate(request, email=request.user.email, password=password)
+
+        if user is not None and confirm_delete == 'on':
+            # Delete the user account
+            user.delete()
+            logout(request)
+            messages.success(request, 'Your account has been deleted.')
+            return redirect('home')
+        else:
+            messages.error(request, 'Invalid password or confirmation.')
+    return render(request, 'pages/delete_account.html')

@@ -112,3 +112,7 @@ class Report(models.Model):
 
     def __str__(self):
         return f"Report by {self.user} on {self.list} at {self.timestamp}"
+    
+
+class Feedback(models.Model):
+    feedback = models.TextField()

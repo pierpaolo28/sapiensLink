@@ -23,7 +23,7 @@
         </div>
         <form method="POST">
           {% csrf_token %}
-          {% if user.is_authenticated and user != request.user %}
+          {% if user.is_authenticated and request.user.is_authenticated and user != request.user %}
               {% if is_following %}
                   <button class="btn btn-primary rounded-pill my-1 mx-1 py-1 py-1"  type="submit">
                       Unfollow 

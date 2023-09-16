@@ -40,6 +40,18 @@
           </div>
         </form>
       </div>
+
+      <form method="post" action="{% url 'delete_account' %}">
+        {% csrf_token %}
+        <label for="password">Confirm Password:</label>
+        <input type="password" name="password" required>
+        <label for="confirm_delete">Confirm Deletion:</label>
+        <input type="checkbox" name="confirm_delete" required>
+        <label for="feedback">Reason for Deletion (optional):</label>
+        <textarea name="feedback" rows="4"></textarea>
+        <button type="submit">Delete Account</button>
+      </form>
+
     </div>
   </div>
   </div>

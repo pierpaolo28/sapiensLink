@@ -19,4 +19,5 @@ urlpatterns = [
     path('who_to_follow/', views.whoToFollowPage, name="who_to_follow"),
     path('vote/<str:pk>/<str:action>/', views.vote, name='vote'),
     path('report/<str:pk>/', views.report_list, name='report_list'),
+    path('delete-account/', views.delete_account, name='delete_account'),
 ]
