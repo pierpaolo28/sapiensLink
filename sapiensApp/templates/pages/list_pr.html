@@ -18,7 +18,7 @@
 <ul>
   {% for suggestion in suggestions %}
     <li>{{ suggestion.suggestion_text }}
-      {% if request.user == list.author %}
+      {% if request.user == list.author or request.user.is_superuser %}
       <a href="{% url 'approve_suggestion' suggestion.id %}">Accept</a> |
       <a href="{% url 'decline_suggestion' suggestion.id %}">Decline</a>
       {% endif %}

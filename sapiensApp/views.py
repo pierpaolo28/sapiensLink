@@ -388,7 +388,7 @@ def list_pr(request, pk):
 def approve_suggestion(request, suggestion_id):
     suggestion = get_object_or_404(EditSuggestion, id=suggestion_id)
     # Check if the current user is the author of the list
-    if suggestion.list.author == request.user:
+    if suggestion.list.author == request.user or request.user.is_superuser:
         suggestion.is_accepted = True
         suggestion.save()
 
@@ -403,7 +403,7 @@ def approve_suggestion(request, suggestion_id):
 def decline_suggestion(request, suggestion_id):
     suggestion = get_object_or_404(EditSuggestion, id=suggestion_id)
     # Check if the current user is the author of the list
-    if suggestion.list.author == request.user:
+    if suggestion.list.author == request.user or request.user.is_superuser:
         suggestion.delete()
 
     return redirect('list_pr', pk=suggestion.list.id)

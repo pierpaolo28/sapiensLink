@@ -87,10 +87,16 @@ class EditSuggestion(models.Model):
     suggestion_text = models.TextField()
     is_accepted = models.BooleanField(default=False)
 
+    def __str__(self):
+        return f"Edit List {self.list}. Is Accepted? {self.is_accepted}"
+
 class EditComment(models.Model):
     edit_suggestion = models.ForeignKey(EditSuggestion, on_delete=models.CASCADE)
     commenter = models.ForeignKey(User, on_delete=models.CASCADE)
     text = models.TextField()
+
+    def __str__(self):
+        return f"Edit List {self.edit_suggestion.list} comment by {self.commenter}"
 
 
 class Vote(models.Model):
@@ -99,7 +105,7 @@ class Vote(models.Model):
     action = models.CharField(default='neutral', max_length=15) 
 
     def __str__(self):
-        return self.value
+        return f"{self.user} voted for {self.action}"
 
 
 class Comment(models.Model):
@@ -128,3 +134,6 @@ class Report(models.Model):
 
 class Feedback(models.Model):
     feedback = models.TextField()
+
+    def __str__(self):
+        return self.feedback[0:50]
