@@ -15,6 +15,7 @@
     </div>
     <div class="listListList__content">
         <a href="{% url 'list' list.id %}">{{list.name}}</a>
+        <p>{{list.content}}</p>
     </div>
     <div class="listListList__meta">
         <a href="{% url 'list' list.id %}" class="listListList__joined">

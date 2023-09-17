@@ -137,3 +137,15 @@ class Feedback(models.Model):
 
     def __str__(self):
         return self.feedback[0:50]
+    
+
+class SavedList(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    list = models.ForeignKey(List, on_delete=models.CASCADE)
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-saved_at']
+
+    def __str__(self):
+        return f"{self.user.username} saved {self.list.title}"

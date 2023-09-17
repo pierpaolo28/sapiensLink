@@ -90,6 +90,19 @@
           {% else %}
             <a href="{% url 'list_pr' list.id %}">Suggest Edit</a>
           {% endif %}
+          {% if request.user.is_authenticated and request.user != list.author %}
+            {% if list.id in saved_list_ids %}
+              <form action="" method="POST">
+                {% csrf_token %}
+                <button type="submit" name="unsave">Unsave List</button>
+              </form>
+            {% else %}
+              <form action="" method="POST">
+                {% csrf_token %}
+                <button type="submit" name="save">Save List</button>
+              </form>
+            {% endif %}
+          {% endif %}
         </div>
 
         <div class="list__conversation">
@@ -135,7 +148,7 @@
         {% if request.user.is_authenticated %}
           <form action="" method="POST">
             {% csrf_token %}
-            <input name="body" placeholder="Write your comment here..." />
+            <input name="comment" placeholder="Write your comment here..." />
           </form>
         {% else %}
         <p class="room__login__comment"> <a href="{% url 'login' %}">Log in </a> to write your comment </p>

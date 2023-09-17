@@ -27,4 +27,5 @@ urlpatterns = [
     path('comment_pr/delete/<str:comment_id>/', views.delete_pr_comment, name='delete_pr_comment'),
     path('about/', TemplateView.as_view(template_name='pages/about.html'), name='about'),
     path('contacts/', TemplateView.as_view(template_name='pages/contacts.html'), name='contacts'),
+    path('saved_lists/<str:pk>', views.savedListsPage, name="saved_lists"),
 ]

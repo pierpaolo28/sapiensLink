@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count
 from django.contrib.auth import authenticate, login, logout
-from .models import List, Topic, Comment, User, Vote, Report, Feedback, EditSuggestion, EditComment
+from .models import List, Topic, Comment, User, Vote, Report, Feedback, EditSuggestion, EditComment, SavedList
 from .forms import ListForm, UserForm, MyUserCreationForm, ReportForm, EditSuggestionForm, EditCommentForm
 from django.core.paginator import Paginator
 
@@ -107,20 +107,31 @@ def list(request, pk):
     # Check if the user has already reported this list
     if user.is_authenticated:
         has_reported = Report.objects.filter(user=user, list=list).exists()
+        saved_list_ids = SavedList.objects.filter(user=request.user).values_list('list_id', flat=True)
     else:
         has_reported = False
+        saved_list_ids = []
 
     if request.method == 'POST':
-        comment = Comment.objects.create(
-            user=request.user,
-            list=list,
-            body=request.POST.get('body')
-        )
-        list.participants.add(request.user)
-        return redirect('list', pk=list.id)
+        if 'comment' in request.POST:
+            Comment.objects.create(
+                user=request.user,
+                list=list,
+                body=request.POST.get('comment')
+            )
+            list.participants.add(request.user)
+            return redirect('list', pk=list.id)
+        elif 'save' in request.POST:
+            SavedList.objects.get_or_create(user=request.user, list=list)
+            return redirect('list', pk=list.id)
+        elif 'unsave' in request.POST:
+            saved_list = get_object_or_404(SavedList, user=request.user, list=list)
+            saved_list.delete()
+            return redirect('list', pk=list.id)
 
     context = {'list': list, 'list_comments': list_comments,
-               'participants': participants, 'has_reported': has_reported}
+               'participants': participants, 'has_reported': has_reported, 
+               'saved_list_ids': saved_list_ids}
     return render(request, 'pages/list.html', context)
 
 
@@ -156,6 +167,7 @@ def userProfile(request, pk):
     list_comments = user.comment_set.all()
     topics = Topic.objects.annotate(names_count=Count('name')).order_by('-names_count')
     users = User.objects.annotate(followers_count=Count('followers')).order_by('-followers_count')[0:5]
+    saved_lists = SavedList.objects.filter(user=user)
 
     # Create a paginator instance
     paginator = Paginator(lists, LISTS_PER_PAGE)
@@ -189,7 +201,8 @@ def userProfile(request, pk):
                 'page': page,
                 'list_comments': list_comments, 
                 'topics': topics,
-                "is_following": is_following
+                "is_following": is_following,
+                'saved_lists': saved_lists,
             }
             current_user_profile.save()
             return render(request, 'pages/profile.html', context)
@@ -200,7 +213,8 @@ def userProfile(request, pk):
         'page': page,
         'list_comments': list_comments, 
         'topics': topics,
-        'is_following': is_following
+        'is_following': is_following,
+        'saved_lists': saved_lists,
     }
     return render(request, 'pages/profile.html', context)
 
@@ -420,3 +434,10 @@ def delete_pr_comment(request, comment_id):
         comment.delete()
 
     return redirect(back_url)
+
+
+def savedListsPage(request, pk):
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+    user = User.objects.get(id=pk)
+    saved_lists = SavedList.objects.filter(user=user).filter(list__name__icontains=q)
+    return render(request, 'pages/saved_lists.html', {'saved_lists': saved_lists})
