@@ -148,4 +148,4 @@ class SavedList(models.Model):
         ordering = ['-saved_at']
 
     def __str__(self):
-        return f"{self.user.username} saved {self.list.title}"
+        return f"{self.user.name} saved {self.list.name}"
