@@ -1,6 +1,6 @@
 from django.forms import ModelForm
 from django.contrib.auth.forms import UserCreationForm
-from .models import List, User, Report
+from .models import List, User, Report, EditSuggestion, EditComment
 
 
 class ListForm(ModelForm):
@@ -23,3 +23,14 @@ class ReportForm(ModelForm):
     class Meta:
         model = Report
         fields = ['reason']
+
+
+class EditSuggestionForm(ModelForm):
+    class Meta:
+        model = EditSuggestion
+        fields = ['suggestion_text']
+
+class EditCommentForm(ModelForm):
+    class Meta:
+        model = EditComment
+        fields = ['text']

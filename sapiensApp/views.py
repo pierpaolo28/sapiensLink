@@ -4,8 +4,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count
 from django.contrib.auth import authenticate, login, logout
-from .models import List, Topic, Comment, User, Vote, Report, Feedback
-from .forms import ListForm, UserForm, MyUserCreationForm, ReportForm
+from .models import List, Topic, Comment, User, Vote, Report, Feedback, EditSuggestion, EditComment
+from .forms import ListForm, UserForm, MyUserCreationForm, ReportForm, EditSuggestionForm, EditCommentForm
 from django.core.paginator import Paginator
 
 # Create your views here.
@@ -104,7 +104,7 @@ def list(request, pk):
     list_comments = list.comment_set.all()
     participants = list.participants.all()
     user = request.user
-    # Check if the user has already reported this post
+    # Check if the user has already reported this list
     if user.is_authenticated:
         has_reported = Report.objects.filter(user=user, list=list).exists()
     else:
@@ -354,3 +354,69 @@ def delete_account(request):
         else:
             messages.error(request, 'Invalid password or confirmation.')
     return render(request, 'pages/delete_account.html')
+
+
+@login_required(login_url='login')
+def list_pr(request, pk):
+    list = get_object_or_404(List, id=pk)
+    suggestions = EditSuggestion.objects.filter(list=list, is_accepted=False)
+    pr_comments = EditComment.objects.filter(edit_suggestion__list=list)
+    
+    edit_suggestion_form = EditSuggestionForm()
+    comment_form = EditCommentForm()
+    
+    if request.method == 'POST':
+        if 'edit_suggestion' in request.POST:
+            edit_suggestion_form = EditSuggestionForm(request.POST)
+            if edit_suggestion_form.is_valid():
+                suggestion = edit_suggestion_form.save(commit=False)
+                suggestion.list = list
+                suggestion.suggested_by = request.user
+                suggestion.save()
+        elif 'comment' in request.POST:
+            comment_form = EditCommentForm(request.POST)
+            if comment_form.is_valid():
+                comment = comment_form.save(commit=False)
+                comment.edit_suggestion = EditSuggestion.objects.get(pk=request.POST['edit_suggestion_id'])
+                comment.commenter = request.user
+                comment.save()
+    
+    return render(request, 'pages/list_pr.html', {'list': list, 'suggestions': suggestions, 'pr_comments': pr_comments, 'edit_suggestion_form': edit_suggestion_form, 'comment_form': comment_form})
+
+
+@login_required(login_url='login')
+def approve_suggestion(request, suggestion_id):
+    suggestion = get_object_or_404(EditSuggestion, id=suggestion_id)
+    # Check if the current user is the author of the list
+    if suggestion.list.author == request.user:
+        suggestion.is_accepted = True
+        suggestion.save()
+
+        list = suggestion.list
+        list.content = suggestion.suggestion_text
+        list.save()
+
+    return redirect('list_pr', pk=suggestion.list.id)
+
+
+@login_required(login_url='login')
+def decline_suggestion(request, suggestion_id):
+    suggestion = get_object_or_404(EditSuggestion, id=suggestion_id)
+    # Check if the current user is the author of the list
+    if suggestion.list.author == request.user:
+        suggestion.delete()
+
+    return redirect('list_pr', pk=suggestion.list.id)
+
+
+@login_required(login_url='login')
+def delete_pr_comment(request, comment_id):
+    back_url = request.GET.get('back_url')
+
+    comment = get_object_or_404(EditComment, id=comment_id)
+
+    # Check if the current user is the author of the comment
+    if comment.commenter == request.user:
+        comment.delete()
+
+    return redirect(back_url)

@@ -85,6 +85,11 @@
           {% if not has_reported %}
               <a href="{% url 'report_list' list.id %}?back_url={{ request.path }}">Report</a>
           {% endif %}
+          {% if request.user == list.author %}
+            <a href="{% url 'list_pr' list.id %}">View Suggested Edits</a>
+          {% else %}
+            <a href="{% url 'list_pr' list.id %}">Suggest Edit</a>
+          {% endif %}
         </div>
 
         <div class="list__conversation">

@@ -20,4 +20,8 @@ urlpatterns = [
     path('vote/<str:pk>/<str:action>/', views.vote, name='vote'),
     path('report/<str:pk>/', views.report_list, name='report_list'),
     path('delete-account/', views.delete_account, name='delete_account'),
+    path('list_pr/<str:pk>/', views.list_pr, name='list_pr'),
+    path('list_suggestion/approve/<str:suggestion_id>/', views.approve_suggestion, name='approve_suggestion'),
+    path('list_suggestion/decline/<str:suggestion_id>/', views.decline_suggestion, name='decline_suggestion'),
+    path('comment_pr/delete/<str:comment_id>/', views.delete_pr_comment, name='delete_pr_comment'),
 ]

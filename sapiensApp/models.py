@@ -81,6 +81,18 @@ class List(models.Model):
         return self.name
     
 
+class EditSuggestion(models.Model):
+    list = models.ForeignKey(List, on_delete=models.CASCADE)
+    suggested_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    suggestion_text = models.TextField()
+    is_accepted = models.BooleanField(default=False)
+
+class EditComment(models.Model):
+    edit_suggestion = models.ForeignKey(EditSuggestion, on_delete=models.CASCADE)
+    commenter = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField()
+
+
 class Vote(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     list = models.ForeignKey(List, on_delete=models.CASCADE)
