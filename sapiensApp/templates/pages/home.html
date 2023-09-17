@@ -34,9 +34,9 @@
         <div>
           <h2>Lists & Threads</h2>
           <p>{{list_count}} Lists available</p>
-          <a class="btn btn--main btn--pill" href="{% url 'home' %}">Most Recent</a>
-          <a class="btn btn--main btn--pill" href="{% url 'custom_home' 'follow_true' 'top_voted_false'%}">Following Only</a>
-          <a class="btn btn--main btn--pill" href="{% url 'custom_home' 'follow_false' 'top_voted_true'%}">Top Voted</a>
+          <a class="btn btn--main btn--pill" href="{% url 'home' %}">Latest</a>
+          <a class="btn btn--main btn--pill" href="{% url 'custom_home' 'follow_true' 'top_voted_false'%}">Follow List</a>
+          <a class="btn btn--main btn--pill" href="{% url 'custom_home' 'follow_false' 'top_voted_true'%}">Popular</a>
         </div>
 
         <a class="btn btn--main" href="{% url 'create_list' %}">

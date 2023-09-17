@@ -45,7 +45,7 @@ class User(AbstractUser):
     name = models.CharField(max_length=200, null=True)
     email = models.EmailField(_('email address'), unique=True, null=True)
     bio = models.TextField(null=True, blank=True)
-    avatar = models.ImageField(null=True, default="TODO.svg", blank=True)
+    avatar = models.ImageField(null=True, default="profile_pic.png", blank=True)
     followers = models.ManyToManyField(
         "self", blank=True, related_name="following", symmetrical=False
     )
