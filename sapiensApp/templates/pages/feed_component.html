@@ -1,7 +1,9 @@
-{% for list in lists %}
+{% for list in page %}
 <div class="listListList">
     <div class="listListList__header">
+        {% if list.author.id != None %}
         <a href="{% url 'profile' list.author.id %}" class="listListList__author">
+        {% endif %}
             <div class="avatar avatar--small">
                 <img src="{{list.author.avatar.url}}" />
             </div>
@@ -13,6 +15,7 @@
     </div>
     <div class="listListList__content">
         <a href="{% url 'list' list.id %}">{{list.name}}</a>
+        <p>{{list.content}}</p>
     </div>
     <div class="listListList__meta">
         <a href="{% url 'list' list.id %}" class="listListList__joined">
@@ -36,4 +39,18 @@
         <p class="listListList__topic">{{list.topic.name}}</p>
     </div>
 </div>
+{% empty %}
+    <p>No objects to display.</p>
 {% endfor %}
+
+<div class="pagination">
+    <span class="step-links">
+        {% if page.has_previous %}
+            <a href="?page={{ page.previous_page_number }}">Previous</a>
+        {% endif %}
+
+        {% if page.has_next %}
+            <a href="?page={{ page.next_page_number }}">Next</a>
+        {% endif %}
+    </span>
+</div>

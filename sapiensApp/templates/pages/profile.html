@@ -3,9 +3,6 @@
 {% block content %}
 <main class="profile-page layout layout--3">
   <div class="container">
-    <!-- Topics Start -->
-    {% include 'pages/topics_component.html' %}
-    <!-- Topics End -->
 
     <!-- List of Lists Start -->
     <div class="listList">
@@ -23,7 +20,7 @@
         </div>
         <form method="POST">
           {% csrf_token %}
-          {% if user.is_authenticated and user != request.user %}
+          {% if user.is_authenticated and request.user.is_authenticated and user != request.user %}
               {% if is_following %}
                   <button class="btn btn-primary rounded-pill my-1 mx-1 py-1 py-1"  type="submit">
                       Unfollow 
@@ -69,7 +66,7 @@
     <!-- List of Lists End -->
 
     <!-- Who To Follow Start -->
-    {% include 'pages/who_to_follow_component.html' %}
+    {% include 'pages/saved_lists_component.html' %}
     <!-- Who To Follow End -->
   </div>
 </main>

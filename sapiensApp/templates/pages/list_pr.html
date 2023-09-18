@@ -1,0 +1,61 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<a  href="javascript:history.back()">
+  <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+    <title>Left Arrow</title>
+    <path
+      d="M13.723 2.286l-13.723 13.714 13.719 13.714 1.616-1.611-10.96-10.96h27.625v-2.286h-27.625l10.965-10.965-1.616-1.607z">
+    </path>
+  </svg>
+</a>
+
+<h1>{{ list.name }}</h1>
+<p>{{ list.content }}</p>
+
+<h2>View Existing Edit Suggestions</h2>
+<ul>
+  {% for suggestion in suggestions %}
+    <li>{{ suggestion.suggestion_text }}
+      {% if request.user == list.author or request.user.is_superuser %}
+      <a href="{% url 'approve_suggestion' suggestion.id %}">Accept</a> |
+      <a href="{% url 'decline_suggestion' suggestion.id %}">Decline</a>
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>
+
+<h2>Submit Edit Suggestion</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ edit_suggestion_form.as_p }}
+  <button type="submit" name="edit_suggestion">Submit Suggestion</button>
+</form>
+
+<h2>Comments About Existing Edit Submissions</h2>
+<ul>
+  {% for comment in pr_comments %}
+    {% if not comment.edit_suggestion.is_accepted and not comment.edit_suggestion.is_declined %}
+      <li>{{comment.edit_suggestion.suggestion_text}} - {{ comment.text }} - {{ comment.commenter.name }}
+          {% if comment.commenter == user %}
+            <a href="{% url 'delete_pr_comment' comment.id %}?back_url={{ request.path }}">Delete</a>
+          {% endif %}
+      </li>
+    {% endif %}
+  {% endfor %}
+</ul>
+
+<h2>Leave a Comment</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ comment_form.as_p }}
+  <select name="edit_suggestion_id" required>
+    <option value="" disabled selected>Select an option</option>
+    {% for suggestion in suggestions %}
+      <option value="{{ suggestion.id }}">{{ suggestion.suggestion_text }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" name="comment">Submit Comment</button>
+</form>
+{% endblock content %}

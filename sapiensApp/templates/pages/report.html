@@ -1,0 +1,11 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<h1>Report form for: {{list.name}}</h1>
+<h2>TODO: Write Community conditions for valid report</h2>
+<form method="list" action="">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Report</button>
+</form>
+{% endblock content %}

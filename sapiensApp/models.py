@@ -45,7 +45,7 @@ class User(AbstractUser):
     name = models.CharField(max_length=200, null=True)
     email = models.EmailField(_('email address'), unique=True, null=True)
     bio = models.TextField(null=True, blank=True)
-    avatar = models.ImageField(null=True, default="TODO.svg", blank=True)
+    avatar = models.ImageField(null=True, default="profile_pic.png", blank=True)
     followers = models.ManyToManyField(
         "self", blank=True, related_name="following", symmetrical=False
     )
@@ -81,13 +81,31 @@ class List(models.Model):
         return self.name
     
 
+class EditSuggestion(models.Model):
+    list = models.ForeignKey(List, on_delete=models.CASCADE)
+    suggested_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    suggestion_text = models.TextField()
+    is_accepted = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Edit List {self.list}. Is Accepted? {self.is_accepted}"
+
+class EditComment(models.Model):
+    edit_suggestion = models.ForeignKey(EditSuggestion, on_delete=models.CASCADE)
+    commenter = models.ForeignKey(User, on_delete=models.CASCADE)
+    text = models.TextField()
+
+    def __str__(self):
+        return f"Edit List {self.edit_suggestion.list} comment by {self.commenter}"
+
+
 class Vote(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     list = models.ForeignKey(List, on_delete=models.CASCADE)
     action = models.CharField(default='neutral', max_length=15) 
 
     def __str__(self):
-        return self.value
+        return f"{self.user} voted for {self.action}"
 
 
 class Comment(models.Model):
@@ -98,7 +116,36 @@ class Comment(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['updated', 'created']
+        ordering = ['created', 'updated']
 
     def __str__(self):
         return self.body[0:50]
+    
+
+class Report(models.Model):
+    list = models.ForeignKey(List, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    reason = models.TextField()
+
+    def __str__(self):
+        return f"Report on list {self.list} at {self.timestamp}"
+    
+
+class Feedback(models.Model):
+    feedback = models.TextField()
+
+    def __str__(self):
+        return self.feedback[0:50]
+    
+
+class SavedList(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    list = models.ForeignKey(List, on_delete=models.CASCADE)
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-saved_at']
+
+    def __str__(self):
+        return f"{self.user.name} saved {self.list.name}"
