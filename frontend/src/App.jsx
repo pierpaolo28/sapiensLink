@@ -1,5 +1,6 @@
 import "./App.css";
 import axios from "axios";
+import Header from "./components/header/Header";
 
 function App() {
   const getHome = () => {
@@ -11,6 +12,7 @@ function App() {
 
   return (
     <>
+      <Header></Header>
       Click on the button to get data from Django.
       <br />
       See data in the console
