@@ -5,16 +5,24 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { MantineProvider, createTheme } from "@mantine/core";
 import "@mantine/core/styles.css";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const theme = createTheme({
   /** Put your mantine theme override here */
 });
 
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <App />,
+  },
+]);
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <MantineProvider theme={theme}>
     <React.StrictMode>
-      <App />
+      <RouterProvider router={router} />
     </React.StrictMode>
   </MantineProvider>
 );

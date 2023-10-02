@@ -9,12 +9,19 @@ import {
   rem,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-
 import classes from "./Header.module.css";
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
   const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] =
     useDisclosure(false);
+  const navigate = useNavigate();
+
+  const onSignup = (isUser: boolean) => {
+    console.log("isUser", isUser);
+
+    navigate(isUser ? "/login" : "/signup");
+  };
 
   return (
     <Box pb={120}>
@@ -27,8 +34,10 @@ export default function Header() {
             </a>
           </Group>
           <Group visibleFrom="sm">
-            <Button variant="default">Log in</Button>
-            <Button>Sign up</Button>
+            <Button variant="default" onClick={() => onSignup(true)}>
+              Log in
+            </Button>
+            <Button onClick={() => onSignup(false)}>Sign up</Button>
           </Group>
           <Burger
             opened={drawerOpened}
@@ -51,8 +60,10 @@ export default function Header() {
           <Divider my="sm" />
 
           <Group justify="center" grow pb="xl" px="md">
-            <Button variant="default">Log in</Button>
-            <Button>Sign up</Button>
+            <Button variant="default" onClick={() => onSignup(true)}>
+              Log in
+            </Button>
+            <Button onClick={() => onSignup(false)}>Sign up</Button>
           </Group>
         </ScrollArea>
       </Drawer>
