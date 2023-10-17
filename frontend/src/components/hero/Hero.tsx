@@ -2,7 +2,7 @@ import Container from "../shared/Container";
 
 const Hero = () => {
   return (
-    <div className="w-full bg-gray-10">
+    <div className="w-full bg-gray-10 h-[50%]">
       {/* Use Grid */}
       <Container className="flex flex-col lg:flex-row justify-around">
         <div className="lg-halveWidth">

@@ -24,7 +24,7 @@ export default function Header() {
   };
 
   return (
-    <Box pb={120}>
+    <Box className={classes.box}>
       <header className={classes.header}>
         <Group justify="space-between" h="100%">
           LOGO
