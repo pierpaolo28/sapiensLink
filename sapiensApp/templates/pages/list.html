@@ -80,6 +80,9 @@
           </form>
           <div class="list__content">
             {{list.content}}
+            {% if list.source|length > 0 %}
+              {{list.source}}
+            {% endif %}
           </div>
           <span class="list__topics">{{list.topic}}</span>
           {% if not has_reported %}
