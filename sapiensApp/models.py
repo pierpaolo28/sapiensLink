@@ -73,6 +73,7 @@ class List(models.Model):
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
     score = models.IntegerField(default=0)
+    source = models.CharField(max_length=500, blank=True, default='')
 
     class Meta:
         ordering = ['-updated', '-created']
