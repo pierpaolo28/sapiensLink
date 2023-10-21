@@ -8,12 +8,20 @@ import "@mantine/core/styles.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const theme = createTheme({
-  /** Put your mantine theme override here */
+  /** Put your mantine theme override here but preferred choice is to use Tailwind */
 });
 
 const router = createBrowserRouter([
   {
     path: "/",
+    element: <App />,
+  },
+  {
+    path: "/login",
+    element: <App />,
+  },
+  {
+    path: "/signup",
     element: <App />,
   },
 ]);

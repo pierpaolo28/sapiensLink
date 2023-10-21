@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 import GridContainer from "./components/shared/GridContainer";
 
 function App() {
+  // works fine
   const getHome = () => {
     axios
       .get("home")
@@ -12,6 +13,18 @@ function App() {
       .catch((err) => console.log(err));
   };
 
+  const getList = () => {
+    // 404
+    axios.get("lists").then(console.log);
+  };
+
+  const getLists = async () => {
+    // cors error
+    let response = await fetch("http://127.0.0.1:8000/api/lists/");
+    let lists = await response.json();
+
+    console.log(lists);
+  };
   return (
     <div id="page-container">
       <div id="content-wrap">
@@ -19,7 +32,17 @@ function App() {
         <GridContainer>
           <div className="leftSidePanel">Example List</div>
           <div className="mainPanel">Sharing Knowledge One Link At A Time</div>
-          <div className="rightSidePanel">Example List</div>
+          <div className="rightSidePanel">
+            Example List
+            <ul>
+              <li>
+                <button onClick={getHome}>Get Home From Django </button>
+              </li>
+              <li>
+                <button onClick={getLists}>Get List </button>
+              </li>
+            </ul>
+          </div>
         </GridContainer>
       </div>
       {/* 
@@ -27,10 +50,10 @@ function App() {
       //   <br />
       //   See data in the console
       //   <br />
-      //   <button onClick={getHome}>Get Home From Django </button> 
+        // <button onClick={getHome}>Get Home From Django </button> 
       */}
       <footer id="footer">
-        <Footer id="footer"></Footer>
+        <Footer></Footer>
       </footer>
     </div>
   );
