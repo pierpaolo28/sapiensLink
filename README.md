@@ -6,6 +6,20 @@ Run a django project with `python manage.py runserver`
 
 You might need to create a local DB and/or superuser credentials to access the admin panel.
 
+## Make sure to work in your virtualenv
+
+If you don't have virtualenv installed use: `pip install virtualenv`.
+
+For the first usage, to create a virtualenv called venv, use `virtualenv venv` from command line.
+
+Then every time you are developing make sure to first activate your virtualenv using `source venv/bin/activate` (for Mac/Linux, for Windows use: `.env\Scripts\activate.bat`).
+
+After you install any Python package, use `pip freeze > requirements.txt`.
+
+If you need to install any missing package someone else might have added since your last contribution, then use: `pip install -r requirements.txt`.
+
+Once finished developing use: `deactivate`.
+
 ## Create Your Local DB
 
 Run the following commands:
