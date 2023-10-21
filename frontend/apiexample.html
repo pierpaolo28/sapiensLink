@@ -21,22 +21,36 @@
 <script>
     let listsContainer = document.getElementById('lists-container')
 
-    let getLists = async () => {
+    let getData = async () => {
         let response = await fetch('http://127.0.0.1:8000/api/lists/')
         let lists = await response.json()
 
         for (let i = 0; lists.length > i; i++) {
-            let room = lists[i]
+            let list = lists[i]
 
             let row = `<div>
-                            <h3>${room.name}</h3>
+                            <h3>${list.name}</h3>
+                            <p>${list.content}</p>
+                            <p>${list.created}</p>
                         </div>`
+
+            listsContainer.innerHTML += row
+        }
+
+        listsContainer.innerHTML += '<h2>Users on the platform</h2>'
+
+        let usr_response = await fetch('http://127.0.0.1:8000/api/users/')
+        let users = await usr_response.json()
+        for (let i = 0; users.length > i; i++) {
+            let user = users[i]
+
+            let row = `<p>${user.name}<p>`
 
             listsContainer.innerHTML += row
         }
     }
 
-    getLists()
+    getData()
 </script>
 
 </html>
