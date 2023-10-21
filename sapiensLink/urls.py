@@ -23,6 +23,7 @@ handler404 = 'sapiensApp.views.custom_404'
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("sapiensApp.urls")),
+    path('api/', include('sapiensApp.api.urls'))
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
