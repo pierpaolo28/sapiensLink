@@ -235,6 +235,7 @@ def createList(request):
             topic=topic,
             name=request.POST.get('name'),
             content=request.POST.get('content'),
+            source=request.POST.get('source'),
         )
         return redirect('home')
 
@@ -256,6 +257,7 @@ def updateList(request, pk):
         list.name = request.POST.get('name')
         list.topic = topic
         list.content = request.POST.get('content')
+        list.source = request.POST.get('source')
         list.save()
         return redirect('home')
 

@@ -44,6 +44,11 @@
             {{form.content}}
           </div>
 
+          <div class="form__group">
+            <label for="list_source">Original Source</label>
+            {{form.source}}
+          </div>
+
           <div class="form__action">
             <a class="btn btn--dark" href="{{request.META.HTTP_REFERER}}">Cancel</a>
             <button class="btn btn--main" type="submit">Submit</button>
