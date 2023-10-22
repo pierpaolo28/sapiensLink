@@ -20,7 +20,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         notification_message = event['notification']
         creator = event['creator_id']
         receiver = event['receiver_id']
-        comment_id = event['comment_id']
 
         # Convert synchronous database operations to asynchronous
         await self.create_notification(notification_message, creator, receiver)

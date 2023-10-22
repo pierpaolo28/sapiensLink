@@ -126,7 +126,7 @@ def list(request, pk):
 
     if request.method == 'POST':
         if 'comment' in request.POST:
-            new_comment = Comment.objects.create(
+            Comment.objects.create(
                 user=request.user,
                 list=list,
                 body=request.POST.get('comment')
@@ -142,7 +142,6 @@ def list(request, pk):
                     'notification': f'A new comment was added on the list "{list.name}".',
                     'creator_id': user.id,
                     'receiver_id': list.author.id,
-                    'comment_id': new_comment.id,
                 }
             )
 
@@ -476,7 +475,7 @@ def savedListsPage(request, pk):
 @permission_classes([IsAuthenticated])  # Ensure that the user is authenticated
 def get_notifications(request):
     limit = int(request.GET.get('limit', 5))  # Convert to an integer and default to 5 if limit is not provided
-    notifications = Notification.objects.all().filter(read=False).order_by('-timestamp')[:limit]
+    notifications = Notification.objects.all().filter(read=False).filter(receiver=request.user.id).filter(~Q(creator=request.user.id)).order_by('-timestamp')[:limit]
     notifications_data = [{'message': notification.message,
                            'id': notification.id,
                            'read': notification.read} for notification in notifications]
