@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,7 +41,17 @@ INSTALLED_APPS = [
     'sapiensApp.apps.SapiensappConfig',
     'rest_framework',
     'corsheaders',
+    'channels',
 ]
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('localhost', 6379)],
+        },
+    },
+}
 
 AUTH_USER_MODEL = 'sapiensApp.User'
 
@@ -141,3 +152,5 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #TODO: Change to allow just specific url
 CORS_ALLOW_ALL_ORIGINS = True
+
+ASGI_APPLICATION = 'sapiensLink.asgi.application'

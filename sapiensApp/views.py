@@ -7,6 +7,8 @@ from django.contrib.auth import authenticate, login, logout
 from .models import List, Topic, Comment, User, Vote, Report, Feedback, EditSuggestion, EditComment, SavedList
 from .forms import ListForm, UserForm, MyUserCreationForm, ReportForm, EditSuggestionForm, EditCommentForm
 from django.core.paginator import Paginator
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 # Create your views here.
 LISTS_PER_PAGE = 20
@@ -120,6 +122,17 @@ def list(request, pk):
                 body=request.POST.get('comment')
             )
             list.participants.add(request.user)
+
+            # Sending notification to the WebSocket group
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                "comment_notifications_group",
+                {
+                    'type': 'notification_message',
+                    'message': f'A new comment was added on the list "{list.name}".'
+                }
+            )
+
             return redirect('list', pk=list.id)
         elif 'save' in request.POST:
             SavedList.objects.get_or_create(user=request.user, list=list)
