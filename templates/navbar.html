@@ -36,6 +36,114 @@
                     </svg>
                 </button>
             </div>
+
+            <div id="notification-icon" onclick="showNotifications()">🔔 <span id="notification-count" style="font-size: 12px;"></span></div>
+            <div id="notification-dropdown" style="display: none;">
+                <ul id="notification-list">
+                    <!-- Existing notification messages will be added here -->
+                </ul>
+            </div>
+        
+            <script>
+            const dropdown = document.getElementById('notification-dropdown');
+            const notificationList = document.getElementById('notification-list');
+            let unreadNotificationCount = 0;
+            const token = localStorage.getItem('token');
+    
+            async function markNotificationAsRead(notificationId) {
+                try {
+                    const response = await fetch(`/api/notifications/${notificationId}/mark_as_read/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}` // Include the authentication token
+                        }
+                    });
+                    if (!response.ok) {
+                        throw new Error('Failed to mark notification as read');
+                    }
+                    console.log(`Notification ${notificationId} marked as read.`);
+                } catch (error) {
+                    console.error('Error marking notification as read:', error);
+                }
+            }
+    
+            // Function to handle fetching unread notification count and notifications on page load
+            async function fetchNotifications() {
+                try {
+                    const response = await fetch('/api/notifications/', {
+                        headers: {
+                            'Authorization': `Bearer ${token}` // Include the authentication token
+                        }
+                    });
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch notifications');
+                    }
+                    const data = await response.json();
+                    notificationList.innerHTML = '';
+                    unreadNotificationCount = 0; // Reset the unread notification count
+                    data.notifications.forEach(notification => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = notification.message;
+                        listItem.dataset.notificationId = notification.id;
+                        if (!notification.read) {
+                            unreadNotificationCount++; // Increment the unread notification count only for unread notifications
+                        }
+                        listItem.addEventListener('click', async () => {
+                            await markNotificationAsRead(notification.id);
+                            listItem.remove(); // Remove the read notification from the list
+                            unreadNotificationCount--; // Decrement the unread notification count
+                            updateNotificationCount(unreadNotificationCount); // Update the notification count display
+                        });
+                        notificationList.appendChild(listItem);
+                    });
+                    updateNotificationCount(unreadNotificationCount); // Update the notification count display
+                } catch (error) {
+                    console.error('Error fetching notifications:', error);
+                }
+            }
+    
+            function updateNotificationCount(count) {
+                const notificationCount = document.getElementById('notification-count');
+                notificationCount.textContent = count > 0 ? count : '';
+            }
+    
+            function showNotifications() {
+                if (dropdown.style.display === 'none') {
+                    fetchNotifications(); // Fetch the notifications
+                    dropdown.style.display = 'block';
+                } else {
+                    dropdown.style.display = 'none';
+                }
+            }
+
+            const socket = new WebSocket('ws://127.0.0.1:8000/ws/notifications/');
+
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                const notification = data.message;
+                const listItem = document.createElement('li');
+                listItem.textContent = notification;
+                notificationList.appendChild(listItem);
+
+                // Persist the notification in local storage
+                let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+                notifications.push(notification);
+                localStorage.setItem('notifications', JSON.stringify(notifications));
+            };
+
+            // Load existing notifications from local storage
+            const storedNotifications = JSON.parse(localStorage.getItem('notifications')) || [];
+            storedNotifications.forEach(notification => {
+                const listItem = document.createElement('li');
+                listItem.textContent = notification;
+                notificationList.appendChild(listItem);
+            });
+
+            window.onload = fetchNotifications;
+
+            </script>
+
             {% else %}
 
             <!-- Not Logged In -->
@@ -50,49 +158,6 @@
                 <a href="{% url 'home' %}" class="dropdown-link">
                     <title>Home</title>
                 Home</a>
-
-                <div id="notification-icon" onclick="showNotifications()">🔔</div>
-                <div id="notification-dropdown" style="display: none;">
-                    <ul id="notification-list">
-                        <!-- Existing notification messages will be added here -->
-                    </ul>
-                </div>
-
-                <script>
-                    const dropdown = document.getElementById('notification-dropdown');
-                    const notificationList = document.getElementById('notification-list');
-
-                    function showNotifications() {
-                        if (dropdown.style.display === 'none') {
-                            dropdown.style.display = 'block';
-                        } else {
-                            dropdown.style.display = 'none';
-                        }
-                    }
-
-                    const socket = new WebSocket('ws://127.0.0.1:8000/ws/comment_notifications/');
-
-                    socket.onmessage = function(event) {
-                        const data = JSON.parse(event.data);
-                        const notification = data.message;
-                        const listItem = document.createElement('li');
-                        listItem.textContent = notification;
-                        notificationList.appendChild(listItem);
-
-                        // Persist the notification in local storage
-                        let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
-                        notifications.push(notification);
-                        localStorage.setItem('notifications', JSON.stringify(notifications));
-                    };
-
-                    // Load existing notifications from local storage
-                    const storedNotifications = JSON.parse(localStorage.getItem('notifications')) || [];
-                    storedNotifications.forEach(notification => {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = notification;
-                        notificationList.appendChild(listItem);
-                    });
-                </script>
 
                 <a href="{% url 'update_user' %}" class="dropdown-link"><svg version="1.1"
                         xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">

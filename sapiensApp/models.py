@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from django.db import models
+from asgiref.sync import sync_to_async
 
 """Declare models for YOUR_APP app."""
 
@@ -152,10 +153,20 @@ class SavedList(models.Model):
         return f"{self.user.name} saved {self.list.name}"
     
 
+@sync_to_async
+def create_notification(message, creator, receiver):
+    Notification.objects.create(message=message, creator=creator, receiver=receiver)
+
 class Notification(models.Model):
     message = models.CharField(max_length=255)
     timestamp = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    creator = models.CharField(max_length=255)
+    receiver = models.CharField(max_length=255)
+    read = models.BooleanField(default=False)  # Default to unread
 
     def __str__(self):
         return self.message
+
+    @classmethod
+    def create_notification_async(cls, message, creator, receiver):
+        return sync_to_async(cls.objects.create)(message=message, creator=creator, receiver=receiver)

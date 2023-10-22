@@ -8,7 +8,13 @@ from .models import List, Topic, Comment, User, Vote, Report, Feedback, EditSugg
 from .forms import ListForm, UserForm, MyUserCreationForm, ReportForm, EditSuggestionForm, EditCommentForm
 from django.core.paginator import Paginator
 from channels.layers import get_channel_layer
-from asgiref.sync import async_to_sync
+from asgiref.sync import async_to_sync, sync_to_async
+from django.http import JsonResponse
+from .models import Notification
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import RefreshToken
 
 # Create your views here.
 LISTS_PER_PAGE = 20
@@ -31,7 +37,10 @@ def loginPage(request):
 
         if user is not None:
             login(request, user)
-            return redirect('home')
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            context = {'access_token': access_token}
+            return render(request, 'pages/home.html', context)
         else:
             messages.error(request, 'Email OR password does not exit')
 
@@ -101,6 +110,7 @@ def index(request):
     return render(request, 'pages/index.html')
 
 
+@sync_to_async
 def list(request, pk):
     list = List.objects.get(id=pk)
     list_comments = list.comment_set.all()
@@ -116,7 +126,7 @@ def list(request, pk):
 
     if request.method == 'POST':
         if 'comment' in request.POST:
-            Comment.objects.create(
+            new_comment = Comment.objects.create(
                 user=request.user,
                 list=list,
                 body=request.POST.get('comment')
@@ -126,10 +136,13 @@ def list(request, pk):
             # Sending notification to the WebSocket group
             channel_layer = get_channel_layer()
             async_to_sync(channel_layer.group_send)(
-                "comment_notifications_group",
+                "notifications_group",
                 {
-                    'type': 'notification_message',
-                    'message': f'A new comment was added on the list "{list.name}".'
+                    'type': 'send_notification',
+                    'notification': f'A new comment was added on the list "{list.name}".',
+                    'creator_id': user.id,
+                    'receiver_id': list.author.id,
+                    'comment_id': new_comment.id,
                 }
             )
 
@@ -456,3 +469,31 @@ def savedListsPage(request, pk):
     user = User.objects.get(id=pk)
     saved_lists = SavedList.objects.filter(user=user).filter(list__name__icontains=q)
     return render(request, 'pages/saved_lists.html', {'saved_lists': saved_lists})
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])  # Use JSONWebTokenAuthentication for secure authentication
+@permission_classes([IsAuthenticated])  # Ensure that the user is authenticated
+def get_notifications(request):
+    limit = int(request.GET.get('limit', 5))  # Convert to an integer and default to 5 if limit is not provided
+    notifications = Notification.objects.all().filter(read=False).order_by('-timestamp')[:limit]
+    notifications_data = [{'message': notification.message,
+                           'id': notification.id,
+                           'read': notification.read} for notification in notifications]
+    return JsonResponse({'notifications': notifications_data})
+
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])  # Use JSONWebTokenAuthentication for secure authentication
+@permission_classes([IsAuthenticated])  # Ensure that the user is authenticated
+def mark_notification_as_read(request, notification_id):
+    try:
+        notification = Notification.objects.get(pk=notification_id)
+        # # Perform additional permission check if necessary
+        # if request.user != notification.receiver:  # Ensure the requesting user owns the notification
+        #     return JsonResponse({'error': 'You are not authorized to perform this action.'}, status=403)
+        notification.read = True
+        notification.save()
+        return JsonResponse({'status': 'Notification marked as read.'})
+    except Notification.DoesNotExist:
+        return JsonResponse({'error': 'Notification not found.'}, status=404)

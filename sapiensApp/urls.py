@@ -1,5 +1,6 @@
 from django.urls import path
 from django.views.generic.base import TemplateView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from . import views
 
 urlpatterns = [
@@ -28,4 +29,8 @@ urlpatterns = [
     path('about/', TemplateView.as_view(template_name='pages/about.html'), name='about'),
     path('contacts/', TemplateView.as_view(template_name='pages/contacts.html'), name='contacts'),
     path('saved_lists/<str:pk>', views.savedListsPage, name="saved_lists"),
+    path('api/notifications/', views.get_notifications, name='get_notifications'),
+    path('api/notifications/<int:notification_id>/mark_as_read/', views.mark_notification_as_read, name='mark_notification_as_read'),
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
