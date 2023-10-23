@@ -123,27 +123,6 @@
                 fetchNotifications()
             }
 
-            // socket.onmessage = function(event) {
-            //     const data = JSON.parse(event.data);
-            //     const notification = data.message;
-            //     const listItem = document.createElement('li');
-            //     listItem.textContent = notification;
-            //     notificationList.appendChild(listItem);
-
-            //     // Persist the notification in local storage
-            //     let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
-            //     notifications.push(notification);
-            //     localStorage.setItem('notifications', JSON.stringify(notifications));
-            // };
-
-            // // Load existing notifications from local storage
-            // const storedNotifications = JSON.parse(localStorage.getItem('notifications')) || [];
-            // storedNotifications.forEach(notification => {
-            //     const listItem = document.createElement('li');
-            //     listItem.textContent = notification;
-            //     notificationList.appendChild(listItem);
-            // });
-
             window.onload = fetchNotifications;
 
             </script>
