@@ -107,7 +107,39 @@
                 const notificationCount = document.getElementById('notification-count');
                 notificationCount.textContent = count > 0 ? count : '';
             }
-    
+
+            let socket = null; // Define the socket variable globally
+
+            function initWebSocket() {
+                if (socket === null) {
+                    socket = new WebSocket('ws://127.0.0.1:8000/ws/notifications/');
+
+                    socket.onopen = function (event) {
+                        console.log('WebSocket is connected.');
+                        fetchNotifications(); // Fetch notifications when the WebSocket connection is open
+                    };
+
+                    socket.onmessage = function (event) {
+                        fetchNotifications(); // Fetch notifications when a new message is received
+                    };
+
+                    socket.onclose = function (event) {
+                        console.log('WebSocket is closed.');
+                    };
+
+                    socket.onerror = function (event) {
+                        console.error('WebSocket error:', event);
+                    };
+                }
+            }
+
+            function closeWebSocket() {
+                if (socket !== null) {
+                    socket.close();
+                    socket = null;
+                }
+            }
+
             function showNotifications() {
                 if (dropdown.style.display === 'none') {
                     fetchNotifications(); // Fetch the notifications
@@ -117,13 +149,14 @@
                 }
             }
 
-            
-            const socket = new WebSocket('ws://127.0.0.1:8000/ws/notifications/');
-            socket.onmessage = function(event) {
-                fetchNotifications()
-            }
+            window.onload = function () {
+                initWebSocket(); // Initialize the WebSocket connection on page load
+            };
 
-            window.onload = fetchNotifications;
+            window.onbeforeunload = function () {
+                closeWebSocket(); // Close the WebSocket connection before the page is unloaded
+            };
+
 
             </script>
 

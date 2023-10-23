@@ -59,7 +59,7 @@ def getReports(request):
 @permission_classes([IsAuthenticated])  # Ensure that the user is authenticated
 def get_notifications(request):
     limit = int(request.GET.get('limit', 5))  # Convert to an integer and default to 5 if limit is not provided
-    notifications = Notification.objects.all().filter(read=False).filter(receiver=request.user.id).filter(~Q(creator=request.user.id))[:limit] #.order_by('-timestamp')
+    notifications = Notification.objects.all().filter(read=False).filter(receiver=request.user.id).filter(~Q(creator=request.user.id))[:limit]
     notifications_data = [{'message': notification.message,
                            'id': notification.id,
                            'read': notification.read} for notification in notifications]
@@ -72,9 +72,6 @@ def get_notifications(request):
 def mark_notification_as_read(request, notification_id):
     try:
         notification = Notification.objects.get(pk=notification_id)
-        # # Perform additional permission check if necessary
-        # if request.user != notification.receiver:  # Ensure the requesting user owns the notification
-        #     return JsonResponse({'error': 'You are not authorized to perform this action.'}, status=403)
         notification.read = True
         notification.save()
         return JsonResponse({'status': 'Notification marked as read.'})
