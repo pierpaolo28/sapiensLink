@@ -52,10 +52,10 @@
         </a>
       </div>
 
-      {% if access_token %}
+      {% if request.session.access_token %}
         <script>
           var data = {
-              access_token: "{{ access_token }}"
+              access_token: "{{ request.session.access_token }}"
           };
           localStorage.setItem('token', data.access_token);
         </script>

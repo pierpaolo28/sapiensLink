@@ -39,6 +39,8 @@ def loginPage(request):
             login(request, user)
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
+            # context = {'access_token': access_token}
+            # return render(request, 'pages/home.html', context)
             request.session["access_token"] = access_token
             return redirect('home')
         else:
@@ -65,6 +67,8 @@ def registerPage(request):
             login(request, user)
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
+            # context = {'access_token': access_token}
+            # return render(request, 'pages/home.html', context)
             request.session["access_token"] = access_token
             return redirect('home')
         else:
