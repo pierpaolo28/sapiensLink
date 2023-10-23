@@ -39,8 +39,8 @@ def loginPage(request):
             login(request, user)
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
-            context = {'access_token': access_token}
-            return render(request, 'pages/home.html', context)
+            request.session["access_token"] = access_token
+            return redirect('home')
         else:
             messages.error(request, 'Email OR password does not exit')
 
@@ -63,6 +63,9 @@ def registerPage(request):
             user.email = user.email.lower()
             user.save()
             login(request, user)
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            request.session["access_token"] = access_token
             return redirect('home')
         else:
             messages.error(request, 'An error occurred during registration')
@@ -475,7 +478,7 @@ def savedListsPage(request, pk):
 @permission_classes([IsAuthenticated])  # Ensure that the user is authenticated
 def get_notifications(request):
     limit = int(request.GET.get('limit', 5))  # Convert to an integer and default to 5 if limit is not provided
-    notifications = Notification.objects.all().filter(read=False).filter(receiver=request.user.id).filter(~Q(creator=request.user.id)).order_by('-timestamp')[:limit]
+    notifications = Notification.objects.all().filter(read=False).filter(receiver=request.user.id).filter(~Q(creator=request.user.id))[:limit] #.order_by('-timestamp')
     notifications_data = [{'message': notification.message,
                            'id': notification.id,
                            'read': notification.read} for notification in notifications]

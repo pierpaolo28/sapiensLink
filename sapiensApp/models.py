@@ -153,9 +153,9 @@ class SavedList(models.Model):
         return f"{self.user.name} saved {self.list.name}"
     
 
-@sync_to_async
-def create_notification(message, creator, receiver):
-    Notification.objects.create(message=message, creator=creator, receiver=receiver)
+# @sync_to_async
+# def create_notification(message, creator, receiver):
+#     Notification.objects.create(message=message, creator=creator, receiver=receiver)
 
 class Notification(models.Model):
     message = models.CharField(max_length=255)
@@ -164,9 +164,12 @@ class Notification(models.Model):
     receiver = models.CharField(max_length=255)
     read = models.BooleanField(default=False)  # Default to unread
 
+    class Meta:
+        ordering = ['-timestamp']
+
     def __str__(self):
         return self.message
 
-    @classmethod
-    def create_notification_async(cls, message, creator, receiver):
-        return sync_to_async(cls.objects.create)(message=message, creator=creator, receiver=receiver)
+    # @classmethod
+    # def create_notification_async(cls, message, creator, receiver):
+    #     return sync_to_async(cls.objects.create)(message=message, creator=creator, receiver=receiver)
