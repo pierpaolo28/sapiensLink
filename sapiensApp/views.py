@@ -140,17 +140,19 @@ def list(request, pk):
             )
             list.participants.add(request.user)
 
-            # Sending notification to the WebSocket group
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                "notifications_group",
-                {
-                    'type': 'send_notification',
-                    'notification': f'A new comment was added on the list "{list.name}".',
-                    'creator_id': user.id,
-                    'receiver_id': list.author.id,
-                }
-            )
+            for receiver in list.participants.all():
+                if receiver != request.user:
+                    # Sending notification to the WebSocket group
+                    channel_layer = get_channel_layer()
+                    async_to_sync(channel_layer.group_send)(
+                        "notifications_group",
+                        {
+                            'type': 'send_notification',
+                            'notification': f'A new comment was added on the list "{list.name}".',
+                            'creator_id': user.id,
+                            'receiver_id': receiver.id,
+                        }
+                    )
 
             return redirect('list', pk=list.id)
         elif 'save' in request.POST:
@@ -374,6 +376,17 @@ def report_list(request, pk):
             report.list = list
             report.user = request.user
             report.save()
+            # Sending notification to the WebSocket group
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                "notifications_group",
+                {
+                    'type': 'send_notification',
+                    'notification': f'Your list "{list.name}" has been reported by an user.',
+                    'creator_id': request.user.id,
+                    'receiver_id': list.author.id,
+                }
+            )
             return redirect(back_url)
     else:
         form = ReportForm()
@@ -421,6 +434,17 @@ def list_pr(request, pk):
                 suggestion.list = list
                 suggestion.suggested_by = request.user
                 suggestion.save()
+                # Sending notification to the WebSocket group
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)(
+                    "notifications_group",
+                    {
+                        'type': 'send_notification',
+                        'notification': f'A new suggestion to edit your list "{list.name}" has been created.',
+                        'creator_id': request.user.id,
+                        'receiver_id': list.author.id,
+                    }
+                )
         elif 'comment' in request.POST:
             comment_form = EditCommentForm(request.POST)
             if comment_form.is_valid():
@@ -428,6 +452,17 @@ def list_pr(request, pk):
                 comment.edit_suggestion = EditSuggestion.objects.get(pk=request.POST['edit_suggestion_id'])
                 comment.commenter = request.user
                 comment.save()
+                # Sending notification to the WebSocket group
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)(
+                    "notifications_group",
+                    {
+                        'type': 'send_notification',
+                        'notification': f'A new comment has been added to a suggestion to edit your list "{list.name}".',
+                        'creator_id': request.user.id,
+                        'receiver_id': list.author.id,
+                    }
+                )
     
     return render(request, 'pages/list_pr.html', {'list': list, 'suggestions': suggestions, 'pr_comments': pr_comments, 'edit_suggestion_form': edit_suggestion_form, 'comment_form': comment_form})
 
@@ -443,6 +478,17 @@ def approve_suggestion(request, suggestion_id):
         list = suggestion.list
         list.content = suggestion.suggestion_text
         list.save()
+        # Sending notification to the WebSocket group
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "notifications_group",
+            {
+                'type': 'send_notification',
+                'notification': f'Your suggestion to edit the list "{list.name}" has been approved!',
+                'creator_id': request.user.id,
+                'receiver_id': suggestion.suggested_by.id,
+            }
+        )
 
     return redirect('list_pr', pk=suggestion.list.id)
 
@@ -453,6 +499,17 @@ def decline_suggestion(request, suggestion_id):
     # Check if the current user is the author of the list
     if suggestion.list.author == request.user or request.user.is_superuser:
         suggestion.delete()
+        # Sending notification to the WebSocket group
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "notifications_group",
+            {
+                'type': 'send_notification',
+                'notification': f'Your suggestion to edit the list "{suggestion.list.name}" has been declined.',
+                'creator_id': request.user.id,
+                'receiver_id': suggestion.suggested_by.id,
+            }
+        )
 
     return redirect('list_pr', pk=suggestion.list.id)
 
