@@ -39,3 +39,10 @@ Add an email address and a password as requested.
 The superuser is a special type of user with elevated privileges, typically used for administering and managing the application.
 
 Access the admin panel by navigating to [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) and login with your superuser credentials
+
+
+## Run Redis Server
+
+In order to have the web application notification system up and running, you need to make sure to have the Redis Server up and running (opening a new terminal window at the root of the project and running the following command):
+
+- `redis-server`

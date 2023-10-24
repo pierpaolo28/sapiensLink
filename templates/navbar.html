@@ -48,7 +48,58 @@
             const dropdown = document.getElementById('notification-dropdown');
             const notificationList = document.getElementById('notification-list');
             let unreadNotificationCount = 0;
-            const token = localStorage.getItem('token');
+            let token = localStorage.getItem('token');
+
+            function getExpirationTime(token) {
+            const decodedToken = JSON.parse(atob(token.split('.')[1]));
+                if (decodedToken && decodedToken.exp) {
+                    return decodedToken.exp * 1000; // Convert to milliseconds
+                }
+                return null;
+            }
+
+            // TODO: Check if after the token is updated its necessary to refresh the page. 
+            // It seems that after the token is refreshed, the first notification doesn't work and thereafter works
+            async function refreshAccessToken(refreshToken) {
+                try {
+                    const response = await fetch('/api/token/refresh/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ refresh: refreshToken }),
+                    });
+                    if (!response.ok) {
+                        console.error('Failed to refresh access token');
+                        if (!window.location.href.includes('login')) {
+                            console.error('Redirecting to login page');
+                            window.location.href = "{% url 'login' %}";
+                        }
+                        return;
+                    }
+                    const data = await response.json();
+                    localStorage.setItem('token', data.access); // Store the new access token
+                    const expirationTime = getExpirationTime(data.access);
+                    if (expirationTime) {
+                        localStorage.setItem('expirationTime', expirationTime); // Update the expiration time in localStorage
+                    }
+                    token = data.access; // Update the token variable
+                } catch (error) {
+                    console.error('Error refreshing access token:', error);
+                    // Handle the error as needed
+                    // For example, redirect the user to the login page or display an error message
+                }
+            }
+
+            function isAccessTokenExpired() {
+                // Implement the logic to check if the access token is expired
+                // Compare the expiration time with the current time
+                const expirationTime = localStorage.getItem('expirationTime'); // Get the token expiration time from localStorage
+                const currentTime = new Date().getTime(); // Get the current time
+                console.log(expirationTime)
+                console.log(currentTime)
+                return currentTime > expirationTime; // Compare the current time with the expiration time
+            }
     
             async function markNotificationAsRead(notificationId) {
                 try {
@@ -71,32 +122,49 @@
             // Function to handle fetching unread notification count and notifications on page load
             async function fetchNotifications() {
                 try {
+                    if (isAccessTokenExpired()) {
+                        const refreshToken = localStorage.getItem('refreshToken');
+                        if (refreshToken) {
+                            await refreshAccessToken(refreshToken);
+                        } else {
+                            console.error('Refresh token not available.');
+                            window.location.href = "{% url 'login' %}";
+                        }
+                    }
+
                     const response = await fetch('/api/notifications/', {
                         headers: {
                             'Authorization': `Bearer ${token}` // Include the authentication token
                         }
                     });
+
                     if (!response.ok) {
                         throw new Error('Failed to fetch notifications');
                     }
+
                     const data = await response.json();
                     notificationList.innerHTML = '';
                     unreadNotificationCount = 0; // Reset the unread notification count
+
                     data.notifications.forEach(notification => {
                         const listItem = document.createElement('li');
                         listItem.textContent = notification.message;
                         listItem.dataset.notificationId = notification.id;
+
                         if (!notification.read) {
                             unreadNotificationCount++; // Increment the unread notification count only for unread notifications
                         }
+
                         listItem.addEventListener('click', async () => {
                             await markNotificationAsRead(notification.id);
                             listItem.remove(); // Remove the read notification from the list
                             unreadNotificationCount--; // Decrement the unread notification count
                             updateNotificationCount(unreadNotificationCount); // Update the notification count display
                         });
+
                         notificationList.appendChild(listItem);
                     });
+
                     updateNotificationCount(unreadNotificationCount); // Update the notification count display
                 } catch (error) {
                     console.error('Error fetching notifications:', error);
@@ -149,17 +217,26 @@
                 }
             }
 
-            window.onload = function () {
-                initWebSocket(); // Initialize the WebSocket connection on page load
-            };
+            if (!window.location.href.includes('login')) {
+                window.onload = function () {
+                    if (!isAccessTokenExpired()) {
+                        initWebSocket(); // Initialize the WebSocket connection on page load if the token is not expired
+                    } else {
+                        const refreshToken = localStorage.getItem('refreshToken');
+                        if (refreshToken) {
+                            refreshAccessToken(refreshToken);
+                        }
+                        else{
+                            window.location.href = "{% url 'login' %}";
+                        }
+                    }
+                };
+        }
 
             window.onbeforeunload = function () {
                 closeWebSocket(); // Close the WebSocket connection before the page is unloaded
             };
-
-
-            </script>
-
+        </script>
             {% else %}
 
             <!-- Not Logged In -->

@@ -17,7 +17,12 @@ LISTS_PER_PAGE = 20
 def loginPage(request):
     page = 'login'
     if request.user.is_authenticated:
-        return redirect('home')
+        token = request.session["refresh_token"]
+        try:
+            RefreshToken(token)
+            return redirect('home')
+        except:
+            logout(request)
 
     if request.method == 'POST':
         email = request.POST.get('email').lower()
@@ -35,6 +40,8 @@ def loginPage(request):
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
             request.session["access_token"] = access_token
+            request.session["refresh_token"] = str(refresh)
+            request.session["expiration_time"] = refresh.access_token['exp'] * 1000 # Convert expiration time to milliseconds
             return redirect('home')
         else:
             messages.error(request, 'Email OR password does not exit')
@@ -61,6 +68,8 @@ def registerPage(request):
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
             request.session["access_token"] = access_token
+            request.session["refresh_token"] = str(refresh)
+            request.session["expiration_time"] = refresh.access_token['exp'] * 1000 # Convert expiration time to milliseconds
             return redirect('home')
         else:
             messages.error(request, 'An error occurred during registration')
