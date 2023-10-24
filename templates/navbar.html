@@ -96,8 +96,6 @@
                 // Compare the expiration time with the current time
                 const expirationTime = localStorage.getItem('expirationTime'); // Get the token expiration time from localStorage
                 const currentTime = new Date().getTime(); // Get the current time
-                console.log(expirationTime)
-                console.log(currentTime)
                 return currentTime > expirationTime; // Compare the current time with the expiration time
             }
     
