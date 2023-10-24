@@ -20,13 +20,14 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         notification_message = event['notification']
         creator = event['creator_id']
         receiver = event['receiver_id']
+        url = event['url']
 
         # Convert synchronous database operations to asynchronous
-        await self.create_notification(notification_message, creator, receiver)
+        await self.create_notification(notification_message, creator, receiver, url)
 
         await self.send(text_data=json.dumps({'notification': notification_message}))
 
     @sync_to_async
-    def create_notification(self, notification_message, creator, receiver):
+    def create_notification(self, notification_message, creator, receiver, url):
         Notification.objects.create(message=notification_message,
-                                    creator=creator, receiver=receiver)
+                                    creator=creator, receiver=receiver, url=url)

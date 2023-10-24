@@ -156,6 +156,7 @@
                         listItem.addEventListener('click', async () => {
                             await markNotificationAsRead(notification.id);
                             listItem.remove(); // Remove the read notification from the list
+                            window.location.href = notification.url; // Redirect to the URL specified in the notification
                             unreadNotificationCount--; // Decrement the unread notification count
                             updateNotificationCount(unreadNotificationCount); // Update the notification count display
                         });

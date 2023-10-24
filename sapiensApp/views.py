@@ -151,6 +151,7 @@ def list(request, pk):
                             'notification': f'A new comment was added on the list "{list.name}".',
                             'creator_id': user.id,
                             'receiver_id': receiver.id,
+                            'url': request.build_absolute_uri()
                         }
                     )
 
@@ -264,13 +265,15 @@ def createList(request):
         else:
             return HttpResponse('The provided topic is not valid, only dropdown options are available.')
 
-        List.objects.create(
+        list = List.objects.create(
             author=request.user,
             topic=topic,
             name=request.POST.get('name'),
             content=request.POST.get('content'),
             source=request.POST.get('source'),
         )
+        list.participants.add(request.user)
+
         return redirect('home')
 
     context = {'form': form, 'topics': topics}
@@ -385,6 +388,7 @@ def report_list(request, pk):
                     'notification': f'Your list "{list.name}" has been reported by an user.',
                     'creator_id': request.user.id,
                     'receiver_id': list.author.id,
+                    'url': request.build_absolute_uri('/') + 'list/' + str(list.id) + '/',
                 }
             )
             return redirect(back_url)
@@ -443,6 +447,7 @@ def list_pr(request, pk):
                         'notification': f'A new suggestion to edit your list "{list.name}" has been created.',
                         'creator_id': request.user.id,
                         'receiver_id': list.author.id,
+                        'url': request.build_absolute_uri(),
                     }
                 )
         elif 'comment' in request.POST:
@@ -461,6 +466,7 @@ def list_pr(request, pk):
                         'notification': f'A new comment has been added to a suggestion to edit your list "{list.name}".',
                         'creator_id': request.user.id,
                         'receiver_id': list.author.id,
+                        'url': request.build_absolute_uri(),
                     }
                 )
     
@@ -487,6 +493,7 @@ def approve_suggestion(request, suggestion_id):
                 'notification': f'Your suggestion to edit the list "{list.name}" has been approved!',
                 'creator_id': request.user.id,
                 'receiver_id': suggestion.suggested_by.id,
+                'url': request.build_absolute_uri('/') + 'list/' + str(suggestion.list.id) + '/',
             }
         )
 
@@ -508,6 +515,7 @@ def decline_suggestion(request, suggestion_id):
                 'notification': f'Your suggestion to edit the list "{suggestion.list.name}" has been declined.',
                 'creator_id': request.user.id,
                 'receiver_id': suggestion.suggested_by.id,
+                'url': request.build_absolute_uri('/') + 'list/' + str(suggestion.list.id) + '/',
             }
         )
 

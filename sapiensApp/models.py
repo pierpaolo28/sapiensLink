@@ -159,6 +159,7 @@ class Notification(models.Model):
     creator = models.CharField(max_length=255)
     receiver = models.CharField(max_length=255)
     read = models.BooleanField(default=False)  # Default to unread
+    url = models.CharField(max_length=255)
 
     class Meta:
         ordering = ['-timestamp']

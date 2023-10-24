@@ -62,7 +62,8 @@ def get_notifications(request):
     notifications = Notification.objects.all().filter(read=False).filter(receiver=request.user.id).filter(~Q(creator=request.user.id))[:limit]
     notifications_data = [{'message': notification.message,
                            'id': notification.id,
-                           'read': notification.read} for notification in notifications]
+                           'read': notification.read,
+                           'url': notification.url} for notification in notifications]
     return JsonResponse({'notifications': notifications_data})
 
 
