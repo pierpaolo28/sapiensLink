@@ -15,18 +15,28 @@ from rest_framework import status
 def getRoutes(request):
     routes = [
         'GET /api',
-        'GET-POST-DELETE /api/lists',
+        'POST /api/mass-lists/'
+        'GET-POST-DELETE /api/lists/',
         'GET-PUT-DELETE /api/list/:id',
-        'GET-POST-DELETE /api/users',
-        'GET-PUT-DELETE /api/user/:id',
-        'GET-POST-DELETE /api/reports',
-        'GET-PUT-DELETE /api/report/:id',
-        'GET /api/notifications',
+        'GET-POST-DELETE /api/users/',
+        'GET-PUT-DELETE /api/user/:id/',
+        'GET-POST-DELETE /api/reports/',
+        'GET-PUT-DELETE /api/report/:id/',
+        'GET /api/notifications/',
         'GET /api/notifications/<int:notification_id>/mark_as_read/',
-        'GET /api/token',
-        'GET /api/token/refresh',
+        'GET /api/token/',
+        'GET /api/token/refresh/',
     ]
     return Response(routes)
+
+
+@api_view(['POST'])
+def mass_list_upload(request):
+    serializer = ListSerializer(data=request.data, many=True)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'POST', 'DELETE'])

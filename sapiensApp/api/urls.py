@@ -4,6 +4,7 @@ from . import views
 
 urlpatterns = [
     path('',  views.getRoutes),
+    path('mass-lists/', views.mass_list_upload),
     path('lists/', views.lists),
     path('list/<str:pk>/', views.list),
     path('users/', views.users),
