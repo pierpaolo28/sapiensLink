@@ -8,16 +8,19 @@ from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework import status
 
 
 @api_view(['GET'])
 def getRoutes(request):
     routes = [
         'GET /api',
-        'GET /api/lists',
-        'GET /api/list/:id'
-        'GET /api/users',
-        'GET /api/reports',
+        'GET-POST-DELETE /api/lists',
+        'GET-PUT-DELETE /api/list/:id',
+        'GET-POST-DELETE /api/users',
+        'GET-PUT-DELETE /api/user/:id',
+        'GET-POST-DELETE /api/reports',
+        'GET-PUT-DELETE /api/report/:id',
         'GET /api/notifications',
         'GET /api/notifications/<int:notification_id>/mark_as_read/',
         'GET /api/token',
@@ -26,32 +29,144 @@ def getRoutes(request):
     return Response(routes)
 
 
-@api_view(['GET'])
-def getLists(request):
-    lists = List.objects.all()
-    serializer = ListSerializer(lists, many=True)
-    return Response(serializer.data)
+@api_view(['GET', 'POST', 'DELETE'])
+def lists(request):
+    """
+    Retrieve/delete lists or make one.
+    """
+
+    if request.method == 'GET':
+        lists = List.objects.all()
+        serializer = ListSerializer(lists, many=True)
+        return Response(serializer.data)
+    
+    elif request.method == 'POST':
+        serializer = ListSerializer(data=request.data, many=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        lists.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@api_view(['GET'])
-def getList(request, pk):
-    list = List.objects.get(id=pk)
-    serializer = ListSerializer(list, many=False)
-    return Response(serializer.data)
+@api_view(['GET', 'PUT', 'DELETE'])
+def list(request, pk):
+    """
+    Retrieve, update or delete a list.
+    """
+    try:
+        list = List.objects.get(id=pk)
+    except List.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = ListSerializer(list, many=False)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = ListSerializer(list, data=request.data, many=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        list.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@api_view(['GET'])
-def getUsers(request):
-    users = User.objects.all()
-    serializer = UserSerializer(users, many=True)
-    return Response(serializer.data)
+@api_view(['GET', 'POST', 'DELETE'])
+def users(request):
+    """
+    Retrieve/delete users or make one.
+    """
+
+    if request.method == 'GET':
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
+    
+    elif request.method == 'POST':
+        serializer = UserSerializer(data=request.data, many=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        users.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+@api_view(['GET', 'PUT', 'DELETE'])
+def user(request, pk):
+    """
+    Retrieve, update or delete a user.
+    """
+    try:
+        user = User.objects.get(id=pk)
+    except User.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = UserSerializer(user, many=False)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = UserSerializer(user, data=request.data, many=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@api_view(['GET'])
-def getReports(request):
-    reports = Report.objects.all()
-    serializer = ReportSerializer(reports, many=True)
-    return Response(serializer.data)
+@api_view(['GET', 'POST', 'DELETE'])
+def reports(request):
+    """
+    Retrieve/delete reports or make one.
+    """
+
+    if request.method == 'GET':
+        reports = Report.objects.all()
+        serializer = ReportSerializer(reports, many=True)
+        return Response(serializer.data)
+    
+    elif request.method == 'POST':
+        serializer = ReportSerializer(data=request.data, many=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        reports.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+
+@api_view(['GET', 'DELETE'])
+def report(request, pk):
+    """
+    Retrieve or delete a report.
+    """
+    try:
+        report = Report.objects.get(id=pk)
+    except Report.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = ReportSerializer(report, many=False)
+        return Response(serializer.data)
+
+    elif request.method == 'DELETE':
+        report.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(['GET'])

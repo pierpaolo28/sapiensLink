@@ -4,10 +4,12 @@ from . import views
 
 urlpatterns = [
     path('',  views.getRoutes),
-    path('lists/', views.getLists),
-    path('list/<str:pk>/', views.getList),
-    path('users/', views.getUsers),
-    path('reports/', views.getReports),
+    path('lists/', views.lists),
+    path('list/<str:pk>/', views.list),
+    path('users/', views.users),
+    path('user/<str:pk>/', views.user),
+    path('reports/', views.reports),
+    path('report/<str:pk>/', views.report),
     path('notifications/', views.get_notifications, name='get_notifications'),
     path('notifications/<int:notification_id>/mark_as_read/', views.mark_notification_as_read, name='mark_notification_as_read'),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
