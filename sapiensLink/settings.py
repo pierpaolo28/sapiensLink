@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import app_secrets
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'channels',
     'django_extensions',
+    'django_rest_passwordreset',
 ]
 
 REST_FRAMEWORK = {
@@ -167,3 +169,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOW_ALL_ORIGINS = True
 
 ASGI_APPLICATION = 'sapiensLink.asgi.application'
+
+#TODO: Safely story sendgrid api key
+DEFAULT_FROM_EMAIL = 'sapienslink@gmail.com'
+SENDGRID_API_KEY = app_secrets.SENDGRID_API_KEY
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_HOST_USER = 'apikey' # this is exactly the value 'apikey'
+EMAIL_HOST_PASSWORD = SENDGRID_API_KEY
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
