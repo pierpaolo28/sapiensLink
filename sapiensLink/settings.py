@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'channels',
+    'django_extensions',
 ]
 
 REST_FRAMEWORK = {

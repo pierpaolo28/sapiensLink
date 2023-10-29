@@ -11,6 +11,7 @@ cryptography==41.0.4
 daphne==4.0.0
 Django==4.2.5
 django-cors-headers==4.2.0
+django-extensions==3.2.3
 djangorestframework==3.14.0
 djangorestframework-simplejwt==5.3.0
 hyperlink==21.0.0
@@ -21,8 +22,11 @@ Pillow==10.0.0
 pyasn1==0.5.0
 pyasn1-modules==0.3.0
 pycparser==2.21
+pydot==1.4.2
+pygraphviz==1.11
 PyJWT==2.8.0
 pyOpenSSL==23.2.0
+pyparsing==3.1.1
 pytz==2023.3.post1
 redis==5.0.1
 service-identity==23.1.0
