@@ -79,14 +79,25 @@ def registerPage(request):
 
 def home(request, follow='follow_false', top_voted='top_voted_false'):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
+    all_lists = List.objects.filter(public=True)
+    all_list_count = all_lists.count()
+    all_topics = Topic.objects.filter(name__icontains=q)
+    # Filtering the topics where public=True at least once
+    topics = [topic for topic in all_topics if all_lists.filter(topic=topic).exists()]
 
-    lists = List.objects.filter(
+    # Creating the topic counts dictionary for the filtered topics
+    topic_counts = {topic.name: all_lists.filter(topic=topic).count() for topic in topics}
+
+    filtered_topic_counts = {key: topic_counts[key] for key in topic_counts if key in [topic.name for topic in topics]}
+
+    sorted_topic_counts = sorted(filtered_topic_counts.items(), key=lambda item: item[1], reverse=True)
+
+    lists = all_lists.filter(
         Q(topic__name__icontains=q) |
         Q(name__icontains=q) |
         Q(content__icontains=q)
     )
 
-    topics = Topic.objects.annotate(names_count=Count('name')).order_by('-names_count')
     users = User.objects.annotate(followers_count=Count('followers')).order_by('-followers_count')[0:5]
     list_count = lists.count()
     
@@ -108,8 +119,9 @@ def home(request, follow='follow_false', top_voted='top_voted_false'):
     # Get the Page object for the current page
     page = paginator.get_page(page_number)
 
-    context = {'page': page, 'topics': topics, 'users': users,
-               'list_count': list_count}
+    context = {'page': page, 'users': users,
+               'list_count': list_count, 'topic_counts': sorted_topic_counts,
+               'all_list_count': all_list_count}
     return render(request, 'pages/home.html', context)
 
 
@@ -197,11 +209,9 @@ def vote(request, pk, action):
 
 def userProfile(request, pk):
     user = User.objects.get(id=pk)
-    lists_count = List.objects.filter(author_id = pk).count()
-    lists = user.list_set.all()
+    lists_count = List.objects.filter(author_id = pk, public=True).count()
+    lists = user.list_set.filter(public=True)
     list_comments = user.comment_set.all()
-    topics = Topic.objects.annotate(names_count=Count('name')).order_by('-names_count')
-    users = User.objects.annotate(followers_count=Count('followers')).order_by('-followers_count')[0:5]
     saved_lists = SavedList.objects.filter(user=user)
 
     # Create a paginator instance
@@ -231,11 +241,9 @@ def userProfile(request, pk):
                 is_following = True
             context = {
                 "user": user,
-                "users": users,
                 "lists_count": lists_count,
                 'page': page,
                 'list_comments': list_comments, 
-                'topics': topics,
                 "is_following": is_following,
                 'saved_lists': saved_lists,
             }
@@ -243,11 +251,9 @@ def userProfile(request, pk):
             return render(request, 'pages/profile.html', context)
     context = {
         "user": user,
-        "users": users,
         "lists_count": lists_count,
         'page': page,
         'list_comments': list_comments, 
-        'topics': topics,
         'is_following': is_following,
         'saved_lists': saved_lists,
     }
@@ -255,12 +261,67 @@ def userProfile(request, pk):
 
 
 @login_required(login_url='login')
+def private_lists(request, pk):
+    user = User.objects.get(id=pk)
+    lists_count = List.objects.filter(author_id = pk, public=True).count()
+    private_lists = user.list_set.filter(public=False)
+    list_comments = user.comment_set.all()
+    saved_lists = SavedList.objects.filter(user=user)
+
+    # Create a paginator instance
+    paginator = Paginator(private_lists, LISTS_PER_PAGE)
+    
+    # Get the current page number from the request's GET parameters
+    page_number = request.GET.get('page')
+
+    # Get the Page object for the current page
+    page = paginator.get_page(page_number)
+
+    if request.user.is_authenticated:
+        if request.user.following.filter(pk=pk).exists():
+            is_following = True
+        else:
+            is_following = False
+    else:
+        is_following = False
+    if request.method == "POST":
+        current_user_profile = request.user
+        if pk != request.user.id:
+            if request.user.following.filter(pk=pk).exists():
+                current_user_profile.following.remove(user)
+                is_following = False
+            else:
+                current_user_profile.following.add(user)
+                is_following = True
+            context = {
+                "user": user,
+                "lists_count": lists_count,
+                'page': page,
+                'list_comments': list_comments, 
+                "is_following": is_following,
+                'saved_lists': saved_lists
+            }
+            current_user_profile.save()
+            return render(request, 'pages/private_lists.html', context)
+    context = {
+        "user": user,
+        "lists_count": lists_count,
+        'page': page,
+        'list_comments': list_comments, 
+        'is_following': is_following,
+        'saved_lists': saved_lists
+    }
+    return render(request, 'pages/private_lists.html', context)
+
+
+@login_required(login_url='login')
 def createList(request):
     form = ListForm()
-    topics = ["Economics", "Finance", "Management", "Tech", "Education"]
+    # TODO: Make proper list of allowed topics
+    allowed_topics = ["Economics", "Finance", "Management", "Tech", "Education"]
     if request.method == 'POST':
         topic_name = request.POST.get('topic')
-        if topic_name in topics:
+        if topic_name in allowed_topics:
             topic, created = Topic.objects.get_or_create(name=topic_name)
         else:
             return HttpResponse('The provided topic is not valid, only dropdown options are available.')
@@ -270,19 +331,23 @@ def createList(request):
             topic=topic,
             name=request.POST.get('name'),
             content=request.POST.get('content'),
+            public=True if request.POST.get('public') == 'on' else False,
             source=request.POST.get('source'),
         )
         list.participants.add(request.user)
 
         return redirect('home')
 
-    context = {'form': form, 'topics': topics}
+    context = {'form': form, 'topics': allowed_topics}
     return render(request, 'pages/list_form.html', context)
 
 
 @login_required(login_url='login')
 def updateList(request, pk):
     list = List.objects.get(id=pk)
+    topic = Topic.objects.get(id=list.topic_id)
+    # TODO: Make proper list of allowed topics
+    allowed_topics = ["Economics", "Finance", "Management", "Tech", "Education"]
     form = ListForm(instance=list)
     topics = Topic.objects.all()
     if request.user != list.author:
@@ -290,10 +355,16 @@ def updateList(request, pk):
 
     if request.method == 'POST':
         topic_name = request.POST.get('topic')
-        topic, created = Topic.objects.get_or_create(name=topic_name)
+        if topic_name in allowed_topics:
+            topic.name = topic_name
+            topic.save()
+        else:
+            return HttpResponse('The provided topic is not valid, only dropdown options are available.')
+        topic.public = True if request.POST.get('public') == 'on' else False
         list.name = request.POST.get('name')
         list.topic = topic
         list.content = request.POST.get('content')
+        list.public = True if request.POST.get('public') == 'on' else False
         list.source = request.POST.get('source')
         list.save()
         return redirect('home')
@@ -353,8 +424,22 @@ def updateUser(request):
 
 def topicsPage(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
-    topics = Topic.objects.filter(name__icontains=q).annotate(names_count=Count('name')).order_by('-names_count')
-    return render(request, 'pages/topics.html', {'topics': topics})
+    
+    all_lists = List.objects.filter(public=True)
+    all_topics = Topic.objects.filter(name__icontains=q)
+    all_list_count = all_lists.count()
+    # Filtering the topics where public=True at least once
+    topics = [topic for topic in all_topics if all_lists.filter(topic=topic).exists()]
+
+    # Creating the topic counts dictionary for the filtered topics
+    topic_counts = {topic.name: all_lists.filter(topic=topic).count() for topic in topics}
+
+    filtered_topic_counts = {key: topic_counts[key] for key in topic_counts if key in [topic.name for topic in topics]}
+
+    sorted_topic_counts = sorted(filtered_topic_counts.items(), key=lambda item: item[1], reverse=True)
+
+    return render(request, 'pages/topics.html', {'topic_counts': sorted_topic_counts,
+                                                 'all_list_count': all_list_count})
 
 
 def whoToFollowPage(request):
