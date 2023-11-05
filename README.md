@@ -70,7 +70,11 @@ Now open pgadmin4, click on servers, register servers, then choose a name for th
 Once created the database and accordingly updated the settings.py file we can run the following commands:
 
 `python manage.py makemigrations`
+
 `python manage.py migrate`
+
 `python manage.py migrate auth`
+
 `python manage.py migrate --run-syncdb`
+
 `python manage.py runserver`
