@@ -1,0 +1,59 @@
+<!-- Example script to populate database with posts. Posts will keep being added
+until the live server is shut down -->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Adding Lists to Website</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+</head>
+
+<body>
+
+    <h1>Adding Lists to Website</h1>
+
+    <div id="lists-container">
+
+    </div>
+
+</body>
+
+<script>
+    let listsContainer = document.getElementById('lists-container')
+
+    let getData = async () => {
+        var lists_json_resp = await fetch('lists.json')
+        var lists_json = await lists_json_resp.json()
+
+        await fetch("http://127.0.0.1:8000/api/mass-lists/", {
+            method: "POST",
+            body: JSON.stringify(lists_json),
+            headers: {
+                "Content-type": "application/json; charset=UTF-8"
+            }
+        }).catch(error => {
+                    console.error('Error posting lists:', error);
+        });
+        let list_response = await fetch('http://127.0.0.1:8000/api/lists/')
+        let lists = await list_response.json()
+
+        for (let i = 0; lists.length > i; i++) {
+            let list = lists[i]
+
+            let row = `<div>
+                            <h3>${list.name}</h3>
+                            <p>${list.content}</p>
+                            <p>${list.created}</p>
+                        </div>`
+
+            listsContainer.innerHTML += row
+        }
+    }
+
+    getData()
+</script>
+
+</html>
+

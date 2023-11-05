@@ -4,13 +4,20 @@
     </div>
     <ul class="topics__list">
         <li>
-            <a href="{% url 'home' %}" class="active">All <span>{{topics.count}}</span></a>
+            <a href="{% url 'home' %}" class="active">All <span>{{all_list_count}}</span></a>
         </li>
-        {% for topic in topics|slice:4 %}
-        <li>
-            <a href="{% url 'home' %}?q={{topic.name}}">{{topic.name}}<span>{{topic.list_set.all.count}}</span></a>
-        </li>
+        {% if topic_counts %}
+        {% for topic, count in topic_counts %}
+            <li>
+                <a href="{% url 'home' %}?q={{ topic }}">
+                    {{ topic }} 
+                    <span>
+                        {{ count }}
+                    </span>
+                </a>
+            </li>
         {% endfor %}
+        {% endif %}
 
     </ul>
     <a class="btn btn--link" href="{% url 'topics' %}">

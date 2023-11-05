@@ -32,12 +32,24 @@
         </form>
 
         <ul class="users__list">
-          {% for user in users %}
           <li>
-            <a href="{% url 'profile' user.id %}">{{ user.name }} <span>{{user.followers.count}}</span></a>
+            <a href="{% url 'who_to_follow' %}" class="active">All</a>
           </li>
-          {% endfor %}
-
+          {% if request.user.is_authenticated %}
+              {% for user in users %}
+                  {% if request.user.id != user.id %}
+                  <li>
+                      <a href="{% url 'profile' user.id %}">{{user.name}}<span>{{user.followers.count}}</span></a>
+                  </li>
+                  {% endif %}
+              {% endfor %}
+          {% else %}
+              {% for user in users %}
+              <li>
+                  <a href="{% url 'profile' user.id %}">{{user.name}}<span>{{user.followers.count}}</span></a>
+              </li>
+              {% endfor %}
+          {% endif %}
         </ul>
       </div>
     </div>

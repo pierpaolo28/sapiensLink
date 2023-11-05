@@ -7,6 +7,9 @@ from django.contrib.auth import authenticate, login, logout
 from .models import List, Topic, Comment, User, Vote, Report, Feedback, EditSuggestion, EditComment, SavedList
 from .forms import ListForm, UserForm, MyUserCreationForm, ReportForm, EditSuggestionForm, EditCommentForm
 from django.core.paginator import Paginator
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync, sync_to_async
+from rest_framework_simplejwt.tokens import RefreshToken
 
 # Create your views here.
 LISTS_PER_PAGE = 20
@@ -14,7 +17,12 @@ LISTS_PER_PAGE = 20
 def loginPage(request):
     page = 'login'
     if request.user.is_authenticated:
-        return redirect('home')
+        token = request.session["refresh_token"]
+        try:
+            RefreshToken(token)
+            return redirect('home')
+        except:
+            logout(request)
 
     if request.method == 'POST':
         email = request.POST.get('email').lower()
@@ -29,6 +37,11 @@ def loginPage(request):
 
         if user is not None:
             login(request, user)
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            request.session["access_token"] = access_token
+            request.session["refresh_token"] = str(refresh)
+            request.session["expiration_time"] = refresh.access_token['exp'] * 1000 # Convert expiration time to milliseconds
             return redirect('home')
         else:
             messages.error(request, 'Email OR password does not exit')
@@ -52,6 +65,11 @@ def registerPage(request):
             user.email = user.email.lower()
             user.save()
             login(request, user)
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            request.session["access_token"] = access_token
+            request.session["refresh_token"] = str(refresh)
+            request.session["expiration_time"] = refresh.access_token['exp'] * 1000 # Convert expiration time to milliseconds
             return redirect('home')
         else:
             messages.error(request, 'An error occurred during registration')
@@ -61,14 +79,25 @@ def registerPage(request):
 
 def home(request, follow='follow_false', top_voted='top_voted_false'):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
+    all_lists = List.objects.filter(public=True)
+    all_list_count = all_lists.count()
+    all_topics = Topic.objects.filter(name__icontains=q)
+    # Filtering the topics where public=True at least once
+    topics = [topic for topic in all_topics if all_lists.filter(topic=topic).exists()]
 
-    lists = List.objects.filter(
+    # Creating the topic counts dictionary for the filtered topics
+    topic_counts = {topic.name: all_lists.filter(topic=topic).count() for topic in topics}
+
+    filtered_topic_counts = {key: topic_counts[key] for key in topic_counts if key in [topic.name for topic in topics]}
+
+    sorted_topic_counts = sorted(filtered_topic_counts.items(), key=lambda item: item[1], reverse=True)
+
+    lists = all_lists.filter(
         Q(topic__name__icontains=q) |
         Q(name__icontains=q) |
         Q(content__icontains=q)
     )
 
-    topics = Topic.objects.annotate(names_count=Count('name')).order_by('-names_count')
     users = User.objects.annotate(followers_count=Count('followers')).order_by('-followers_count')[0:5]
     list_count = lists.count()
     
@@ -90,8 +119,9 @@ def home(request, follow='follow_false', top_voted='top_voted_false'):
     # Get the Page object for the current page
     page = paginator.get_page(page_number)
 
-    context = {'page': page, 'topics': topics, 'users': users,
-               'list_count': list_count}
+    context = {'page': page, 'users': users,
+               'list_count': list_count, 'topic_counts': sorted_topic_counts,
+               'all_list_count': all_list_count}
     return render(request, 'pages/home.html', context)
 
 
@@ -99,6 +129,7 @@ def index(request):
     return render(request, 'pages/index.html')
 
 
+@sync_to_async
 def list(request, pk):
     list = List.objects.get(id=pk)
     list_comments = list.comment_set.all()
@@ -120,6 +151,22 @@ def list(request, pk):
                 body=request.POST.get('comment')
             )
             list.participants.add(request.user)
+
+            for receiver in list.participants.all():
+                if receiver != request.user:
+                    # Sending notification to the WebSocket group
+                    channel_layer = get_channel_layer()
+                    async_to_sync(channel_layer.group_send)(
+                        "notifications_group",
+                        {
+                            'type': 'send_notification',
+                            'notification': f'A new comment was added on the list "{list.name}".',
+                            'creator_id': user.id,
+                            'receiver_id': receiver.id,
+                            'url': request.build_absolute_uri()
+                        }
+                    )
+
             return redirect('list', pk=list.id)
         elif 'save' in request.POST:
             SavedList.objects.get_or_create(user=request.user, list=list)
@@ -162,11 +209,9 @@ def vote(request, pk, action):
 
 def userProfile(request, pk):
     user = User.objects.get(id=pk)
-    lists_count = List.objects.filter(author_id = pk).count()
-    lists = user.list_set.all()
+    lists_count = List.objects.filter(author_id = pk, public=True).count()
+    lists = user.list_set.filter(public=True)
     list_comments = user.comment_set.all()
-    topics = Topic.objects.annotate(names_count=Count('name')).order_by('-names_count')
-    users = User.objects.annotate(followers_count=Count('followers')).order_by('-followers_count')[0:5]
     saved_lists = SavedList.objects.filter(user=user)
 
     # Create a paginator instance
@@ -196,11 +241,9 @@ def userProfile(request, pk):
                 is_following = True
             context = {
                 "user": user,
-                "users": users,
                 "lists_count": lists_count,
                 'page': page,
                 'list_comments': list_comments, 
-                'topics': topics,
                 "is_following": is_following,
                 'saved_lists': saved_lists,
             }
@@ -208,11 +251,9 @@ def userProfile(request, pk):
             return render(request, 'pages/profile.html', context)
     context = {
         "user": user,
-        "users": users,
         "lists_count": lists_count,
         'page': page,
         'list_comments': list_comments, 
-        'topics': topics,
         'is_following': is_following,
         'saved_lists': saved_lists,
     }
@@ -220,32 +261,93 @@ def userProfile(request, pk):
 
 
 @login_required(login_url='login')
+def private_lists(request, pk):
+    user = User.objects.get(id=pk)
+    lists_count = List.objects.filter(author_id = pk, public=True).count()
+    private_lists = user.list_set.filter(public=False)
+    list_comments = user.comment_set.all()
+    saved_lists = SavedList.objects.filter(user=user)
+
+    # Create a paginator instance
+    paginator = Paginator(private_lists, LISTS_PER_PAGE)
+    
+    # Get the current page number from the request's GET parameters
+    page_number = request.GET.get('page')
+
+    # Get the Page object for the current page
+    page = paginator.get_page(page_number)
+
+    if request.user.is_authenticated:
+        if request.user.following.filter(pk=pk).exists():
+            is_following = True
+        else:
+            is_following = False
+    else:
+        is_following = False
+    if request.method == "POST":
+        current_user_profile = request.user
+        if pk != request.user.id:
+            if request.user.following.filter(pk=pk).exists():
+                current_user_profile.following.remove(user)
+                is_following = False
+            else:
+                current_user_profile.following.add(user)
+                is_following = True
+            context = {
+                "user": user,
+                "lists_count": lists_count,
+                'page': page,
+                'list_comments': list_comments, 
+                "is_following": is_following,
+                'saved_lists': saved_lists
+            }
+            current_user_profile.save()
+            return render(request, 'pages/private_lists.html', context)
+    context = {
+        "user": user,
+        "lists_count": lists_count,
+        'page': page,
+        'list_comments': list_comments, 
+        'is_following': is_following,
+        'saved_lists': saved_lists
+    }
+    return render(request, 'pages/private_lists.html', context)
+
+
+@login_required(login_url='login')
 def createList(request):
     form = ListForm()
-    topics = ["Economics", "Finance", "Management", "Tech", "Education"]
+    # TODO: Make proper list of allowed topics
+    allowed_topics = ["Economics", "Finance", "Management", "Tech", "Education"]
     if request.method == 'POST':
         topic_name = request.POST.get('topic')
-        if topic_name in topics:
+        if topic_name in allowed_topics:
             topic, created = Topic.objects.get_or_create(name=topic_name)
         else:
             return HttpResponse('The provided topic is not valid, only dropdown options are available.')
 
-        List.objects.create(
+        list = List.objects.create(
             author=request.user,
             topic=topic,
             name=request.POST.get('name'),
             content=request.POST.get('content'),
+            public=True if request.POST.get('public') == 'on' else False,
             source=request.POST.get('source'),
         )
+        list.participants.add(request.user)
+
         return redirect('home')
 
-    context = {'form': form, 'topics': topics}
+    context = {'form': form, 'topics': allowed_topics}
     return render(request, 'pages/list_form.html', context)
 
 
 @login_required(login_url='login')
 def updateList(request, pk):
     list = List.objects.get(id=pk)
+    topic = Topic.objects.get(id=list.topic_id)
+    # TODO: Make proper list of allowed topics
+    allowed_topics = ["Economics", "Finance", "Management", "Tech", "Education"]
     form = ListForm(instance=list)
     topics = Topic.objects.all()
     if request.user != list.author:
@@ -253,10 +355,16 @@ def updateList(request, pk):
 
     if request.method == 'POST':
         topic_name = request.POST.get('topic')
-        topic, created = Topic.objects.get_or_create(name=topic_name)
+        if topic_name in allowed_topics:
+            topic.name = topic_name
+            topic.save()
+        else:
+            return HttpResponse('The provided topic is not valid, only dropdown options are available.')
+        topic.public = True if request.POST.get('public') == 'on' else False
         list.name = request.POST.get('name')
         list.topic = topic
         list.content = request.POST.get('content')
+        list.public = True if request.POST.get('public') == 'on' else False
         list.source = request.POST.get('source')
         list.save()
         return redirect('home')
@@ -316,8 +424,22 @@ def updateUser(request):
 
 def topicsPage(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
-    topics = Topic.objects.filter(name__icontains=q).annotate(names_count=Count('name')).order_by('-names_count')
-    return render(request, 'pages/topics.html', {'topics': topics})
+    
+    all_lists = List.objects.filter(public=True)
+    all_topics = Topic.objects.filter(name__icontains=q)
+    all_list_count = all_lists.count()
+    # Filtering the topics where public=True at least once
+    topics = [topic for topic in all_topics if all_lists.filter(topic=topic).exists()]
+
+    # Creating the topic counts dictionary for the filtered topics
+    topic_counts = {topic.name: all_lists.filter(topic=topic).count() for topic in topics}
+
+    filtered_topic_counts = {key: topic_counts[key] for key in topic_counts if key in [topic.name for topic in topics]}
+
+    sorted_topic_counts = sorted(filtered_topic_counts.items(), key=lambda item: item[1], reverse=True)
+
+    return render(request, 'pages/topics.html', {'topic_counts': sorted_topic_counts,
+                                                 'all_list_count': all_list_count})
 
 
 def whoToFollowPage(request):
@@ -342,6 +464,18 @@ def report_list(request, pk):
             report.list = list
             report.user = request.user
             report.save()
+            # Sending notification to the WebSocket group
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                "notifications_group",
+                {
+                    'type': 'send_notification',
+                    'notification': f'Your list "{list.name}" has been reported by an user.',
+                    'creator_id': request.user.id,
+                    'receiver_id': list.author.id,
+                    'url': request.build_absolute_uri('/') + 'list/' + str(list.id) + '/',
+                }
+            )
             return redirect(back_url)
     else:
         form = ReportForm()
@@ -389,6 +523,18 @@ def list_pr(request, pk):
                 suggestion.list = list
                 suggestion.suggested_by = request.user
                 suggestion.save()
+                # Sending notification to the WebSocket group
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)(
+                    "notifications_group",
+                    {
+                        'type': 'send_notification',
+                        'notification': f'A new suggestion to edit your list "{list.name}" has been created.',
+                        'creator_id': request.user.id,
+                        'receiver_id': list.author.id,
+                        'url': request.build_absolute_uri(),
+                    }
+                )
         elif 'comment' in request.POST:
             comment_form = EditCommentForm(request.POST)
             if comment_form.is_valid():
@@ -396,6 +542,18 @@ def list_pr(request, pk):
                 comment.edit_suggestion = EditSuggestion.objects.get(pk=request.POST['edit_suggestion_id'])
                 comment.commenter = request.user
                 comment.save()
+                # Sending notification to the WebSocket group
+                channel_layer = get_channel_layer()
+                async_to_sync(channel_layer.group_send)(
+                    "notifications_group",
+                    {
+                        'type': 'send_notification',
+                        'notification': f'A new comment has been added to a suggestion to edit your list "{list.name}".',
+                        'creator_id': request.user.id,
+                        'receiver_id': list.author.id,
+                        'url': request.build_absolute_uri(),
+                    }
+                )
     
     return render(request, 'pages/list_pr.html', {'list': list, 'suggestions': suggestions, 'pr_comments': pr_comments, 'edit_suggestion_form': edit_suggestion_form, 'comment_form': comment_form})
 
@@ -411,6 +569,18 @@ def approve_suggestion(request, suggestion_id):
         list = suggestion.list
         list.content = suggestion.suggestion_text
         list.save()
+        # Sending notification to the WebSocket group
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "notifications_group",
+            {
+                'type': 'send_notification',
+                'notification': f'Your suggestion to edit the list "{list.name}" has been approved!',
+                'creator_id': request.user.id,
+                'receiver_id': suggestion.suggested_by.id,
+                'url': request.build_absolute_uri('/') + 'list/' + str(suggestion.list.id) + '/',
+            }
+        )
 
     return redirect('list_pr', pk=suggestion.list.id)
 
@@ -421,6 +591,18 @@ def decline_suggestion(request, suggestion_id):
     # Check if the current user is the author of the list
     if suggestion.list.author == request.user or request.user.is_superuser:
         suggestion.delete()
+        # Sending notification to the WebSocket group
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "notifications_group",
+            {
+                'type': 'send_notification',
+                'notification': f'Your suggestion to edit the list "{suggestion.list.name}" has been declined.',
+                'creator_id': request.user.id,
+                'receiver_id': suggestion.suggested_by.id,
+                'url': request.build_absolute_uri('/') + 'list/' + str(suggestion.list.id) + '/',
+            }
+        )
 
     return redirect('list_pr', pk=suggestion.list.id)
 

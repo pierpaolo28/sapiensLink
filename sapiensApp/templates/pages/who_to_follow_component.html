@@ -3,11 +3,21 @@
         <h2>Who To Follow</h2>
     </div>
     <ul class="who_to_follow__list">
-        {% for user in users %}
-        <li>
-            <a href="{% url 'profile' user.id %}">{{user.name}}<span>{{user.followers.count}}</span></a>
-        </li>
-        {% endfor %}
+        {% if request.user.is_authenticated %}
+            {% for user in users %}
+                {% if request.user.id != user.id %}
+                <li>
+                    <a href="{% url 'profile' user.id %}">{{user.name}}<span>{{user.followers.count}}</span></a>
+                </li>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            {% for user in users %}
+            <li>
+                <a href="{% url 'profile' user.id %}">{{user.name}}<span>{{user.followers.count}}</span></a>
+            </li>
+            {% endfor %}
+        {% endif %}
 
     </ul>
     <a class="btn btn--link" href="{% url 'who_to_follow' %}">

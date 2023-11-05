@@ -52,6 +52,19 @@
         </a>
       </div>
 
+      {% if request.session.access_token %}
+        <script>
+          let data = {
+              access_token: "{{ request.session.access_token }}",
+              refresh_token: "{{ request.session.refresh_token }}",
+              expiration_time: "{{ request.session.expiration_time }}"
+          };
+          localStorage.setItem('token', data.access_token);
+          localStorage.setItem('refreshToken', data.refresh_token);
+          localStorage.setItem('expirationTime', data.expiration_time);
+        </script>
+      {% endif %}
+
       {% include 'pages/feed_component.html' %}
 
     </div>

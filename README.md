@@ -28,6 +28,8 @@ Run the following commands:
 - `python manage.py migrate` (apply migration files to db)
 - `python manage.py migrate --run-syncdb` (sync db schema with state of Django models)
 
+The server can then be launched using: `python manage.py runserver` and the front end reachable at [http://127.0.0.1:8000](http://127.0.0.1:8000).
+
 ## Create Superuser
 
 If you want to create a superuser account to access the admin interface, run the following commands:
@@ -39,3 +41,16 @@ Add an email address and a password as requested.
 The superuser is a special type of user with elevated privileges, typically used for administering and managing the application.
 
 Access the admin panel by navigating to [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) and login with your superuser credentials
+
+
+## Run Redis Server
+
+In order to have the web application notification system up and running, you need to make sure to have the Redis Server up and running (opening a new terminal window at the root of the project and running the following command):
+
+- `redis-server`
+
+## Visualizing the database
+
+In order to create a snapshot of the database architecture, the following command can be used: `python manage.py graph_models -a sapinesApp -o db.png`
+
+![](db.png)
