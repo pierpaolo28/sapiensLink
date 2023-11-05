@@ -109,10 +109,15 @@ WSGI_APPLICATION = 'sapiensLink.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': app_secrets.POSTGRESQL_NAME,
+        'USER': app_secrets.POSTGRESQL_USERNAME,
+        'PASSWORD': app_secrets.POSTGRESQL_PASSWORD,
+        'HOST': app_secrets.POSTGRESQL_HOST,
+        'PORT': app_secrets.POSTGRESQL_PORT,
     }
 }
+
 
 
 # Password validation

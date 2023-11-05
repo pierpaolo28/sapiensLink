@@ -54,3 +54,23 @@ In order to have the web application notification system up and running, you nee
 In order to create a snapshot of the database architecture, the following command can be used: `python manage.py graph_models -a sapinesApp -o db.png`
 
 ![](db.png)
+
+## PostgreSQL
+
+To install postgresql on Mac and the Pgadmin user interface use the following commands:
+
+`brew install postgresql`
+
+`brew install --cask pgadmin4`
+
+Finally, make sure your environment is up to date with the requirements.txt file.
+
+Now open pgadmin4, click on servers, register servers, then choose a name for the server. For host name/address put localhost, port 5432, and choose an username/password. Now we can create a database.
+
+Once created the database and accordingly updated the settings.py file we can run the following commands:
+
+`python manage.py makemigrations`
+`python manage.py migrate`
+`python manage.py migrate auth`
+`python manage.py migrate --run-syncdb`
+`python manage.py runserver`
