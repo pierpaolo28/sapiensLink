@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from django.db import models
 
+
 """Declare models for YOUR_APP app."""
 
 class UserManager(BaseUserManager):
@@ -46,6 +47,7 @@ class User(AbstractUser):
     email = models.EmailField(_('email address'), unique=True, null=True)
     bio = models.TextField(null=True, blank=True)
     avatar = models.ImageField(null=True, default="profile_pic.png", blank=True)
+    social = models.CharField(max_length=300, null=True, blank=True)
     followers = models.ManyToManyField(
         "self", blank=True, related_name="following", symmetrical=False
     )
@@ -65,7 +67,7 @@ class Topic(models.Model):
 
 class List(models.Model):
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    topic = models.ForeignKey(Topic, on_delete=models.SET_NULL, null=True)
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=200)
     content = models.TextField(null=True, blank=True)
     participants = models.ManyToManyField(
@@ -74,6 +76,7 @@ class List(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     score = models.IntegerField(default=0)
     source = models.CharField(max_length=500, blank=True, default='')
+    public = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['-updated', '-created']
@@ -150,3 +153,18 @@ class SavedList(models.Model):
 
     def __str__(self):
         return f"{self.user.name} saved {self.list.name}"
+    
+
+class Notification(models.Model):
+    message = models.CharField(max_length=255)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    creator = models.CharField(max_length=255)
+    receiver = models.CharField(max_length=255)
+    read = models.BooleanField(default=False)  # Default to unread
+    url = models.CharField(max_length=255)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return self.message
