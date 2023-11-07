@@ -1,8 +1,10 @@
 # Sapiens link
 
-This project is built with [Django](https://www.djangoproject.com/).
+This project is built with [React](https://react.dev/) and [Django](https://www.djangoproject.com/).
 
-Run a django project with `python manage.py runserver`
+## Django Backend
+
+Run a Django project with `python manage.py runserver`
 
 You might need to create a local DB and/or superuser credentials to access the admin panel.
 
@@ -55,3 +57,14 @@ In order to create a snapshot of the database architecture, the following comman
 
 ![](db.png)
 
+## React Frontend
+
+Run a React project with `npm run start` from the _frontend_ folder.
+
+To run a React project, you need to install its dependencies first. </br>
+Inside the _frontend_ folder, run `npm install`.
+
+If you need to fetch data from the Django server, you will need to:
+
+- run React with `npm start` from the _frontend_ folder
+- run Django with `python manage.py runserver` from the sapiensLink folder. You might also need to create your local DB as reported above.
