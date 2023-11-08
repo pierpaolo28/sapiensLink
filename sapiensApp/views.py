@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q, Count
 from django.contrib.auth import authenticate, login, logout
 from .models import List, Topic, Comment, User, Vote, Report, Feedback, EditSuggestion, EditComment, SavedList
-from .forms import ListForm, UserForm, MyUserCreationForm, ReportForm, EditSuggestionForm, EditCommentForm
+from .forms import ListForm, CommentForm, UserForm, MyUserCreationForm, ReportForm, EditSuggestionForm, EditCommentForm
 from django.core.paginator import Paginator
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync, sync_to_async
@@ -132,6 +132,7 @@ def index(request):
 @sync_to_async
 def list(request, pk):
     list = List.objects.get(id=pk)
+    comment_form = CommentForm()
     list_comments = list.comment_set.all()
     participants = list.participants.all()
     user = request.user
@@ -145,27 +146,29 @@ def list(request, pk):
 
     if request.method == 'POST':
         if 'comment' in request.POST:
-            Comment.objects.create(
-                user=request.user,
-                list=list,
-                body=request.POST.get('comment')
-            )
-            list.participants.add(request.user)
+            comment_form = CommentForm(request.POST)
+            if comment_form.is_valid():
+                comment = comment_form.save(commit=False)
+                comment.user = request.user
+                comment.list = list
+                comment.save()
 
-            for receiver in list.participants.all():
-                if receiver != request.user:
-                    # Sending notification to the WebSocket group
-                    channel_layer = get_channel_layer()
-                    async_to_sync(channel_layer.group_send)(
-                        "notifications_group",
-                        {
-                            'type': 'send_notification',
-                            'notification': f'A new comment was added on the list "{list.name}".',
-                            'creator_id': user.id,
-                            'receiver_id': receiver.id,
-                            'url': request.build_absolute_uri()
-                        }
-                    )
+                list.participants.add(request.user)
+
+                for receiver in list.participants.all():
+                    if receiver != request.user:
+                        # Sending notification to the WebSocket group
+                        channel_layer = get_channel_layer()
+                        async_to_sync(channel_layer.group_send)(
+                            "notifications_group",
+                            {
+                                'type': 'send_notification',
+                                'notification': f'A new comment was added on the list "{list.name}".',
+                                'creator_id': user.id,
+                                'receiver_id': receiver.id,
+                                'url': request.build_absolute_uri()
+                            }
+                        )
 
             return redirect('list', pk=list.id)
         elif 'save' in request.POST:
@@ -176,7 +179,7 @@ def list(request, pk):
             saved_list.delete()
             return redirect('list', pk=list.id)
 
-    context = {'list': list, 'list_comments': list_comments,
+    context = {'list': list, 'list_comments': list_comments, 'comment_form': comment_form,
                'participants': participants, 'has_reported': has_reported, 
                'saved_list_ids': saved_list_ids}
     return render(request, 'pages/list.html', context)
@@ -416,7 +419,7 @@ def updateUser(request):
             if password:
                 user.set_password(password)
                 user.save()
-            return redirect('profile', pk=user.id)
+                return redirect('profile', pk=user.id)
 
     return render(request, 'pages/update_user.html', {'form': form})
 

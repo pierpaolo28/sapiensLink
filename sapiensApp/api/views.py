@@ -15,7 +15,7 @@ from rest_framework import status
 def getRoutes(request):
     routes = [
         'GET /api',
-        'POST /api/mass-lists/'
+        'POST /api/mass-lists/',
         'GET-POST-DELETE /api/lists/',
         'GET-PUT-DELETE /api/list/:id',
         'GET-POST-DELETE /api/users/',

@@ -154,9 +154,10 @@
       </div>
       <div class="list__comment">
         {% if request.user.is_authenticated %}
-          <form action="" method="POST">
+          <form method="POST">
             {% csrf_token %}
-            <input name="comment" placeholder="Write your comment here..." />
+            {{ comment_form.body }}
+            <button type="submit" name="comment">Submit Comment</button>
           </form>
         {% else %}
         <p class="list__login__comment"> <a href="{% url 'login' %}">Log in </a> to write your comment </p>

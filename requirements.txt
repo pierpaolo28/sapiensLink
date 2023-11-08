@@ -3,6 +3,7 @@ async-timeout==4.0.3
 attrs==23.1.0
 autobahn==23.6.2
 Automat==22.10.0
+better-profanity==0.7.0
 cffi==1.16.0
 channels==4.0.0
 channels-redis==4.1.0
@@ -20,6 +21,7 @@ idna==3.4
 incremental==22.10.0
 msgpack==1.0.7
 Pillow==10.0.0
+psycopg2-binary==2.9.9
 pyasn1==0.5.0
 pyasn1-modules==0.3.0
 pycparser==2.21
