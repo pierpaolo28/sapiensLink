@@ -213,6 +213,7 @@ def userProfile(request, pk):
     lists = user.list_set.filter(public=True)
     list_comments = user.comment_set.all()
     saved_lists = SavedList.objects.filter(user=user)
+    contributions = EditSuggestion.objects.filter(suggested_by=pk, is_accepted=True).order_by('-id')[:5]
 
     # Create a paginator instance
     paginator = Paginator(lists, LISTS_PER_PAGE)
@@ -246,6 +247,7 @@ def userProfile(request, pk):
                 'list_comments': list_comments, 
                 "is_following": is_following,
                 'saved_lists': saved_lists,
+                'contributions': contributions,
             }
             current_user_profile.save()
             return render(request, 'pages/profile.html', context)
@@ -256,6 +258,7 @@ def userProfile(request, pk):
         'list_comments': list_comments, 
         'is_following': is_following,
         'saved_lists': saved_lists,
+        'contributions': contributions,
     }
     return render(request, 'pages/profile.html', context)
 

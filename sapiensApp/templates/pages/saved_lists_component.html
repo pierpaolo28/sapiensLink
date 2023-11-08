@@ -1,5 +1,17 @@
 <div class="saved_lists_component">
     <div class="saved_lists_component__header">
+        <h2>Recent Contributions</h2>
+    </div>
+    <ul class="saved_lists__list">
+        {% for contribution in contributions %}
+        <li>
+            <a href="{% url 'list' contribution.list.id %}">{{contribution.list}}</a>
+        </li>
+        {% empty %}
+        <li>No recent contributions.</li>
+        {% endfor %}
+    </ul>
+    <div class="saved_lists_component__header">
         <h2>Saved Lists</h2>
     </div>
     <ul class="saved_lists__list">
