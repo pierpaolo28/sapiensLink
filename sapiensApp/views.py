@@ -79,7 +79,7 @@ def registerPage(request):
 
 def home(request, follow='follow_false', top_voted='top_voted_false'):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
-    all_lists = List.objects.filter(public=True)
+    all_lists = List.objects.filter(public=True).distinct()
     all_list_count = all_lists.count()
     all_topics = Topic.objects.filter(name__icontains=q)
     # Filtering the topics where public=True at least once
@@ -319,60 +319,56 @@ def private_lists(request, pk):
 
 @login_required(login_url='login')
 def createList(request):
-    form = ListForm()
-    # TODO: Make proper list of allowed topics
-    allowed_topics = ["Economics", "Finance", "Management", "Tech", "Education"]
-    if request.method == 'POST':
-        topic_name = request.POST.get('topic')
-        if topic_name in allowed_topics:
+    form = ListForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        list_instance = form.save(commit=False)
+        list_instance.author = request.user
+        list_instance.save()
+        # Assuming you want to create Topic instances for the selected topics
+        for topic_name in form.cleaned_data['topic']:
             topic, created = Topic.objects.get_or_create(name=topic_name)
-        else:
-            return HttpResponse('The provided topic is not valid, only dropdown options are available.')
-
-        list = List.objects.create(
-            author=request.user,
-            topic=topic,
-            name=request.POST.get('name'),
-            content=request.POST.get('content'),
-            public=True if request.POST.get('public') == 'on' else False,
-            source=request.POST.get('source'),
-        )
-        list.participants.add(request.user)
-
+            list_instance.topic.add(topic)
+        # Don't forget to handle other ManyToMany fields like 'participants' if necessary
+        list_instance.participants.add(request.user)
+        list_instance.save()
         return redirect('home')
 
-    context = {'form': form, 'topics': allowed_topics}
+    context = {'form': form}
     return render(request, 'pages/list_form.html', context)
 
 
 @login_required(login_url='login')
 def updateList(request, pk):
-    list = List.objects.get(id=pk)
-    topic = Topic.objects.get(id=list.topic_id)
-    # TODO: Make proper list of allowed topics
-    allowed_topics = ["Economics", "Finance", "Management", "Tech", "Education"]
-    form = ListForm(instance=list)
-    topics = Topic.objects.all()
-    if request.user != list.author:
-        return HttpResponse('Not authorized to proceed.')
+    list_instance = get_object_or_404(List, id=pk)
+    if request.user != list_instance.author:
+        return HttpResponse('You are not authorized to edit this list.')
+
+    form = ListForm(instance=list_instance)
+
+    # Pre-populate the topics field with the current topics of the list
+    if request.method == 'GET':
+        # Get the list of topic names that are currently associated with this list
+        initial_topics = list_instance.topic.values_list('name', flat=True)
+        # The initial topics must be set as a list of topic names, not objects
+        form.fields['topic'].initial = [name for name in initial_topics]
 
     if request.method == 'POST':
-        topic_name = request.POST.get('topic')
-        if topic_name in allowed_topics:
-            topic.name = topic_name
-            topic.save()
-        else:
-            return HttpResponse('The provided topic is not valid, only dropdown options are available.')
-        topic.public = True if request.POST.get('public') == 'on' else False
-        list.name = request.POST.get('name')
-        list.topic = topic
-        list.content = request.POST.get('content')
-        list.public = True if request.POST.get('public') == 'on' else False
-        list.source = request.POST.get('source')
-        list.save()
-        return redirect('home')
+        form = ListForm(request.POST, instance=list_instance)
+        if form.is_valid():
+            list_instance = form.save(commit=False)
+            list_instance.save()
+            # Clear existing topics
+            list_instance.topic.clear()
+            # Get the list of topic names from the POST data
+            topic_names = request.POST.getlist('topic')
+            # Add new topics
+            for topic_name in topic_names:
+                topic, created = Topic.objects.get_or_create(name=topic_name)
+                list_instance.topic.add(topic)
 
-    context = {'form': form, 'topics': topics, 'list': list}
+            return redirect('home')
+
+    context = {'form': form, 'list': list_instance}
     return render(request, 'pages/list_form.html', context)
 
 

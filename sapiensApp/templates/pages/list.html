@@ -84,7 +84,12 @@
               {{list.source}}
             {% endif %}
           </div>
-          <span class="list__topics">{{list.topic}}</span>
+          <p>List Topics</p>
+          <ul>
+            {% for topic in list.topic.all %}
+                <li>{{ topic.name }}</li>
+            {% endfor %}
+          </ul>
           {% if not has_reported %}
               <a href="{% url 'report_list' list.id %}?back_url={{ request.path }}">Report</a>
           {% endif %}

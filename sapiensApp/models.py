@@ -67,7 +67,7 @@ class Topic(models.Model):
 
 class List(models.Model):
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    topic = models.ForeignKey(Topic, on_delete=models.CASCADE, null=True)
+    topic = models.ManyToManyField(Topic)
     name = models.CharField(max_length=200)
     content = models.TextField(null=True, blank=True)
     participants = models.ManyToManyField(

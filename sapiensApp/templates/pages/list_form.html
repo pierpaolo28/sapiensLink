@@ -1,3 +1,9 @@
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Add this in the <head> section of your HTML -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+  
+
 {% extends 'main.html' %}
 
 {% block content %}
@@ -21,38 +27,7 @@
         <form class="form" action="" method="POST">
           {% csrf_token %}
 
-          <div class="form__group">
-            <label for="list_topic">Enter a Topic</label>
-            <input required type="text" value="{{list.topic.name}}" name="topic" list="topic-list" />
-            <datalist id="topic-list">
-              <select id="list_topic">
-                {% for topic in topics %}
-                <option value="{{topic}}">{{topic}}</option>
-                {% endfor %}
-              </select>
-            </datalist>
-          </div>
-
-
-          <div class="form__group">
-            <label for="list_name">List Name</label>
-            {{form.name}}
-          </div>
-
-          <div class="form__group">
-            <label for="list_content">List Content</label>
-            {{form.content}}
-          </div>
-
-          <div class="form__group">
-            <label for="list_public">Public</label>
-            {{form.public}}
-          </div>
-
-          <div class="form__group">
-            <label for="list_source">Original Source</label>
-            {{form.source}}
-          </div>
+          {{ form.as_p }}
 
           <div class="form__action">
             <a class="btn btn--dark" href="{{request.META.HTTP_REFERER}}">Cancel</a>
@@ -62,5 +37,14 @@
       </div>
     </div>
   </div>
+
+  <script>
+    $(document).ready(function() {
+        $('.select2').select2({
+            placeholder: 'Select topics',
+            allowClear: true
+        });
+    });
+    </script>
 </main>
 {% endblock content %}
