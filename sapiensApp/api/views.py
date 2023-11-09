@@ -1,9 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import Q
-from sapiensApp.models import List, User, Report, Notification
+from sapiensApp.models import List, Topic, User, Report, Notification
 from .serializers import ListSerializer, UserSerializer, ReportSerializer
-from sapiensApp.api import serializers
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
@@ -32,11 +31,41 @@ def getRoutes(request):
 
 @api_view(['POST'])
 def mass_list_upload(request):
-    serializer = ListSerializer(data=request.data, many=True)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    for item in request.data:
+        serializer = ListSerializer(data=item)
+        if serializer.is_valid():
+            topics_data = item.get('topic', [])
+            participants_data = item.get('participants', [])
+            name = item.get('name', None)  # Adjust this based on the field names in your request data
+            content = item.get('content', None)
+            source = item.get('source', '')
+            author = item.get('author', None)
+            if author:
+                author = User.objects.get(id=author)
+            else:
+                author = None
+
+            # Create the List instance
+            list_instance = serializer.create(validated_data={
+                'name': name,
+                'content': content,
+                'source': source,
+                'author': author
+            })
+
+            # Handle the many-to-many relationship with topics
+            for topic_name in topics_data:
+                topic = Topic.objects.get(name=topic_name)
+                list_instance.topic.add(topic)
+
+            # Handle the many-to-many relationship with participants
+            for participant_id in participants_data:
+                participant = User.objects.get(id=participant_id)
+                list_instance.participants.add(participant)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 
 @api_view(['GET', 'POST', 'DELETE'])
@@ -47,13 +76,50 @@ def lists(request):
 
     if request.method == 'GET':
         lists = List.objects.all()
-        serializer = ListSerializer(lists, many=True)
-        return Response(serializer.data)
+        serialized_data = []
+        for item in lists:
+            data = {
+                'id': item.id,
+                'author': item.author.id if item.author else None,
+                'name': item.name,
+                'content': item.content,
+                'source': item.source,
+                'score': item.score,
+                'participants': [i.id for i in item.participants.all() if i],
+                'topic': [i.name for i in item.topic.all() if i],
+                'public': item.public,
+            }
+            serialized_data.append(data)
+        return JsonResponse(serialized_data, safe=False)
     
     elif request.method == 'POST':
-        serializer = ListSerializer(data=request.data, many=False)
+        serializer = ListSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            topics_data = request.data.get('topic', [])
+            participants_data = request.data.get('participants', [])
+            name = request.data.get('name', None)  # Adjust this based on the field names in your request data
+            content = request.data.get('content', None)
+            source = request.data.get('source', '')
+            author = request.data.get('author', None)
+            if author:
+                author = User.objects.get(id=author)
+            else:
+                author = None
+
+            # Create the List instance
+            list_instance = List.objects.create(name=name, content=content, 
+                                                source=source, author=author)
+
+            # Handle the many-to-many relationship with topics
+            for topic_name in topics_data:
+                topic, created = Topic.objects.get_or_create(name=topic_name)
+                list_instance.topic.add(topic)
+
+            # Handle the many-to-many relationship with participants
+            for participant_id in participants_data:
+                participant = User.objects.get(id=participant_id)
+                list_instance.participants.add(participant)
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
