@@ -60,34 +60,12 @@ def lists(request):
     
     elif request.method == 'POST':
         serializer = ListSerializer(data=request.data)
+
         if serializer.is_valid():
-            topics_data = request.data.get('topic', [])
-            participants_data = request.data.get('participants', [])
-            name = request.data.get('name', None)  # Adjust this based on the field names in your request data
-            content = request.data.get('content', None)
-            source = request.data.get('source', '')
-            author = request.data.get('author', None)
-            if author:
-                author = User.objects.get(id=author)
-            else:
-                author = None
-
-            # Create the List instance
-            list_instance = List.objects.create(name=name, content=content, 
-                                                source=source, author=author)
-
-            # Handle the many-to-many relationship with topics
-            for topic_name in topics_data:
-                topic, created = Topic.objects.get_or_create(name=topic_name)
-                list_instance.topic.add(topic)
-
-            # Handle the many-to-many relationship with participants
-            for participant_id in participants_data:
-                participant = User.objects.get(id=participant_id)
-                list_instance.participants.add(participant)
-
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            serializer.save()
+            return Response({"outcome": "successful upload"}, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
         lists = List.objects.all()
@@ -103,7 +81,7 @@ def list(request, pk):
     try:
         list = List.objects.get(id=pk)
     except List.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response({"outcome": "list not found"}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
         serializer = ListSerializer(list, many=False)
@@ -118,7 +96,7 @@ def list(request, pk):
 
     elif request.method == 'DELETE':
         list.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"outcome": "list deleted"}, status=status.HTTP_201_CREATED)
 
 
 @api_view(['GET', 'POST', 'DELETE'])
