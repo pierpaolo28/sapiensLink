@@ -32,41 +32,14 @@ def getRoutes(request):
 
 @api_view(['POST'])
 def mass_list_upload(request):
-    for item in request.data:
-        serializer = ListSerializer(data=item)
-        if serializer.is_valid():
-            topics_data = item.get('topic', [])
-            participants_data = item.get('participants', [])
-            name = item.get('name', None)  # Adjust this based on the field names in your request data
-            content = item.get('content', None)
-            source = item.get('source', '')
-            author = item.get('author', None)
-            if author:
-                author = User.objects.get(id=author)
-            else:
-                author = None
+    serializer = ListSerializer(data=request.data, many=True)
 
-            # Create the List instance
-            list_instance = serializer.create(validated_data={
-                'name': name,
-                'content': content,
-                'source': source,
-                'author': author
-            })
+    if serializer.is_valid():
+        serializer.save()
 
-            # Handle the many-to-many relationship with topics
-            for topic_name in topics_data:
-                topic = Topic.objects.get(name=topic_name)
-                list_instance.topic.add(topic)
-
-            # Handle the many-to-many relationship with participants
-            for participant_id in participants_data:
-                participant = User.objects.get(id=participant_id)
-                list_instance.participants.add(participant)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    return Response({"outcome": "successful upload"}, status=status.HTTP_201_CREATED)
-
+        return Response({"outcome": "successful upload"}, status=status.HTTP_201_CREATED)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'POST', 'DELETE'])
@@ -81,22 +54,9 @@ def lists(request):
 
         lists = List.objects.all()
         paginated_queryset = paginator.paginate_queryset(lists, request)
-        serialized_data = []
-        for item in paginated_queryset:
-            data = {
-                'id': item.id,
-                'author': item.author.id if item.author else None,
-                'name': item.name,
-                'content': item.content,
-                'source': item.source,
-                'score': item.score,
-                'participants': [i.id for i in item.participants.all() if i],
-                'topic': [i.name for i in item.topic.all() if i],
-                'public': item.public,
-            }
-            serialized_data.append(data)
+        serializer = ListSerializer(paginated_queryset, many=True)
         
-        return paginator.get_paginated_response(serialized_data)
+        return paginator.get_paginated_response(serializer.data)
     
     elif request.method == 'POST':
         serializer = ListSerializer(data=request.data)
@@ -130,8 +90,9 @@ def lists(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
+        lists = List.objects.all()
         lists.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"outcome": "all lists deleted"}, status=status.HTTP_201_CREATED)
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
