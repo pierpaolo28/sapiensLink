@@ -9,7 +9,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
+from django.db.models import Count
+from django.db.models import Q
+from django.core.paginator import Paginator
 
+LISTS_PER_PAGE = 10
 
 @api_view(['GET'])
 def getRoutes(request):
@@ -27,6 +31,7 @@ def getRoutes(request):
         'GET /api/notifications/<int:notification_id>/mark_as_read/',
         'GET /api/token/',
         'GET /api/token/refresh/',
+        'GET /api/get_home_lists/',
     ]
     return Response(routes)
 
@@ -51,7 +56,7 @@ def lists(request):
 
     if request.method == 'GET':
         paginator = PageNumberPagination()
-        paginator.page_size = 10  # Set the number of items per page
+        paginator.page_size = LISTS_PER_PAGE  # Set the number of items per page
 
         lists = List.objects.all()
         paginated_queryset = paginator.paginate_queryset(lists, request)
@@ -98,6 +103,63 @@ def list(request, pk):
     elif request.method == 'DELETE':
         list.delete()
         return Response({"outcome": "list deleted"}, status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET'])
+def get_home_lists(request):
+    q = request.GET.get('q', '')
+    # TODO: Follow home sorting should be made visible to just logged in users on the front end
+    follow = request.GET.get('follow', 'follow_false')
+    top_voted = request.GET.get('top_voted', 'top_voted_false')
+
+    all_lists = List.objects.filter(public=True).distinct()
+    all_list_count = all_lists.count()
+    all_topics = Topic.objects.filter(name__icontains=q)
+    topics = [topic for topic in all_topics if all_lists.filter(topic=topic).exists()]
+    topic_counts = {topic.name: all_lists.filter(topic=topic).count() for topic in topics}
+    filtered_topic_counts = {key: topic_counts[key] for key in topic_counts if key in [topic.name for topic in topics]}
+    sorted_topic_counts = sorted(filtered_topic_counts.items(), key=lambda item: item[1], reverse=True)
+
+    lists = all_lists.filter(
+        Q(topic__name__icontains=q) |
+        Q(name__icontains=q) |
+        Q(content__icontains=q)
+    )
+
+    users = User.objects.annotate(followers_count=Count('followers')).order_by('-followers_count')[0:5]
+    list_count = lists.count()
+
+    if follow == 'follow_true':
+        f_list = request.user.following.all()
+        lists = lists.filter(author__in=f_list)
+        list_count = lists.count()
+    elif top_voted == 'top_voted_true':
+        lists = lists.order_by('-score')
+
+    
+    # Serialize the data
+    paginator = PageNumberPagination()
+    paginator.page_size = LISTS_PER_PAGE
+    paginated_queryset = paginator.paginate_queryset(lists, request)
+    list_serializer = ListSerializer(paginated_queryset, many=True)
+    user_serializer = UserSerializer(users, many=True)
+
+    # Construct the response JSON
+    response_data = {
+        'pagination': {
+            'next_page': paginator.get_next_link(),
+            'previous_page': paginator.get_previous_link(),
+            'total_pages': paginator.page.paginator.num_pages,
+            'current_page': paginator.page.number,
+        },
+        'lists': list_serializer.data,
+        'users': user_serializer.data,
+        'list_count': list_count,
+        'topic_counts': sorted_topic_counts,
+        'all_list_count': all_list_count,
+    }
+
+    return Response(response_data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
