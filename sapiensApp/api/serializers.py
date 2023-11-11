@@ -1,22 +1,34 @@
-from rest_framework.serializers import ModelSerializer, ListField
+from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
 from sapiensApp.models import List, Topic, User, Report
 
 
-class TopicListField(ListField):
-
-    def to_representation(self, data):
-        return [item.name for item in data.all()] if data.exists() else []
-
-    def to_internal_value(self, data):
-        return [Topic.objects.get_or_create(name=item)[0] for item in data]
+class TopicSerializer(ModelSerializer):
+    class Meta:
+        model = Topic
+        fields = '__all__'
 
 
 class ListSerializer(ModelSerializer):
-    topic = TopicListField()
+    topic = TopicSerializer(many=True)
+    participants = PrimaryKeyRelatedField(many=True, queryset=User.objects.all())
 
     class Meta:
         model = List
         fields = '__all__'
+
+    def create(self, validated_data):
+        topics_data = validated_data.pop('topic', [])
+        participants_data = validated_data.pop('participants', [])
+        list_instance = List.objects.create(**validated_data)
+
+        for topic_dic in topics_data:
+            topic_instance, _ = Topic.objects.get_or_create(name=topic_dic['name'])
+            list_instance.topic.add(topic_instance)
+
+        # Use set method for the many-to-many relationship with participants
+        list_instance.participants.set(participants_data)
+
+        return list_instance
         
 
 class UserSerializer(ModelSerializer):

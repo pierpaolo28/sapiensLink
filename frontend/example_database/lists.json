@@ -1,35 +1,207 @@
-[
-    {
-        "name": "Tech Blogs",
-        "content": "Distill, distill.pub \nSebastian Raschka, sebastianraschka.com \nNeal Lathia, nlathia.github.io \nHacker News, news.ycombinator.com \nData Science Simplified, mathdatasimplified.com \nBenn Stancil, bennstancil.com \nBrandon Rohrer, e2eml.schoolblog.html \nAndrej Karpathy, karpathy.github.io \nEugene Yan, eugeneyan.com \nI am Trusk, iamtrask.github.io \nJeremy Jordan, jeremyjordan.me \nJaan Altosaar, jaan.io \nKetan Doshi, ketanhdoshi.github.ioindex.html \nChris McCormick, mccormickml.com \nDaniele Grattarola, danielegrattarola.github.io \nFrancesco Pochetti, francescopochetti.com \nNick Singh, nicksingh.com \nChip Huyen, huyenchip.com \nChris Albon, chrisalbon.com \nluminousmen, luminousmen.com \nPatrick Halina, patrickhalina.com \nBnomial, today.bnomial.com \nFrancesco Zuppichini, medium.com@FrancescoZ \nSebastian Ruder, ruder.io \nWill Koehrsen, williamkoehrsen.medium.com \nMoez Ali, moez-62905.medium.com \nMachine Learning Mastery, machinelearningmastery.com \nDaniel Bourke, mrdbourke.com \nAmit Chaudhary, amitness.com \nConfessions of a Data Guy, confessionsofadataguy.com \nSimone Scardapane, sscardapane.it \nByteByteGo, bytebytego.com \nMachine learning at scale, machinelearningatscale.com \nPaepper.com, paepper.comblog \nAidan Cooper, aidancooper.co.uk \nBeyond the Horizon, rajanieshkaushikk.com \nJay Alammar, jalammar.github.io \nDale On AI, daleonai.com \nEric Jang, evjang.com \nArthur Douillard, arthurdouillard.com \nPyImageSearch, pyimagesearch.com \nLewis Cole Blog, lewiscoleblog.com \nBioinformatics and other bits, dmnfarrell.github.io \nRoadmaps, roadmap.sh \nML@CMU, blog.ml.cmu.edu \nBerkeley Artificial Intelligence Research, bair.berkeley.edublog \nChristopherGS, christophergs.com \nYanislav Donchev, yannidd.github.io \nLil'Log, https: lilianweng.github.io \nKanoki, kanoki.org \nAman Arora’s Blog, amaarora.github.io",
-        "source": "",
-        "topic": [
-            "Tech",
-            "Education"
-        ],
-        "participants": [
-        ]
-    },
-    {
-        "name": "Remote Work Websites",
-        "content": "Remote.co, remote.coremote-jobs \nRemote OK, remoteok.com \nWe Work Remotely, weworkremotely.com",
-        "updated": "2023-10-24T12:09:32.576162Z",
-        "created": "2023-10-24T12:09:32.576228Z",
-        "source": "",
-        "topic": [
-            "Work"
-        ],
-        "participants": [
-        ]
-    },
-    {
-        "name": "Personal Finance & FIRE",
-        "content": "Retire In Progress, retireinprogress.com \nAccidentally Retired, accidentallyretired.com  \nPortfolio Charts, portfoliocharts.com  \nReddit Personal Finance, reddit.comrpersonalfinancewikiindex  \nJustETF, justetf.comen  \nMorning Star, morningstar.com  \nETF.com, etf.cometfanalyticsetf-finder  \nJL Collins, jlcollinsnh.com  \nMr Money Mustache, mrmoneymustache.com  \nMustachian Post Discussion Forum, forum.mustachianpost.com  \nEarly Retirement Extreme,  earlyretirementextreme.com  \nInvestopedia, investopedia.com  \nGlobal Property Guide, globalpropertyguide.com  \nOptimized Portfolio, optimizedportfolio.com  \nLazy Portfolio ETF,  lazyportfolioetf.com  \nBogleHeads, bogleheads.orgindex.php  \nPortfolio Visualizer (with Backtesting), portfoliovisualizer.com  \nWise Money (EU Investing), bankeronwheels.com  \nIndex Fund Investor (EU Investing), indexfundinvestor.eu",
-        "source": "",
-        "topic": [
-            "Personal Finance"
-        ],
-        "participants": [
-        ]
-    }
-]
+{
+    "count": 12,
+    "next": "http://127.0.0.1:8000/api/lists/?page=2",
+    "previous": null,
+    "results": [
+        {
+            "id": 2427,
+            "topic": [
+                {
+                    "id": 49,
+                    "name": "Personal Finance"
+                }
+            ],
+            "participants": [
+                1
+            ],
+            "name": "Personal Finance & FIRE",
+            "content": "Retire In Progress, retireinprogress.com \nAccidentally Retired, accidentallyretired.com  \nPortfolio Charts, portfoliocharts.com  \nReddit Personal Finance, reddit.comrpersonalfinancewikiindex  \nJustETF, justetf.comen  \nMorning Star, morningstar.com  \nETF.com, etf.cometfanalyticsetf-finder  \nJL Collins, jlcollinsnh.com  \nMr Money Mustache, mrmoneymustache.com  \nMustachian Post Discussion Forum, forum.mustachianpost.com  \nEarly Retirement Extreme,  earlyretirementextreme.com  \nInvestopedia, investopedia.com  \nGlobal Property Guide, globalpropertyguide.com  \nOptimized Portfolio, optimizedportfolio.com  \nLazy Portfolio ETF,  lazyportfolioetf.com  \nBogleHeads, bogleheads.orgindex.php  \nPortfolio Visualizer (with Backtesting), portfoliovisualizer.com  \nWise Money (EU Investing), bankeronwheels.com  \nIndex Fund Investor (EU Investing), indexfundinvestor.eu",
+            "updated": "2023-11-11T11:51:57.764430Z",
+            "created": "2023-11-11T11:51:57.764446Z",
+            "score": 0,
+            "source": "",
+            "public": true,
+            "author": null
+        },
+        {
+            "id": 2426,
+            "topic": [
+                {
+                    "id": 48,
+                    "name": "Work"
+                }
+            ],
+            "participants": [],
+            "name": "Remote Work Websites",
+            "content": "Remote.co, remote.coremote-jobs \nRemote OK, remoteok.com \nWe Work Remotely, weworkremotely.com",
+            "updated": "2023-11-11T11:51:57.762423Z",
+            "created": "2023-11-11T11:51:57.762453Z",
+            "score": 0,
+            "source": "",
+            "public": true,
+            "author": null
+        },
+        {
+            "id": 2425,
+            "topic": [
+                {
+                    "id": 46,
+                    "name": "Tech"
+                },
+                {
+                    "id": 47,
+                    "name": "Education"
+                }
+            ],
+            "participants": [],
+            "name": "Tech Blogs",
+            "content": "Distill, distill.pub \nSebastian Raschka, sebastianraschka.com \nNeal Lathia, nlathia.github.io \nHacker News, news.ycombinator.com \nData Science Simplified, mathdatasimplified.com \nBenn Stancil, bennstancil.com \nBrandon Rohrer, e2eml.schoolblog.html \nAndrej Karpathy, karpathy.github.io \nEugene Yan, eugeneyan.com \nI am Trusk, iamtrask.github.io \nJeremy Jordan, jeremyjordan.me \nJaan Altosaar, jaan.io \nKetan Doshi, ketanhdoshi.github.ioindex.html \nChris McCormick, mccormickml.com \nDaniele Grattarola, danielegrattarola.github.io \nFrancesco Pochetti, francescopochetti.com \nNick Singh, nicksingh.com \nChip Huyen, huyenchip.com \nChris Albon, chrisalbon.com \nluminousmen, luminousmen.com \nPatrick Halina, patrickhalina.com \nBnomial, today.bnomial.com \nFrancesco Zuppichini, medium.com@FrancescoZ \nSebastian Ruder, ruder.io \nWill Koehrsen, williamkoehrsen.medium.com \nMoez Ali, moez-62905.medium.com \nMachine Learning Mastery, machinelearningmastery.com \nDaniel Bourke, mrdbourke.com \nAmit Chaudhary, amitness.com \nConfessions of a Data Guy, confessionsofadataguy.com \nSimone Scardapane, sscardapane.it \nByteByteGo, bytebytego.com \nMachine learning at scale, machinelearningatscale.com \nPaepper.com, paepper.comblog \nAidan Cooper, aidancooper.co.uk \nBeyond the Horizon, rajanieshkaushikk.com \nJay Alammar, jalammar.github.io \nDale On AI, daleonai.com \nEric Jang, evjang.com \nArthur Douillard, arthurdouillard.com \nPyImageSearch, pyimagesearch.com \nLewis Cole Blog, lewiscoleblog.com \nBioinformatics and other bits, dmnfarrell.github.io \nRoadmaps, roadmap.sh \nML@CMU, blog.ml.cmu.edu \nBerkeley Artificial Intelligence Research, bair.berkeley.edublog \nChristopherGS, christophergs.com \nYanislav Donchev, yannidd.github.io \nLil'Log, https: lilianweng.github.io \nKanoki, kanoki.org \nAman Arora’s Blog, amaarora.github.io",
+            "updated": "2023-11-11T11:51:57.753547Z",
+            "created": "2023-11-11T11:51:57.753611Z",
+            "score": 0,
+            "source": "",
+            "public": true,
+            "author": null
+        },
+        {
+            "id": 2424,
+            "topic": [
+                {
+                    "id": 49,
+                    "name": "Personal Finance"
+                }
+            ],
+            "participants": [
+                1
+            ],
+            "name": "Personal Finance & FIRE",
+            "content": "Retire In Progress, retireinprogress.com \nAccidentally Retired, accidentallyretired.com  \nPortfolio Charts, portfoliocharts.com  \nReddit Personal Finance, reddit.comrpersonalfinancewikiindex  \nJustETF, justetf.comen  \nMorning Star, morningstar.com  \nETF.com, etf.cometfanalyticsetf-finder  \nJL Collins, jlcollinsnh.com  \nMr Money Mustache, mrmoneymustache.com  \nMustachian Post Discussion Forum, forum.mustachianpost.com  \nEarly Retirement Extreme,  earlyretirementextreme.com  \nInvestopedia, investopedia.com  \nGlobal Property Guide, globalpropertyguide.com  \nOptimized Portfolio, optimizedportfolio.com  \nLazy Portfolio ETF,  lazyportfolioetf.com  \nBogleHeads, bogleheads.orgindex.php  \nPortfolio Visualizer (with Backtesting), portfoliovisualizer.com  \nWise Money (EU Investing), bankeronwheels.com  \nIndex Fund Investor (EU Investing), indexfundinvestor.eu",
+            "updated": "2023-11-11T11:46:38.744293Z",
+            "created": "2023-11-11T11:46:38.744308Z",
+            "score": 0,
+            "source": "",
+            "public": true,
+            "author": null
+        },
+        {
+            "id": 2423,
+            "topic": [
+                {
+                    "id": 48,
+                    "name": "Work"
+                }
+            ],
+            "participants": [],
+            "name": "Remote Work Websites",
+            "content": "Remote.co, remote.coremote-jobs \nRemote OK, remoteok.com \nWe Work Remotely, weworkremotely.com",
+            "updated": "2023-11-11T11:46:38.742191Z",
+            "created": "2023-11-11T11:46:38.742218Z",
+            "score": 0,
+            "source": "",
+            "public": true,
+            "author": null
+        },
+        {
+            "id": 2422,
+            "topic": [
+                {
+                    "id": 46,
+                    "name": "Tech"
+                },
+                {
+                    "id": 47,
+                    "name": "Education"
+                }
+            ],
+            "participants": [],
+            "name": "Tech Blogs",
+            "content": "Distill, distill.pub \nSebastian Raschka, sebastianraschka.com \nNeal Lathia, nlathia.github.io \nHacker News, news.ycombinator.com \nData Science Simplified, mathdatasimplified.com \nBenn Stancil, bennstancil.com \nBrandon Rohrer, e2eml.schoolblog.html \nAndrej Karpathy, karpathy.github.io \nEugene Yan, eugeneyan.com \nI am Trusk, iamtrask.github.io \nJeremy Jordan, jeremyjordan.me \nJaan Altosaar, jaan.io \nKetan Doshi, ketanhdoshi.github.ioindex.html \nChris McCormick, mccormickml.com \nDaniele Grattarola, danielegrattarola.github.io \nFrancesco Pochetti, francescopochetti.com \nNick Singh, nicksingh.com \nChip Huyen, huyenchip.com \nChris Albon, chrisalbon.com \nluminousmen, luminousmen.com \nPatrick Halina, patrickhalina.com \nBnomial, today.bnomial.com \nFrancesco Zuppichini, medium.com@FrancescoZ \nSebastian Ruder, ruder.io \nWill Koehrsen, williamkoehrsen.medium.com \nMoez Ali, moez-62905.medium.com \nMachine Learning Mastery, machinelearningmastery.com \nDaniel Bourke, mrdbourke.com \nAmit Chaudhary, amitness.com \nConfessions of a Data Guy, confessionsofadataguy.com \nSimone Scardapane, sscardapane.it \nByteByteGo, bytebytego.com \nMachine learning at scale, machinelearningatscale.com \nPaepper.com, paepper.comblog \nAidan Cooper, aidancooper.co.uk \nBeyond the Horizon, rajanieshkaushikk.com \nJay Alammar, jalammar.github.io \nDale On AI, daleonai.com \nEric Jang, evjang.com \nArthur Douillard, arthurdouillard.com \nPyImageSearch, pyimagesearch.com \nLewis Cole Blog, lewiscoleblog.com \nBioinformatics and other bits, dmnfarrell.github.io \nRoadmaps, roadmap.sh \nML@CMU, blog.ml.cmu.edu \nBerkeley Artificial Intelligence Research, bair.berkeley.edublog \nChristopherGS, christophergs.com \nYanislav Donchev, yannidd.github.io \nLil'Log, https: lilianweng.github.io \nKanoki, kanoki.org \nAman Arora’s Blog, amaarora.github.io",
+            "updated": "2023-11-11T11:46:38.731141Z",
+            "created": "2023-11-11T11:46:38.731209Z",
+            "score": 0,
+            "source": "",
+            "public": true,
+            "author": null
+        },
+        {
+            "id": 2421,
+            "topic": [
+                {
+                    "id": 49,
+                    "name": "Personal Finance"
+                }
+            ],
+            "participants": [
+                1
+            ],
+            "name": "Personal Finance & FIRE",
+            "content": "Retire In Progress, retireinprogress.com \nAccidentally Retired, accidentallyretired.com  \nPortfolio Charts, portfoliocharts.com  \nReddit Personal Finance, reddit.comrpersonalfinancewikiindex  \nJustETF, justetf.comen  \nMorning Star, morningstar.com  \nETF.com, etf.cometfanalyticsetf-finder  \nJL Collins, jlcollinsnh.com  \nMr Money Mustache, mrmoneymustache.com  \nMustachian Post Discussion Forum, forum.mustachianpost.com  \nEarly Retirement Extreme,  earlyretirementextreme.com  \nInvestopedia, investopedia.com  \nGlobal Property Guide, globalpropertyguide.com  \nOptimized Portfolio, optimizedportfolio.com  \nLazy Portfolio ETF,  lazyportfolioetf.com  \nBogleHeads, bogleheads.orgindex.php  \nPortfolio Visualizer (with Backtesting), portfoliovisualizer.com  \nWise Money (EU Investing), bankeronwheels.com  \nIndex Fund Investor (EU Investing), indexfundinvestor.eu",
+            "updated": "2023-11-11T11:43:05.974599Z",
+            "created": "2023-11-11T11:43:05.974614Z",
+            "score": 0,
+            "source": "",
+            "public": true,
+            "author": null
+        },
+        {
+            "id": 2420,
+            "topic": [
+                {
+                    "id": 48,
+                    "name": "Work"
+                }
+            ],
+            "participants": [],
+            "name": "Remote Work Websites",
+            "content": "Remote.co, remote.coremote-jobs \nRemote OK, remoteok.com \nWe Work Remotely, weworkremotely.com",
+            "updated": "2023-11-11T11:43:05.972613Z",
+            "created": "2023-11-11T11:43:05.972640Z",
+            "score": 0,
+            "source": "",
+            "public": true,
+            "author": null
+        },
+        {
+            "id": 2419,
+            "topic": [
+                {
+                    "id": 46,
+                    "name": "Tech"
+                },
+                {
+                    "id": 47,
+                    "name": "Education"
+                }
+            ],
+            "participants": [],
+            "name": "Tech Blogs",
+            "content": "Distill, distill.pub \nSebastian Raschka, sebastianraschka.com \nNeal Lathia, nlathia.github.io \nHacker News, news.ycombinator.com \nData Science Simplified, mathdatasimplified.com \nBenn Stancil, bennstancil.com \nBrandon Rohrer, e2eml.schoolblog.html \nAndrej Karpathy, karpathy.github.io \nEugene Yan, eugeneyan.com \nI am Trusk, iamtrask.github.io \nJeremy Jordan, jeremyjordan.me \nJaan Altosaar, jaan.io \nKetan Doshi, ketanhdoshi.github.ioindex.html \nChris McCormick, mccormickml.com \nDaniele Grattarola, danielegrattarola.github.io \nFrancesco Pochetti, francescopochetti.com \nNick Singh, nicksingh.com \nChip Huyen, huyenchip.com \nChris Albon, chrisalbon.com \nluminousmen, luminousmen.com \nPatrick Halina, patrickhalina.com \nBnomial, today.bnomial.com \nFrancesco Zuppichini, medium.com@FrancescoZ \nSebastian Ruder, ruder.io \nWill Koehrsen, williamkoehrsen.medium.com \nMoez Ali, moez-62905.medium.com \nMachine Learning Mastery, machinelearningmastery.com \nDaniel Bourke, mrdbourke.com \nAmit Chaudhary, amitness.com \nConfessions of a Data Guy, confessionsofadataguy.com \nSimone Scardapane, sscardapane.it \nByteByteGo, bytebytego.com \nMachine learning at scale, machinelearningatscale.com \nPaepper.com, paepper.comblog \nAidan Cooper, aidancooper.co.uk \nBeyond the Horizon, rajanieshkaushikk.com \nJay Alammar, jalammar.github.io \nDale On AI, daleonai.com \nEric Jang, evjang.com \nArthur Douillard, arthurdouillard.com \nPyImageSearch, pyimagesearch.com \nLewis Cole Blog, lewiscoleblog.com \nBioinformatics and other bits, dmnfarrell.github.io \nRoadmaps, roadmap.sh \nML@CMU, blog.ml.cmu.edu \nBerkeley Artificial Intelligence Research, bair.berkeley.edublog \nChristopherGS, christophergs.com \nYanislav Donchev, yannidd.github.io \nLil'Log, https: lilianweng.github.io \nKanoki, kanoki.org \nAman Arora’s Blog, amaarora.github.io",
+            "updated": "2023-11-11T11:43:05.968036Z",
+            "created": "2023-11-11T11:43:05.968137Z",
+            "score": 0,
+            "source": "",
+            "public": true,
+            "author": null
+        },
+        {
+            "id": 2418,
+            "topic": [
+                {
+                    "id": 49,
+                    "name": "Personal Finance"
+                }
+            ],
+            "participants": [
+                1
+            ],
+            "name": "Personal Finance & FIRE",
+            "content": "Retire In Progress, retireinprogress.com \nAccidentally Retired, accidentallyretired.com  \nPortfolio Charts, portfoliocharts.com  \nReddit Personal Finance, reddit.comrpersonalfinancewikiindex  \nJustETF, justetf.comen  \nMorning Star, morningstar.com  \nETF.com, etf.cometfanalyticsetf-finder  \nJL Collins, jlcollinsnh.com  \nMr Money Mustache, mrmoneymustache.com  \nMustachian Post Discussion Forum, forum.mustachianpost.com  \nEarly Retirement Extreme,  earlyretirementextreme.com  \nInvestopedia, investopedia.com  \nGlobal Property Guide, globalpropertyguide.com  \nOptimized Portfolio, optimizedportfolio.com  \nLazy Portfolio ETF,  lazyportfolioetf.com  \nBogleHeads, bogleheads.orgindex.php  \nPortfolio Visualizer (with Backtesting), portfoliovisualizer.com  \nWise Money (EU Investing), bankeronwheels.com  \nIndex Fund Investor (EU Investing), indexfundinvestor.eu",
+            "updated": "2023-11-11T11:42:57.667504Z",
+            "created": "2023-11-11T11:42:57.667519Z",
+            "score": 0,
+            "source": "",
+            "public": true,
+            "author": null
+        }
+    ]
+}
