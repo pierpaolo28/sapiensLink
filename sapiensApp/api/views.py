@@ -16,6 +16,7 @@ def getRoutes(request):
     routes = [
         'GET /api',
         'POST /api/mass-lists/',
+        'POST /api/mass-users/',
         'GET-POST-DELETE /api/lists/',
         'GET-PUT-DELETE /api/list/:id',
         'GET-POST-DELETE /api/users/',
@@ -99,6 +100,18 @@ def list(request, pk):
         return Response({"outcome": "list deleted"}, status=status.HTTP_201_CREATED)
 
 
+@api_view(['POST'])
+def mass_users_upload(request):
+    serializer = UserSerializer(data=request.data, many=True)
+
+    if serializer.is_valid():
+        serializer.save()
+
+        return Response({"outcome": "successful upload"}, status=status.HTTP_201_CREATED)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 @api_view(['GET', 'POST', 'DELETE'])
 def users(request):
     """
@@ -118,8 +131,9 @@ def users(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
+        users = User.objects.all()
         users.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"outcome": "users deleted"}, status=status.HTTP_204_NO_CONTENT)
     
 
 @api_view(['GET', 'PUT', 'DELETE'])
@@ -137,7 +151,7 @@ def user(request, pk):
         return Response(serializer.data)
 
     elif request.method == 'PUT':
-        serializer = UserSerializer(user, data=request.data, many=False)
+        serializer = UserSerializer(user, data=request.data, many=False, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -145,7 +159,7 @@ def user(request, pk):
 
     elif request.method == 'DELETE':
         user.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response({"outcome": "user deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(['GET', 'POST', 'DELETE'])
@@ -191,6 +205,7 @@ def report(request, pk):
 
 
 @api_view(['GET'])
+# In order to work with this view the user needs to be logged in and the access token needs to be passed in Authorization as Bearer
 @authentication_classes([JWTAuthentication])  # Use JSONWebTokenAuthentication for secure authentication
 @permission_classes([IsAuthenticated])  # Ensure that the user is authenticated
 def get_notifications(request):

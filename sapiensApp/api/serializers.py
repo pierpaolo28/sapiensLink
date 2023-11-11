@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
+from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField, CharField, SerializerMethodField
 from sapiensApp.models import List, Topic, User, Report
 
 
@@ -59,12 +59,45 @@ class ListSerializer(ModelSerializer):
         return instance
         
 
-class UserSerializer(ModelSerializer):
+class FollowSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ['id', 'name']
 
+
+class UserSerializer(ModelSerializer):
+    password = CharField(write_only=True)
+    followers = FollowSerializer(many=True, read_only=True)
+    following = FollowSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'name', 'email', 'password', 'bio', 'avatar', 'social', 'followers', 'following']
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            name=validated_data['name'],
+            email=validated_data['email'],
+            password=validated_data['password'],
+        )
+        return user
     
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.email = validated_data.get('email', instance.email)
+        instance.bio = validated_data.get('bio', instance.bio)
+        instance.avatar = validated_data.get('avatar', instance.avatar)
+        instance.social = validated_data.get('social', instance.social)
+
+        # Update the password if provided
+        password = validated_data.get('password')
+        if password:
+            instance.set_password(password)
+
+        instance.save()
+        return instance
+    
+
 class ReportSerializer(ModelSerializer):
     class Meta:
         model = Report

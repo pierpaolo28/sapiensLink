@@ -1,59 +1,163 @@
-<!-- Example script to populate database with posts. Posts will keep being added
-until the live server is shut down -->
 <!DOCTYPE html>
 <html>
 
 <head>
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>Adding Lists to Website</title>
+    <title>Adding Users & Lists to Website</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
 </head>
 
 <body>
 
+    <h1>Adding Users & Lists to Website</h1>
+
+    <h1>Adding Users to Website</h1>
+
+    <button type="button" onclick="postNewUserData()">Add Users</button>
+    <h2>Users addition can be run just once since emails have to be unique</h2>
+
+    <div id="users-container">
+
+    </div>
+
+    <script>
+        let usersContainer = document.getElementById('users-container');
+
+        async function postUserData(usersJson) {
+            try {
+                console.log('Posting data to http://127.0.0.1:8000/api/mass-users/...');
+                await fetch("http://127.0.0.1:8000/api/mass-users/", {
+                    method: "POST",
+                    body: JSON.stringify(usersJson),
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8"
+                    }
+                });
+
+                console.log('Users Data posted successfully.');
+            } catch (error) {
+                console.error('Error posting users data:', error);
+            }
+        }
+
+        async function fetchUserDataAndDisplay() {
+            try {
+                // Fetch and display data from http://127.0.0.1:8000/api/users/
+                let userResponse = await fetch('http://127.0.0.1:8000/api/users/');
+                let users = await userResponse.json();
+
+                console.log('Displaying data on the page...');
+                usersContainer.innerHTML = ''; // Clear the existing content
+
+                for (let i = 0; users.length > i; i++) {
+                    let user = users[i];
+
+                    let row = `<div>
+                        <h3>${user.id}</h3>
+                        <p>${user.name}</p>
+                        <p>${user.email}</p>
+                    </div>`;
+
+                    usersContainer.innerHTML += row;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Fetch and display data when the page loads
+        fetchUserDataAndDisplay();
+
+        function postNewUserData() {
+            var usersJsonResp = fetch('users.json')
+                .then(response => response.json())
+                .then(usersJson => {
+                    // Post data to the server
+                    postUserData(usersJson);
+
+                    // Fetch and display data after posting
+                    fetchUserDataAndDisplay();
+                })
+                .catch(error => {
+                    console.error('Error fetching users.json:', error);
+                });
+        }
+    </script>
+
     <h1>Adding Lists to Website</h1>
+
+    <button type="button" onclick="postNewListData()">Add Lists</button>
+    <h2>Just latest ten entries displayed</h2>
 
     <div id="lists-container">
 
     </div>
 
+    <script>
+        let listsContainer = document.getElementById('lists-container');
+
+        async function postListData(listsJson) {
+            try {
+                console.log('Posting data to http://127.0.0.1:8000/api/mass-lists/...');
+                await fetch("http://127.0.0.1:8000/api/mass-lists/", {
+                    method: "POST",
+                    body: JSON.stringify(listsJson),
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8"
+                    }
+                });
+
+                console.log('Data posted successfully.');
+            } catch (error) {
+                console.error('Error posting data:', error);
+            }
+        }
+
+        async function fetchListDataAndDisplay() {
+            try {
+                // Fetch and display data from http://127.0.0.1:8000/api/lists/
+                let listResponse = await fetch('http://127.0.0.1:8000/api/lists/');
+                let lists = await listResponse.json();
+
+                console.log('Displaying data on the page...');
+                listsContainer.innerHTML = `<h2>Number of lists created: ${lists.count}</h2>`; // Clear the existing content
+
+                for (let i = 0; lists.results.length > i; i++) {
+                    let list = lists.results[i];
+
+                    let row = `<div>
+                        <h3>${list.name}</h3>
+                        <p>${list.content}</p>
+                        <p>${list.created}</p>
+                    </div>`;
+
+                    listsContainer.innerHTML += row;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Fetch and display data when the page loads
+        fetchListDataAndDisplay();
+
+        function postNewListData() {
+            var listsJsonResp = fetch('lists.json')
+                .then(response => response.json())
+                .then(listsJson => {
+                    // Post data to the server
+                    postListData(listsJson);
+
+                    // Fetch and display data after posting
+                    fetchListDataAndDisplay();
+                })
+                .catch(error => {
+                    console.error('Error fetching lists.json:', error);
+                });
+        }
+    </script>
+
 </body>
 
-<script>
-    let listsContainer = document.getElementById('lists-container')
-
-    let getData = async () => {
-        var lists_json_resp = await fetch('lists.json')
-        var lists_json = await lists_json_resp.json()
-
-        await fetch("http://127.0.0.1:8000/api/mass-lists/", {
-            method: "POST",
-            body: JSON.stringify(lists_json),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
-        }).catch(error => {
-                    console.error('Error posting lists:', error);
-        });
-        let list_response = await fetch('http://127.0.0.1:8000/api/lists/')
-        let lists = await list_response.json()
-
-        for (let i = 0; lists.length > i; i++) {
-            let list = lists[i]
-
-            let row = `<div>
-                            <h3>${list.name}</h3>
-                            <p>${list.content}</p>
-                            <p>${list.created}</p>
-                        </div>`
-
-            listsContainer.innerHTML += row
-        }
-    }
-
-    getData()
-</script>
-
 </html>
-
