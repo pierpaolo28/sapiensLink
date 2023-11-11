@@ -8,6 +8,7 @@ from rest_framework.decorators import api_view, permission_classes, authenticati
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 
 
 @api_view(['GET'])
@@ -64,7 +65,7 @@ def mass_list_upload(request):
                 list_instance.participants.add(participant)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response({"outcome": "successful upload"}, status=status.HTTP_201_CREATED)
 
 
 
@@ -75,9 +76,13 @@ def lists(request):
     """
 
     if request.method == 'GET':
+        paginator = PageNumberPagination()
+        paginator.page_size = 10  # Set the number of items per page
+
         lists = List.objects.all()
+        paginated_queryset = paginator.paginate_queryset(lists, request)
         serialized_data = []
-        for item in lists:
+        for item in paginated_queryset:
             data = {
                 'id': item.id,
                 'author': item.author.id if item.author else None,
@@ -90,7 +95,8 @@ def lists(request):
                 'public': item.public,
             }
             serialized_data.append(data)
-        return JsonResponse(serialized_data, safe=False)
+        
+        return paginator.get_paginated_response(serialized_data)
     
     elif request.method == 'POST':
         serializer = ListSerializer(data=request.data)
