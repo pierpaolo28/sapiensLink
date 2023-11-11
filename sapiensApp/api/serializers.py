@@ -1,5 +1,20 @@
-from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField, CharField, SerializerMethodField
-from sapiensApp.models import List, Topic, User, Report
+from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField, CharField, ValidationError
+from sapiensApp.models import List, Topic, User, Report, Comment
+import csv
+from better_profanity import profanity
+
+
+def load_bad_words_from_csv(csv_file_path, column_name):
+    bad_words = []
+    with open(csv_file_path, mode='r') as file:
+        reader = csv.DictReader(file)
+        for row in reader:
+            bad_words.append(row[column_name])
+    return bad_words
+
+custom_bad_words = load_bad_words_from_csv("././custom_bad_words.csv", "word")
+
+profanity.add_censor_words(custom_bad_words)
 
 
 class TopicSerializer(ModelSerializer):
@@ -102,3 +117,14 @@ class ReportSerializer(ModelSerializer):
     class Meta:
         model = Report
         fields = '__all__'
+
+
+class CommentSerializer(ModelSerializer):
+    def validate_body(self, value):
+        if profanity.contains_profanity(value):
+            raise ValidationError("Unacceptable language detected in the comment.")
+        return value
+
+    class Meta:
+        model = Comment
+        fields = ['user',  'body', 'updated']

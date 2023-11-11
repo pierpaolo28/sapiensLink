@@ -1,8 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import Q
-from sapiensApp.models import List, Topic, User, Report, Notification
-from .serializers import ListSerializer, UserSerializer, ReportSerializer
+from sapiensApp.models import List, Topic, User, Report, Notification, SavedList
+from .serializers import ListSerializer, UserSerializer, ReportSerializer, CommentSerializer
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
@@ -11,7 +11,10 @@ from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Count
 from django.db.models import Q
-from django.core.paginator import Paginator
+from django.shortcuts import get_object_or_404
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
+
 
 LISTS_PER_PAGE = 10
 
@@ -32,6 +35,7 @@ def getRoutes(request):
         'GET /api/token/',
         'GET /api/token/refresh/',
         'GET /api/get_home_lists/',
+        'GET /api/get_list/',
     ]
     return Response(routes)
 
@@ -160,6 +164,71 @@ def get_home_lists(request):
     }
 
     return Response(response_data, status=status.HTTP_200_OK)
+
+
+
+@api_view(['GET', 'POST'])
+def get_list(request, pk):
+    list_instance = List.objects.get(id=pk)
+
+    list_comments = list_instance.comment_set.all()
+    participants = list_instance.participants.all()
+
+    user = request.user
+    has_reported = False
+    saved_list_ids = []
+
+    if user.is_authenticated:
+        has_reported = Report.objects.filter(user=user, list=list_instance).exists()
+        saved_list_ids = SavedList.objects.filter(user=user).values_list('list_id', flat=True)
+
+    if request.method == 'POST':
+        if 'comment' in request.data:
+            comment_serializer = CommentSerializer(data=request.data['comment'])
+            if comment_serializer.is_valid():
+                comment = comment_serializer.save(user=user, list=list_instance)
+                list_instance.participants.add(user)
+
+                # Sending notification to the WebSocket group
+                channel_layer = get_channel_layer()
+                for receiver in list_instance.participants.all():
+                    if receiver != request.user:
+                        async_to_sync(channel_layer.group_send)(
+                            'notifications_group',
+                            {
+                                'type': 'send_notification',
+                                'notification': f'A new comment was added on the list "{list_instance.name}".',
+                                'creator_id': user.id,
+                                'receiver_id': receiver.id,
+                                'url': request.path.split('/')[0] + '/list/' + str(list_instance.id)
+                            }
+                        )
+
+                # Serialize the updated list data
+                list_serializer = ListSerializer(list_instance)
+                return Response(list_serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(comment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        elif 'save' in request.data:
+            SavedList.objects.get_or_create(user=user, list=list_instance)
+            return Response({'message': 'List saved successfully'}, status=status.HTTP_200_OK)
+
+        elif 'unsave' in request.data:
+            saved_list = get_object_or_404(SavedList, user=user, list=list_instance)
+            saved_list.delete()
+            return Response({'message': 'List unsaved successfully'}, status=status.HTTP_200_OK)
+
+    list_serializer = ListSerializer(list_instance)
+    context = {
+        'list': list_serializer.data,
+        'list_comments': CommentSerializer(list_comments, many=True).data,
+        'participants': UserSerializer(participants, many=True).data,
+        'has_reported': has_reported,
+        'saved_list_ids': saved_list_ids
+    }
+
+    return Response(context)
 
 
 @api_view(['POST'])
