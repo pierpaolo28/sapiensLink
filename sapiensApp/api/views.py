@@ -213,6 +213,7 @@ def get_list(request, pk):
         has_reported = Report.objects.filter(user=user, list=list_instance).exists()
         saved_list_ids = SavedList.objects.filter(user=user).values_list('list_id', flat=True)
 
+    # TODO: the comment button should be hidden on the user interface if the user is not logged in
     if request.method == 'POST':
         if 'comment' in request.data:
             comment_serializer = CommentSerializer(data=request.data['comment'])

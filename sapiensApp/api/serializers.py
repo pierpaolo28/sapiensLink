@@ -25,6 +25,18 @@ class TopicSerializer(ModelSerializer):
 
 
 class ListSerializer(ModelSerializer):
+    def clean_name(self):
+        data = self.cleaned_data['name']
+        if profanity.contains_profanity(data):
+            raise ValidationError("Unacceptable language detected in the name.")
+        return data
+
+    def clean_content(self):
+        data = self.cleaned_data['content']
+        if profanity.contains_profanity(data):
+            raise ValidationError("Unacceptable language detected in the content.")
+        return data
+
     topic = TopicSerializer(many=True)
     participants = PrimaryKeyRelatedField(many=True, queryset=User.objects.all())
 
@@ -86,6 +98,18 @@ class UserSerializer(ModelSerializer):
     followers = FollowSerializer(many=True, read_only=True)
     following = FollowSerializer(many=True, read_only=True)
 
+    def clean_name(self):
+        data = self.cleaned_data['name']
+        if profanity.contains_profanity(data):
+            raise ValidationError("Unacceptable language detected in the name.")
+        return data
+    
+    def clean_bio(self):
+        data = self.cleaned_data['bio']
+        if profanity.contains_profanity(data):
+            raise ValidationError("Unacceptable language detected in the bio.")
+        return data
+
     class Meta:
         model = User
         fields = ['id', 'name', 'email', 'password', 'bio', 'avatar', 'social', 'followers', 'following']
@@ -132,6 +156,13 @@ class CommentSerializer(ModelSerializer):
 
 
 class EditSuggestionSerializer(ModelSerializer):
+
+    def clean_suggestion_text(self):
+        data = self.cleaned_data['suggestion_text']
+        if profanity.contains_profanity(data):
+            raise ValidationError("Unacceptable language detected in the suggested new list.")
+        return data
+
     class Meta:
         model = EditSuggestion
         fields = '__all__'
@@ -144,6 +175,13 @@ class SavedListSerializer(ModelSerializer):
 
 
 class EditCommentSerializer(ModelSerializer):
+
+    def clean_text(self):
+        data = self.cleaned_data['text']
+        if profanity.contains_profanity(data):
+            raise ValidationError("Unacceptable language detected in the comment.")
+        return data
+
     class Meta:
         model = EditComment
         fields = '__all__'

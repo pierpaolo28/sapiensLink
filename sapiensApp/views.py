@@ -16,6 +16,7 @@ LISTS_PER_PAGE = 20
 
 def loginPage(request):
     page = 'login'
+    # TODO: Check if this if statement is necessary or not in REST API login_user
     if request.user.is_authenticated:
         token = request.session["refresh_token"]
         try:
