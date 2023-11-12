@@ -144,6 +144,7 @@ def list(request, pk):
 def get_home_lists(request):
     q = request.GET.get('q', '')
     # TODO: Follow home sorting should be made visible to just logged in users on the front end
+    # and make sure people can use enter button to send comment
     follow = request.GET.get('follow', 'follow_false')
     top_voted = request.GET.get('top_voted', 'top_voted_false')
 
@@ -874,6 +875,8 @@ def login_user(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_user(request):
+    # TODO: on frontend when users logs out tokens are deleted and blacklisted so 
+    # people can't use them before the expire
 
     # Clear session data
     request.session.pop("access_token", None)

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'channels',
     'django_extensions',
     'django_rest_passwordreset',
+    'drf_yasg',
 ]
 
 REST_FRAMEWORK = {

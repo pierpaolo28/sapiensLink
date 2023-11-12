@@ -43,6 +43,7 @@ class ListSerializer(ModelSerializer):
     class Meta:
         model = List
         fields = '__all__'
+        extra_kwargs = {'source': {'required': False}}
 
     def create(self, validated_data):
         # Just foreign keys and many to many relations additions creations 
