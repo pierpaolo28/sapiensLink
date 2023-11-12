@@ -171,7 +171,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 ASGI_APPLICATION = 'sapiensLink.asgi.application'
 
 #TODO: Safely story sendgrid api key
-DEFAULT_FROM_EMAIL = 'sapienslink@gmail.com'
+DEFAULT_FROM_EMAIL = app_secrets.FROM_EMAIL
 SENDGRID_API_KEY = app_secrets.SENDGRID_API_KEY
 EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_HOST_USER = 'apikey' # this is exactly the value 'apikey'

@@ -2,10 +2,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import Q
 from sapiensApp.models import List, Topic, User, Report, Notification, SavedList, Vote, EditSuggestion, Comment, Feedback, EditComment
-from .serializers import ListSerializer, UserSerializer, ReportSerializer, CommentSerializer, EditSuggestionSerializer, SavedListSerializer, EditCommentSerializer
+from .serializers import ListSerializer, UserSerializer, ReportSerializer, CommentSerializer, EditSuggestionSerializer, SavedListSerializer, EditCommentSerializer, MyUserCreationForm, LoginSerializer
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
@@ -15,6 +15,19 @@ from django.contrib.auth import authenticate, logout
 from django.shortcuts import get_object_or_404
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.http import urlsafe_base64_encode
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth import login
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+from django.urls import reverse
+import app_secrets
 
 
 LISTS_PER_PAGE = 10
@@ -48,7 +61,12 @@ def getRoutes(request):
         'POST /api/approve_suggestion/:suggestion_id/',
         'POST /api/decline_suggestion/:suggestion_id/',
         'DELETE /api/delete_pr_comment/:comment_id/',
-        'GET /api/saved_lists/:pk/'
+        'GET /api/saved_lists/:pk/',
+        'POST /api/register/',
+        'POST /api/reset_password/',
+        'POST /api/reset_password_confirm/:uidb64/:token/',
+        'POST /api/login_user/',
+        'POST /api/logout_user'
     ]
     return Response(routes)
 
@@ -726,3 +744,140 @@ def mark_notification_as_read(request, notification_id):
         return JsonResponse({'status': 'Notification marked as read.'})
     except Notification.DoesNotExist:
         return JsonResponse({'error': 'Notification not found.'}, status=404)
+    
+
+@api_view(['POST'])
+def register(request):
+    form = MyUserCreationForm(request.data)
+
+    if form.is_valid():
+        user = form.save(commit=False)
+        user.email = user.email.lower()
+        user.save()
+
+        login(request, user)
+
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+
+        data = {
+            "access_token": access_token,
+            "refresh_token": str(refresh),
+            "expiration_time": refresh.access_token['exp'] * 1000  # Convert expiration time to milliseconds
+        }
+
+        return Response(data, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"error": "An error occurred during registration"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])  # Use JSONWebTokenAuthentication for secure authentication
+@permission_classes([IsAuthenticated])  # Ensure that the user is authenticated
+def password_reset(request):
+    email = request.data.get('email', '')
+    try:
+        user = User.objects.get(email=email)
+        context = {
+            'email': email,
+            'user': user,
+            'domain': request.META['HTTP_HOST'],
+            'site_name': 'SapiensLink',
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+            'token': default_token_generator.make_token(user),
+            'protocol': 'https' if request.is_secure() else 'http',
+        }
+        reset_url = reverse('password_reset_confirm', kwargs={'uidb64': context['uid'], 'token': context['token']})
+        reset_url = f"{context['protocol']}://{context['domain']}{reset_url}"
+        context['reset_url'] = reset_url
+
+        # Send email using SendGrid
+        message = Mail(
+            from_email=app_secrets.FROM_EMAIL,  # Replace with your email
+            to_emails=[email],
+            subject='Password Reset',
+            html_content=f'Click the following link to reset your password: {reset_url}',
+        )
+        sg = SendGridAPIClient(app_secrets.SENDGRID_API_KEY)  # Replace with your SendGrid API key
+        sg.send(message)
+
+        return Response({'detail': 'Password reset email sent.'}, status=status.HTTP_200_OK)
+    except ObjectDoesNotExist:
+        return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['POST'])
+@csrf_exempt
+def password_reset_confirm(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+        
+        new_password = request.data.get('new_password', '')
+        # Validate the new password
+        try:
+            validate_password(new_password, user)
+        except ValidationError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        if default_token_generator.check_token(user, token):
+            # Handle password reset confirmation logic here
+            user.set_password(new_password)
+            user.save()
+            return Response({'detail': 'Password reset successful.'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
+    except ObjectDoesNotExist:
+        return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+    except ValueError:
+        return Response({'error': 'Invalid user ID.'}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login_user(request):
+
+    serializer = LoginSerializer(data=request.data)
+    if serializer.is_valid():
+        email = serializer.validated_data['email']
+        password = serializer.validated_data['password']
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'User does not exist'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Manually authenticate the user using the authenticate function
+        user = authenticate(request=request, username=email, password=password)
+
+        if user is not None:
+            # Use DRF's login function to log in the user
+            login(request, user)
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            # Return JSON response
+            response_data = {
+                'access_token': access_token,
+                'refresh_token': str(refresh),
+                'expiration_time': refresh.access_token['exp'] * 1000  # Convert expiration time to milliseconds
+            }
+
+            return Response(response_data, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Email or password does not exist'}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        return Response({'error': 'Invalid input'}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout_user(request):
+
+    # Clear session data
+    request.session.pop("access_token", None)
+    request.session.pop("refresh_token", None)
+    request.session.pop("expiration_time", None)
+
+    logout(request)
+    return Response({'detail': 'Logout successful'}, status=status.HTTP_200_OK)

@@ -1,5 +1,6 @@
-from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField, CharField, ValidationError
+from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField, CharField, ValidationError, Serializer, EmailField
 from sapiensApp.models import List, Topic, User, Report, Comment, EditSuggestion, SavedList, EditComment
+from django.contrib.auth.forms import UserCreationForm
 import csv
 from better_profanity import profanity
 
@@ -146,3 +147,33 @@ class EditCommentSerializer(ModelSerializer):
     class Meta:
         model = EditComment
         fields = '__all__'
+
+
+class MyUserCreationForm(UserCreationForm):
+    name = CharField(max_length=200)
+
+    def clean_name(self):
+        data = self.cleaned_data['name']
+        if profanity.contains_profanity(data):
+            raise ValidationError("Unacceptable language detected in the name.")
+        return data
+
+    class Meta:
+        model = User
+        fields = ['name', 'email', 'password1', 'password2']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'].required = True
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.name = self.cleaned_data['name']
+        if commit:
+            user.save()
+        return user
+    
+
+class LoginSerializer(Serializer):
+    email = EmailField()
+    password = CharField()
