@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField, CharField, ValidationError
-from sapiensApp.models import List, Topic, User, Report, Comment
+from sapiensApp.models import List, Topic, User, Report, Comment, EditSuggestion, SavedList, EditComment
 import csv
 from better_profanity import profanity
 
@@ -127,4 +127,22 @@ class CommentSerializer(ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['user',  'body', 'updated']
+        fields = ['id', 'user',  'body', 'updated']
+
+
+class EditSuggestionSerializer(ModelSerializer):
+    class Meta:
+        model = EditSuggestion
+        fields = '__all__'
+
+
+class SavedListSerializer(ModelSerializer):
+    class Meta:
+        model = SavedList
+        fields = '__all__'
+
+
+class EditCommentSerializer(ModelSerializer):
+    class Meta:
+        model = EditComment
+        fields = '__all__'
