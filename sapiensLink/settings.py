@@ -167,7 +167,14 @@ MEDIA_ROOT = BASE_DIR / 'static/images'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #TODO: Change to allow just specific url
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
+CORS_URLS_REGEX = r"/api/.*"
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5500",
+]
+
 
 ASGI_APPLICATION = 'sapiensLink.asgi.application'
 

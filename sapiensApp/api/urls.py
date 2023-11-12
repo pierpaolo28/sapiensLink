@@ -46,7 +46,7 @@ urlpatterns = [
     path('decline_suggestion/<str:suggestion_id>/', views.decline_suggestion),
     path('delete_pr_comment/<str:comment_id>/', views.delete_pr_comment),
     path('saved_lists/<str:pk>/', views.saved_lists),
-    path('register/', views.register),
+    path('register_user/', views.register_user),
     path('password_reset/', views.password_reset),
     path('password_reset_confirm/<uidb64>/<token>/', views.password_reset_confirm),
     path('login_user/', views.login_user),

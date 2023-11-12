@@ -452,6 +452,7 @@ def whoToFollowPage(request):
 
 
 def custom_404(request, exception):
+    # TODO: For Django API configuration decide if handling 404 request on frontend or backend
     return render(request, 'pages/404.html', status=404)
 
 

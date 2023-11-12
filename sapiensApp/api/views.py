@@ -62,7 +62,7 @@ def getRoutes(request):
         'POST /api/decline_suggestion/:suggestion_id/',
         'DELETE /api/delete_pr_comment/:comment_id/',
         'GET /api/saved_lists/:pk/',
-        'POST /api/register/',
+        'POST /api/register_user/',
         'POST /api/reset_password/',
         'POST /api/reset_password_confirm/:uidb64/:token/',
         'POST /api/login_user/',
@@ -749,7 +749,7 @@ def mark_notification_as_read(request, notification_id):
     
 
 @api_view(['POST'])
-def register(request):
+def register_user(request):
     form = MyUserCreationForm(request.data)
 
     if form.is_valid():
