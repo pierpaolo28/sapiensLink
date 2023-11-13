@@ -215,6 +215,23 @@ class MyUserCreationForm(UserCreationForm):
         return user
     
 
+class RegisterSerializer(Serializer):
+    name = CharField(max_length=200)
+    email = EmailField()
+    password1 = CharField(write_only=True, style={'input_type': 'password'})
+    password2 = CharField(write_only=True, style={'input_type': 'password'})
+
+    def validate_name(self, value):
+        if profanity.contains_profanity(value):
+            raise ValidationError("Unacceptable language detected in the name.")
+        return value
+
+    def validate(self, data):
+        if data['password1'] != data['password2']:
+            raise ValidationError("Passwords do not match.")
+        return data
+    
+
 class LoginSerializer(Serializer):
     email = EmailField()
     password = CharField()

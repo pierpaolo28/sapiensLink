@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import Q
 from sapiensApp.models import List, Topic, User, Report, Notification, SavedList, Vote, EditSuggestion, Comment, Feedback, EditComment
-from .serializers import ListSerializer, UserSerializer, ReportSerializer, CommentSerializer, EditSuggestionSerializer, SavedListSerializer, EditCommentSerializer, MyUserCreationForm, LoginSerializer
+from .serializers import ListSerializer, UserSerializer, ReportSerializer, CommentSerializer, EditSuggestionSerializer, SavedListSerializer, EditCommentSerializer, MyUserCreationForm, LoginSerializer, RegisterSerializer
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
@@ -29,6 +29,7 @@ from sendgrid.helpers.mail import Mail
 from django.urls import reverse
 import app_secrets
 from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 
 LISTS_PER_PAGE = 10
@@ -74,6 +75,26 @@ def getRoutes(request):
 
 # Web Application Utils
 
+@swagger_auto_schema(
+    method='post',
+    operation_summary='Logging in users',
+    request_body=LoginSerializer,
+    responses={
+        200: openapi.Response(
+            description='Successful login',
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'access_token': openapi.Schema(type=openapi.TYPE_STRING),
+                    'refresh_token': openapi.Schema(type=openapi.TYPE_STRING),
+                    'expiration_time': openapi.Schema(type=openapi.TYPE_INTEGER),
+                },
+            ),
+        ),
+        400: 'Bad Request - Both Email and Password are required',
+        401: 'Unauthorized - Wrong Password',
+    }
+)
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_user(request):
@@ -110,6 +131,21 @@ def login_user(request):
         return Response({'message': 'Both Email and Password are required'}, status=status.HTTP_400_BAD_REQUEST)
     
 
+@swagger_auto_schema(
+    method='post',
+    operation_summary='Logging out users',
+    responses={
+        200: openapi.Response(
+            description='Logout successful',
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'message': openapi.Schema(type=openapi.TYPE_STRING),
+                },
+            ),
+        ),
+    }
+)
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -126,12 +162,31 @@ def logout_user(request):
     return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='post',
+    operation_summary='User registration',
+    request_body=RegisterSerializer,
+    responses={
+        201: openapi.Response(
+            description='User registered successfully',
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'access_token': openapi.Schema(type=openapi.TYPE_STRING),
+                    'refresh_token': openapi.Schema(type=openapi.TYPE_STRING),
+                    'expiration_time': openapi.Schema(type=openapi.TYPE_INTEGER),
+                },
+            ),
+        ),
+        400: 'Bad Request - An error occurred during registration',
+    }
+)
 @api_view(['POST'])
 def register_user(request):
-    form = MyUserCreationForm(request.data)
+    serializer = RegisterSerializer(data=request.data)
 
-    if form.is_valid():
-        user = form.save(commit=False)
+    if serializer.is_valid():
+        user = MyUserCreationForm(serializer.validated_data).save(commit=False)
         user.email = user.email.lower()
         user.save()
 
@@ -152,6 +207,29 @@ def register_user(request):
         return Response({"message": "An error occurred during registration"}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method='post',
+    operation_summary='Password reset',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'email': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        required=['email'],
+    ),
+    responses={
+        200: openapi.Response(
+            description='Password reset email sent',
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'message': openapi.Schema(type=openapi.TYPE_STRING),
+                },
+            ),
+        ),
+        404: 'User not found',
+    },
+)
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])  # Use JSONWebTokenAuthentication for secure authentication
 @permission_classes([IsAuthenticated])  # Ensure that the user is authenticated
@@ -187,6 +265,30 @@ def password_reset(request):
         return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
+@swagger_auto_schema(
+    method='post',
+    operation_summary='Confirm password reset',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'new_password': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        required=['new_password'],
+    ),
+    responses={
+        200: openapi.Response(
+            description='Password reset successful',
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'message': openapi.Schema(type=openapi.TYPE_STRING),
+                },
+            ),
+        ),
+        400: 'Bad Request - Invalid token or password does not meet requirements',
+        404: 'User not found',
+    },
+)
 @api_view(['POST'])
 @csrf_exempt
 def password_reset_confirm(request, uidb64, token):
@@ -214,6 +316,39 @@ def password_reset_confirm(request, uidb64, token):
         return Response({'message': 'Invalid user ID'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method='get',
+    operation_summary='Home page',
+    manual_parameters=[
+        openapi.Parameter('q', openapi.IN_QUERY, description='Search query', type=openapi.TYPE_STRING),
+        openapi.Parameter('follow', openapi.IN_QUERY, description='Filter by followed users (follow_true)', type=openapi.TYPE_STRING),
+        openapi.Parameter('top_voted', openapi.IN_QUERY, description='Filter by top voted lists (top_voted_true)', type=openapi.TYPE_STRING),
+    ],
+    responses={
+        200: openapi.Response(
+            description='Success',
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'pagination': openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'next_page': openapi.Schema(type=openapi.TYPE_STRING),
+                            'previous_page': openapi.Schema(type=openapi.TYPE_STRING),
+                            'total_pages': openapi.Schema(type=openapi.TYPE_INTEGER),
+                            'current_page': openapi.Schema(type=openapi.TYPE_INTEGER),
+                        },
+                    ),
+                    'lists': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_OBJECT)),
+                    'users': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_OBJECT)),
+                    'list_count': openapi.Schema(type=openapi.TYPE_INTEGER),
+                    'topic_counts': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING))),
+                    'all_list_count': openapi.Schema(type=openapi.TYPE_INTEGER),
+                },
+            ),
+        ),
+    },
+)
 @api_view(['GET'])
 def home_page(request):
     q = request.GET.get('q', '')
@@ -272,7 +407,35 @@ def home_page(request):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
-
+@swagger_auto_schema(
+    method='get',
+    operation_summary='Get list details',
+    responses={
+        200: openapi.Response(
+            description='Success',
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'list': openapi.Schema(type=openapi.TYPE_OBJECT),
+                    'list_comments': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_OBJECT)),
+                    'participants': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_OBJECT)),
+                    'has_reported': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                    'saved_list_ids': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_INTEGER)),
+                },
+            ),
+        ),
+    },
+)
+@swagger_auto_schema(
+    method='post',
+    operation_summary='Perform actions on the list',
+    request_body=CommentSerializer,
+    responses={
+        201: openapi.Response(description='Comment added successfully'),
+        200: openapi.Response(description='List saved successfully or unsaved successfully'),
+        400: openapi.Response(description='Bad Request'),
+    },
+)
 @api_view(['GET', 'POST'])
 def list_page(request, pk):
     list_instance = List.objects.get(id=pk)
@@ -338,6 +501,30 @@ def list_page(request, pk):
     return Response(context)
 
 
+@swagger_auto_schema(
+    method='post',
+    operation_summary='Vote on a list',
+    manual_parameters=[
+        openapi.Parameter(
+            name='pk',
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_INTEGER,
+            description='ID of the list to vote on',
+            required=True,
+        ),
+        openapi.Parameter(
+            name='action',
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_STRING,
+            description='Vote action (upvote, downvote)',
+            required=True,
+        ),
+    ],
+    responses={
+        200: openapi.Response(description='Vote action successful'),
+        400: openapi.Response(description='Bad Request'),
+    },
+)
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -371,6 +558,40 @@ def vote_action(request, pk, action):
     return Response(list_serializer.data, status=status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='get',
+    operation_summary='Get user profile details',
+    manual_parameters=[
+        openapi.Parameter(
+            name='pk',
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_INTEGER,
+            description='ID of the user profile to retrieve',
+            required=True,
+        ),
+    ],
+    responses={
+        200: openapi.Response(description='User profile details retrieved successfully'),
+        404: openapi.Response(description='User not found'),
+    },
+)
+@swagger_auto_schema(
+    method='post',
+    operation_summary='Follow/Unfollow a user',
+    manual_parameters=[
+        openapi.Parameter(
+            name='pk',
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_INTEGER,
+            description='ID of the user to follow/unfollow',
+            required=True,
+        ),
+    ],
+    responses={
+        200: openapi.Response(description='Follow/Unfollow action successful'),
+        404: openapi.Response(description='User not found'),
+    },
+)
 @api_view(['GET', 'POST'])
 def user_profile_page(request, pk):
     user_instance = get_object_or_404(User, pk=pk)
@@ -420,6 +641,40 @@ def user_profile_page(request, pk):
     return Response(context, status=status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='get',
+    operation_summary='Get private lists for a user',
+    manual_parameters=[
+        openapi.Parameter(
+            name='pk',
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_INTEGER,
+            description='ID of the user to retrieve private lists',
+            required=True,
+        ),
+    ],
+    responses={
+        200: openapi.Response(description='Private lists retrieved successfully'),
+        404: openapi.Response(description='User not found'),
+    },
+)
+@swagger_auto_schema(
+    method='post',
+    operation_summary='Follow/Unfollow a user',
+    manual_parameters=[
+        openapi.Parameter(
+            name='pk',
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_INTEGER,
+            description='ID of the user to follow/unfollow',
+            required=True,
+        ),
+    ],
+    responses={
+        200: openapi.Response(description='Follow/Unfollow action successful'),
+        404: openapi.Response(description='User not found'),
+    },
+)
 @api_view(['GET', 'POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -470,12 +725,12 @@ def private_lists_page(request, pk):
 
 @swagger_auto_schema(
     method='post',
-    operation_summary='Creating a list',
-    request_body=ListSerializer(),
+    operation_summary='Create a list',
+    request_body=ListSerializer,
     responses={
-        201: "Successful Upload",
-        400: "Bad Request",
-    }
+        201: openapi.Response(description='Successful Upload'),
+        400: openapi.Response(description='Bad Request'),
+    },
 )
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])
@@ -490,28 +745,33 @@ def create_list_page(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 @swagger_auto_schema(
     method='get',
-    operation_summary='Display a list',
+    operation_summary='Retrieve a list for updating',
     responses={
-        200: ListSerializer(),
-    }
+        200: openapi.Response(description='List data for updating'),
+        404: openapi.Response(description='List Not Found'),
+        403: openapi.Response(description='Not authorized to proceed'),
+    },
 )
 @swagger_auto_schema(
     method='put',
-    operation_summary='Updating a list',
-    request_body=ListSerializer(),
+    operation_summary='Update a list',
+    request_body=ListSerializer,
     responses={
-        200: ListSerializer(),
-        400: "Bad Request",
-    }
+        200: openapi.Response(description='List data after update'),
+        400: openapi.Response(description='Bad Request'),
+    },
 )
 @swagger_auto_schema(
     method='delete',
-    operation_summary='Deleting a list',
+    operation_summary='Delete a list',
     responses={
-        204: "List Deleted",
-    }
+        204: openapi.Response(description='List Deleted'),
+        404: openapi.Response(description='List Not Found'),
+        403: openapi.Response(description='Not authorized to proceed'),
+    },
 )
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -545,6 +805,15 @@ def update_list_page(request, pk):
         return Response({"message": "List Deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 
+@swagger_auto_schema(
+    method='delete',
+    operation_summary='Delete a comment',
+    responses={
+        204: openapi.Response(description='Comment deleted'),
+        404: openapi.Response(description='Comment Not Found'),
+        403: openapi.Response(description='Not authorized to proceed'),
+    },
+)
 @api_view(['DELETE'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -562,6 +831,31 @@ def delete_comment_action(request, pk):
         return Response({'message': 'Comment deleted'}, status=status.HTTP_204_NO_CONTENT)
 
 
+@swagger_auto_schema(
+    methods=['GET'],
+    operation_summary='Retrieve user information',
+    responses={
+        200: openapi.Response(description='User information retrieved'),
+        400: openapi.Response(description='Bad Request'),
+    },
+)
+@swagger_auto_schema(
+    methods=['PUT'],
+    operation_summary='Update user information',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'name': openapi.Schema(type=openapi.TYPE_STRING, description='User name'),
+            'email': openapi.Schema(type=openapi.TYPE_STRING, description='User email'),
+            # Add other properties as needed
+        },
+        required=['name', 'email'],
+    ),
+    responses={
+        200: openapi.Response(description='User information updated'),
+        400: openapi.Response(description='Bad Request'),
+    },
+)
 @api_view(['GET', 'PUT'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -588,6 +882,14 @@ def update_user_page(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method='GET',
+    operation_summary='Retrieve topic counts based on lists',
+    responses={
+        200: openapi.Response(description='Topic counts retrieved successfully'),
+        400: openapi.Response(description='Bad Request'),
+    },
+)
 @api_view(['GET'])
 def topics_page(request):
     q = request.GET.get('q') if request.GET.get('q') else ''
@@ -615,10 +917,12 @@ def topics_page(request):
 
 
 @swagger_auto_schema(
-    method='get',
+    method='GET',
+    operation_summary='Retrieve users to follow based on name',
     responses={
-        200: UserSerializer(many=True),
-    }
+        200: openapi.Response(description='Users to follow retrieved successfully'),
+        400: openapi.Response(description='Bad Request'),
+    },
 )
 @api_view(['GET'])
 def who_to_follow_page(request):
@@ -631,6 +935,15 @@ def who_to_follow_page(request):
     return Response({'users': user_serializer.data}, status=status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='POST',
+    operation_summary='Report a list',
+    request_body=ReportSerializer(),
+    responses={
+        201: openapi.Response(description='List reported successfully'),
+        400: openapi.Response(description='Bad Request'),
+    },
+)
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -655,6 +968,23 @@ def report_list_page(request, pk):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
+@swagger_auto_schema(
+    method='POST',
+    operation_summary='Delete user account',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'password': openapi.Schema(type=openapi.TYPE_STRING),
+            'confirm_delete': openapi.Schema(type=openapi.TYPE_STRING),
+            'feedback': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        required=['password', 'confirm_delete', 'feedback'],
+    ),
+    responses={
+        200: openapi.Response(description='Account deleted successfully'),
+        400: openapi.Response(description='Bad Request'),
+    },
+)
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -676,6 +1006,44 @@ def delete_user_page(request):
         return Response({'message': 'Invalid password or confirmation'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method='GET',
+    operation_summary='Get edit suggestions and comments',
+    responses={
+        200: openapi.Response(description='List and edit suggestions data'),
+        404: openapi.Response(description='Not Found'),
+    },
+)
+@swagger_auto_schema(
+    method='POST',
+    operation_summary='Add new edit suggestions and/or comments',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'edit_suggestion': openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                description='Properties for the edit_suggestion (if provided)',
+                properties={
+                    'suggestion_text': openapi.Schema(type=openapi.TYPE_STRING, description='Text for the edit suggestion'),
+                },
+                required=['suggestion_text'],
+            ),
+            'comment': openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                description='Properties for the comment (if provided)',
+                properties={
+                    'text': openapi.Schema(type=openapi.TYPE_STRING, description='Text for the comment'),
+                },
+                required=['text'],
+            ),
+        },
+        required=['edit_suggestion', 'comment'],
+    ),
+    responses={
+        201: "Edit suggestion created successfully / Comment added successfully",
+        400: "Bad Request",
+    }
+)
 @api_view(['GET', 'POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -736,6 +1104,15 @@ def list_pr_page(request, pk):
     return Response({'message': 'Invalid request'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+@swagger_auto_schema(
+    method='POST',
+    operation_summary='Approve Edit Suggestion',
+    responses={
+        200: "Suggestion approved successfully",
+        403: "Permission denied",
+        404: "Not Found",
+    }
+)
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -769,6 +1146,15 @@ def approve_suggestion_action(request, suggestion_id):
     return Response({'message': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
 
 
+@swagger_auto_schema(
+    method='POST',
+    operation_summary='Decline Edit Suggestion',
+    responses={
+        200: "Suggestion declined successfully",
+        403: "Permission denied",
+        404: "Not Found",
+    }
+)
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -798,6 +1184,15 @@ def decline_suggestion_action(request, suggestion_id):
     return Response({'message': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
 
 
+@swagger_auto_schema(
+    method='DELETE',
+    operation_summary='Delete a comment about an Edit Suggestion',
+    responses={
+        204: "Comment deleted successfully",
+        403: "Permission denied",
+        404: "Not Found",
+    }
+)
 @api_view(['DELETE'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -812,6 +1207,21 @@ def delete_pr_comment_action(request, comment_id):
     return Response({'message': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
 
 
+@swagger_auto_schema(
+    method='GET',
+    operation_summary='Get lists saved by an user',
+    manual_parameters=[
+        openapi.Parameter(
+            'q',
+            openapi.IN_QUERY,
+            description='Search query for list names',
+            type=openapi.TYPE_STRING,
+        ),
+    ],
+    responses={
+        200: "Successful response",
+    }
+)
 @api_view(['GET'])
 def saved_lists_page(request, pk):
     q = request.GET.get('q', '')
@@ -820,6 +1230,22 @@ def saved_lists_page(request, pk):
     return Response(serializer.data)
 
 
+@swagger_auto_schema(
+    method='GET',
+    operation_summary='Get an user latest 5 notifications',
+    manual_parameters=[
+        openapi.Parameter(
+            'limit',
+            openapi.IN_QUERY,
+            description='Limit the number of notifications to retrieve (default: 5)',
+            type=openapi.TYPE_INTEGER,
+        ),
+    ],
+    responses={
+        200: "Successful response",
+        401: "Unauthorized",
+    }
+)
 @api_view(['GET'])
 # In order to work with this view the user needs to be logged in and the access token needs to be passed in Authorization as Bearer
 @authentication_classes([JWTAuthentication])  # Use JSONWebTokenAuthentication for secure authentication
@@ -834,6 +1260,15 @@ def get_notifications(request):
     return JsonResponse({'notifications': notifications_data})
 
 
+@swagger_auto_schema(
+    method='POST',
+    operation_summary='Mark a notification as read',
+    responses={
+        200: "Notification marked as read successfully",
+        404: "Notification not found",
+        401: "Unauthorized",
+    }
+)
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])  # Use JSONWebTokenAuthentication for secure authentication
 @permission_classes([IsAuthenticated])  # Ensure that the user is authenticated
@@ -850,24 +1285,59 @@ def mark_notification_as_read(request, notification_id):
 # Admin Utils
 
 @swagger_auto_schema(
-    method='get',
-    operation_summary='Display all lists',
+    methods=['GET'],
+    operation_summary='Get all lists',
     responses={
-        200: ListSerializer(many=True),
+        200: openapi.Response(
+            description="Successful response",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'pagination': openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'next_page': openapi.Schema(type=openapi.TYPE_STRING, description='URL for the next page'),
+                            'previous_page': openapi.Schema(type=openapi.TYPE_STRING, description='URL for the previous page'),
+                            'total_pages': openapi.Schema(type=openapi.TYPE_INTEGER, description='Total number of pages'),
+                            'current_page': openapi.Schema(type=openapi.TYPE_INTEGER, description='Current page number'),
+                        },
+                    ),
+                    'lists': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(type=openapi.TYPE_OBJECT, description='Serialized List data'),
+                    ),
+                },
+            ),
+        ),
     }
 )
 @swagger_auto_schema(
-    method='post',
-    operation_summary='Creating multiple lists',
-    request_body=ListSerializer(many=True),
+    methods=['POST'],
+    operation_summary='Create multiple lists at the same time',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_ARRAY,
+        items=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'author': openapi.Schema(type=openapi.TYPE_INTEGER, description='Author ID'),
+                'topic': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)),
+                'name': openapi.Schema(type=openapi.TYPE_STRING, description='List name'),
+                'content': openapi.Schema(type=openapi.TYPE_STRING, description='List content'),
+                'participants': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_INTEGER)),
+                'source': openapi.Schema(type=openapi.TYPE_STRING, description='Source URL'),
+                'public': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Public status'),
+            },
+            required=['name', 'content'],
+        ),
+    ),
     responses={
         201: "Successful Upload",
         400: "Bad Request",
     }
 )
 @swagger_auto_schema(
-    method='delete',
-    operation_summary='Deleting all lists',
+    methods=['DELETE'],
+    operation_summary='Delete all lists',
     responses={
         204: "All Lists Deleted",
     }
@@ -905,27 +1375,63 @@ def lists_db_setup(request):
         return Response({"message": "All Lists Deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 
+
 @swagger_auto_schema(
-    method='get',
-    operation_summary='Display all users',
+    methods=['GET'],
+    operation_summary='Get all users',
     responses={
-        200: ListSerializer(many=True),
+        200: openapi.Response(
+            description="Successful response",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'pagination': openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'next_page': openapi.Schema(type=openapi.TYPE_STRING, description='URL for the next page'),
+                            'previous_page': openapi.Schema(type=openapi.TYPE_STRING, description='URL for the previous page'),
+                            'total_pages': openapi.Schema(type=openapi.TYPE_INTEGER, description='Total number of pages'),
+                            'current_page': openapi.Schema(type=openapi.TYPE_INTEGER, description='Current page number'),
+                        },
+                    ),
+                    'users': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(type=openapi.TYPE_OBJECT, description='Serialized User data'),
+                    ),
+                },
+            ),
+        ),
     }
 )
+
 @swagger_auto_schema(
-    method='post',
-    operation_summary='Creating multiple users',
-    request_body=UserSerializer(many=True),
+    methods=['POST'],
+    operation_summary='Create multiple users at the same time',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_ARRAY,
+        items=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'name': openapi.Schema(type=openapi.TYPE_STRING, description='User name'),
+                'email': openapi.Schema(type=openapi.TYPE_STRING, description='User email'),
+                'password': openapi.Schema(type=openapi.TYPE_STRING, description='User password'),
+                'bio': openapi.Schema(type=openapi.TYPE_STRING, description='User bio'),
+                'avatar': openapi.Schema(type=openapi.TYPE_STRING, description='Avatar image URL'),
+                'social': openapi.Schema(type=openapi.TYPE_STRING, description='Social media information'),
+            },
+            required=['name', 'email', 'password'],  # Define the required fields
+        ),
+    ),
     responses={
         201: "Successful Upload",
         400: "Bad Request",
     }
 )
 @swagger_auto_schema(
-    method='delete',
-    operation_summary='Deleting all users',
+    methods=['DELETE'],
+    operation_summary='Delete all users',
     responses={
-        204: "All Users deleted",
+        204: "All Users Deleted",
     }
 )
 @api_view(['GET', 'POST', 'DELETE'])
