@@ -26,8 +26,8 @@
 
         async function postUserData(usersJson) {
             try {
-                console.log('Posting data to http://127.0.0.1:8000/api/mass-users/...');
-                await fetch("http://127.0.0.1:8000/api/mass-users/", {
+                console.log('Posting data to http://127.0.0.1:8000/api/users_db_setup/...');
+                await fetch("http://127.0.0.1:8000/api/users_db_setup/", {
                     method: "POST",
                     body: JSON.stringify(usersJson),
                     headers: {
@@ -43,15 +43,15 @@
 
         async function fetchUserDataAndDisplay() {
             try {
-                // Fetch and display data from http://127.0.0.1:8000/api/users/
-                let userResponse = await fetch('http://127.0.0.1:8000/api/users/');
+                // Fetch and display data from http://127.0.0.1:8000/api/users_db_setup/
+                let userResponse = await fetch('http://127.0.0.1:8000/api/users_db_setup/');
                 let users = await userResponse.json();
 
                 console.log('Displaying data on the page...');
                 usersContainer.innerHTML = ''; // Clear the existing content
 
-                for (let i = 0; users.length > i; i++) {
-                    let user = users[i];
+                for (let i = 0; users.results.length > i; i++) {
+                    let user = users.results[i];
 
                     let row = `<div>
                         <h3>${user.id}</h3>
@@ -99,8 +99,8 @@
 
         async function postListData(listsJson) {
             try {
-                console.log('Posting data to http://127.0.0.1:8000/api/mass-lists/...');
-                await fetch("http://127.0.0.1:8000/api/mass-lists/", {
+                console.log('Posting data to http://127.0.0.1:8000/api/lists_db_setup/...');
+                await fetch("http://127.0.0.1:8000/api/lists_db_setup/", {
                     method: "POST",
                     body: JSON.stringify(listsJson),
                     headers: {
@@ -116,8 +116,8 @@
 
         async function fetchListDataAndDisplay() {
             try {
-                // Fetch and display data from http://127.0.0.1:8000/api/lists/
-                let listResponse = await fetch('http://127.0.0.1:8000/api/lists/');
+                // Fetch and display data from http://127.0.0.1:8000/api/lists_db_setup/
+                let listResponse = await fetch('http://127.0.0.1:8000/api/lists_db_setup/');
                 let lists = await listResponse.json();
 
                 console.log('Displaying data on the page...');

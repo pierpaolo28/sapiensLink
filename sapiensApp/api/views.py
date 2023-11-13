@@ -5,7 +5,7 @@ from sapiensApp.models import List, Topic, User, Report, Notification, SavedList
 from .serializers import ListSerializer, UserSerializer, ReportSerializer, CommentSerializer, EditSuggestionSerializer, SavedListSerializer, EditCommentSerializer, MyUserCreationForm, LoginSerializer
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
@@ -28,6 +28,7 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from django.urls import reverse
 import app_secrets
+from drf_yasg.utils import swagger_auto_schema
 
 
 LISTS_PER_PAGE = 10
@@ -35,113 +36,186 @@ LISTS_PER_PAGE = 10
 @api_view(['GET'])
 def getRoutes(request):
     routes = [
-        'GET /api',
-        'POST /api/mass-lists/',
-        'POST /api/mass-users/',
-        'GET-POST-DELETE /api/lists/',
-        'GET-PUT-DELETE /api/list/:id',
-        'GET-POST-DELETE /api/users/',
-        'GET-PUT-DELETE /api/user/:id/',
-        'GET-POST-DELETE /api/reports/',
-        'GET-PUT-DELETE /api/report/:id/',
-        'GET /api/notifications/',
-        'GET /api/notifications/<int:notification_id>/mark_as_read/',
+        'GET /api/',
+        'POST /api/login_user/',
+        'POST /api/logout_user/',
+        'POST /api/register_user/',
         'GET /api/token/',
         'GET /api/token/refresh/',
-        'GET /api/get_home_lists/',
-        'GET /api/get_list/',
-        'POST /api/vote/:pk/:action/',
-        'GET-POST /api/user_profile/:pk/',
-        'GET-POST /api/private_lists/:pk',
-        'DELETE /api/delete_comment/:pk',
+        'POST /api/password_reset/',
+        'POST /api/password_reset_confirm/:uidb64/:token/',
+        'GET-POST /api/user_profile_page/:pk/',
+        'GET-PUT /api/update_user_page/',
+        'POST /api/delete_user_page/',
+        'GET /api/home_page/',
         'GET /api/topics_page/',
         'GET /api/who_to_follow_page/',
-        'POST /api/delete_account/',
-        'GET-POST /api/list_pr/:pk/',
-        'POST /api/approve_suggestion/:suggestion_id/',
-        'POST /api/decline_suggestion/:suggestion_id/',
-        'DELETE /api/delete_pr_comment/:comment_id/',
-        'GET /api/saved_lists/:pk/',
-        'POST /api/register_user/',
-        'POST /api/reset_password/',
-        'POST /api/reset_password_confirm/:uidb64/:token/',
-        'POST /api/login_user/',
-        'POST /api/logout_user'
+        'POST /api/create_list_page/',
+        'GET-POST /api/list_page/:pk/',
+        'DELETE /api/delete_comment_action/:pk/',
+        'GET-PUT-POST /api/update_list_page/',
+        'GET-POST /api/list_pr_page/:pk/',
+        'POST /api/approve_suggestion_action/:suggestion_id/',
+        'POST /api/decline_suggestion_action/:suggestion_id/',
+        'DELETE /api/delete_pr_comment_action/:comment_id/',
+        'GET-POST /api/private_lists_page/:pk/',
+        'GET /api/saved_lists_page/:pk/',
+        'POST /api/report_list_page/:pk/',
+        'POST /api/vote_action/:pk/:action/',
+        'GET /api/notifications/',
+        'GET /api/notifications/<int:notification_id>/mark_as_read/',
+        'GET /api/swagger/',
+        'GET /api/redoc/'
+        'GET-POST-DELETE /api/lists_db_setup/',
+        'GET-POST-DELETE /api/users_db_setup/',
     ]
     return Response(routes)
 
 
+# Web Application Utils
+
 @api_view(['POST'])
-def mass_list_upload(request):
-    serializer = ListSerializer(data=request.data, many=True)
+@permission_classes([AllowAny])
+def login_user(request):
 
+    serializer = LoginSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
+        email = serializer.validated_data['email']
+        password = serializer.validated_data['password']
 
-        return Response({"outcome": "successful upload"}, status=status.HTTP_201_CREATED)
-    else:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'message': 'Email does not exist'}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Manually authenticate the user using the authenticate function
+        user = authenticate(request=request, username=email, password=password)
 
-@api_view(['GET', 'POST', 'DELETE'])
-def lists(request):
-    """
-    Retrieve/delete lists or make one.
-    """
+        if user is not None:
+            # Use DRF's login function to log in the user
+            login(request, user)
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            # Return JSON response
+            response_data = {
+                'access_token': access_token,
+                'refresh_token': str(refresh),
+                'expiration_time': refresh.access_token['exp'] * 1000  # Convert expiration time to milliseconds
+            }
 
-    if request.method == 'GET':
-        paginator = PageNumberPagination()
-        paginator.page_size = LISTS_PER_PAGE  # Set the number of items per page
-
-        lists = List.objects.all()
-        paginated_queryset = paginator.paginate_queryset(lists, request)
-        serializer = ListSerializer(paginated_queryset, many=True)
-        
-        return paginator.get_paginated_response(serializer.data)
-    
-    elif request.method == 'POST':
-        serializer = ListSerializer(data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"outcome": "successful upload"}, status=status.HTTP_201_CREATED)
+            return Response(response_data, status=status.HTTP_200_OK)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': 'Wrong Password'}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        return Response({'message': 'Both Email and Password are required'}, status=status.HTTP_400_BAD_REQUEST)
+    
 
-    elif request.method == 'DELETE':
-        lists = List.objects.all()
-        lists.delete()
-        return Response({"outcome": "all lists deleted"}, status=status.HTTP_201_CREATED)
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def logout_user(request):
+    # TODO: on frontend when users logs out tokens are deleted and blacklisted so 
+    # people can't use them before the expire
+
+    # Clear session data
+    request.session.pop("access_token", None)
+    request.session.pop("refresh_token", None)
+    request.session.pop("expiration_time", None)
+
+    logout(request)
+    return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
 
 
-@api_view(['GET', 'PUT', 'DELETE'])
-def list(request, pk):
-    """
-    Retrieve, update or delete a list.
-    """
+@api_view(['POST'])
+def register_user(request):
+    form = MyUserCreationForm(request.data)
+
+    if form.is_valid():
+        user = form.save(commit=False)
+        user.email = user.email.lower()
+        user.save()
+
+        login(request, user)
+
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+
+        data = {
+            "access_token": access_token,
+            "refresh_token": str(refresh),
+            "expiration_time": refresh.access_token['exp'] * 1000  # Convert expiration time to milliseconds
+        }
+
+        return Response(data, status=status.HTTP_201_CREATED)
+    else:
+        # TODO: provide more descriptive explaination of error (e.g. password condition, duplicate email)
+        return Response({"message": "An error occurred during registration"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])  # Use JSONWebTokenAuthentication for secure authentication
+@permission_classes([IsAuthenticated])  # Ensure that the user is authenticated
+def password_reset(request):
+    email = request.data.get('email', '')
     try:
-        list = List.objects.get(id=pk)
-    except List.DoesNotExist:
-        return Response({"outcome": "list not found"}, status=status.HTTP_404_NOT_FOUND)
+        user = User.objects.get(email=email)
+        context = {
+            'email': email,
+            'user': user,
+            'domain': request.META['HTTP_HOST'],
+            'site_name': 'SapiensLink',
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+            'token': default_token_generator.make_token(user),
+            'protocol': 'https' if request.is_secure() else 'http',
+        }
+        reset_url = reverse('password_reset_confirm', kwargs={'uidb64': context['uid'], 'token': context['token']})
+        reset_url = f"{context['protocol']}://{context['domain']}{reset_url}"
+        context['reset_url'] = reset_url
 
-    if request.method == 'GET':
-        serializer = ListSerializer(list, many=False)
-        return Response(serializer.data)
+        # Send email using SendGrid
+        message = Mail(
+            from_email=app_secrets.FROM_EMAIL,  # Replace with your email
+            to_emails=[email],
+            subject='SapiensLink Password Reset',
+            html_content=f'Click the following link to reset your password: {reset_url}',
+        )
+        sg = SendGridAPIClient(app_secrets.SENDGRID_API_KEY)  # Replace with your SendGrid API key
+        sg.send(message)
 
-    elif request.method == 'PUT':
-        serializer = ListSerializer(list, data=request.data, many=False)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': 'Password reset email sent'}, status=status.HTTP_200_OK)
+    except ObjectDoesNotExist:
+        return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-    elif request.method == 'DELETE':
-        list.delete()
-        return Response({"outcome": "list deleted"}, status=status.HTTP_201_CREATED)
+
+@api_view(['POST'])
+@csrf_exempt
+def password_reset_confirm(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+        
+        new_password = request.data.get('new_password', '')
+        # Validate the new password
+        try:
+            validate_password(new_password, user)
+        except ValidationError as e:
+            return Response({'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        if default_token_generator.check_token(user, token):
+            # Handle password reset confirmation logic here
+            user.set_password(new_password)
+            user.save()
+            return Response({'message': 'Password reset successful'}, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
+    except ObjectDoesNotExist:
+        return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    except ValueError:
+        return Response({'message': 'Invalid user ID'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
-def get_home_lists(request):
+def home_page(request):
     q = request.GET.get('q', '')
     # TODO: Follow home sorting should be made visible to just logged in users on the front end
     # and make sure people can use enter button to send comment
@@ -200,7 +274,7 @@ def get_home_lists(request):
 
 
 @api_view(['GET', 'POST'])
-def get_list(request, pk):
+def list_page(request, pk):
     list_instance = List.objects.get(id=pk)
 
     list_comments = list_instance.comment_set.all()
@@ -265,8 +339,9 @@ def get_list(request, pk):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def vote(request, pk, action):
+def vote_action(request, pk, action):
     list_instance = get_object_or_404(List, pk=pk)
     user = request.user
 
@@ -297,8 +372,7 @@ def vote(request, pk, action):
 
 
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
-def user_profile(request, pk):
+def user_profile_page(request, pk):
     user_instance = get_object_or_404(User, pk=pk)
     lists_count = List.objects.filter(author_id=pk, public=True).count()
     lists = user_instance.list_set.filter(public=True)
@@ -347,8 +421,9 @@ def user_profile(request, pk):
 
 
 @api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def private_lists(request, pk):
+def private_lists_page(request, pk):
     user_instance = get_object_or_404(User, pk=pk)
     lists_count = List.objects.filter(author_id=pk, public=True).count()
     private_lists = user_instance.list_set.filter(public=False)
@@ -393,21 +468,124 @@ def private_lists(request, pk):
     return Response(context, status=status.HTTP_200_OK)
 
 
-@api_view(['DELETE'])
+@swagger_auto_schema(
+    method='post',
+    operation_summary='Creating a list',
+    request_body=ListSerializer(),
+    responses={
+        201: "Successful Upload",
+        400: "Bad Request",
+    }
+)
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def delete_comment(request, pk):
-    comment = get_object_or_404(Comment, pk=pk)
+def create_list_page(request):
+    serializer = ListSerializer(data=request.data)
+
+    if serializer.is_valid():
+        serializer.save(author=request.user)
+        return Response({"message": "Successful Upload"}, status=status.HTTP_201_CREATED)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@swagger_auto_schema(
+    method='get',
+    operation_summary='Display a list',
+    responses={
+        200: ListSerializer(),
+    }
+)
+@swagger_auto_schema(
+    method='put',
+    operation_summary='Updating a list',
+    request_body=ListSerializer(),
+    responses={
+        200: ListSerializer(),
+        400: "Bad Request",
+    }
+)
+@swagger_auto_schema(
+    method='delete',
+    operation_summary='Deleting a list',
+    responses={
+        204: "List Deleted",
+    }
+)
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+@api_view(['GET', 'PUT', 'DELETE'])
+def update_list_page(request, pk):
+    """
+    Retrieve, create, update or delete a list.
+    """
+    try:
+        list = List.objects.get(id=pk)
+    except List.DoesNotExist:
+        return Response({"message": "List Not Found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    if request.user != list.author:
+        return Response({"message": "Not authorized to proceed"}, status=status.HTTP_403_FORBIDDEN)
+
+    if request.method == 'GET':
+        # When going to update list page, we first get the data needed to prefill the form
+        serializer = ListSerializer(list, many=False)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    elif request.method == 'PUT':
+        serializer = ListSerializer(list, data=request.data, many=False)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    elif request.method == 'DELETE':
+        list.delete()
+        return Response({"message": "List Deleted"}, status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def delete_comment_action(request, pk):
+    try:
+        comment = Comment.objects.get(pk=pk)
+    except List.DoesNotExist:
+        return Response({"message": "Comment Not Found"}, status=status.HTTP_404_NOT_FOUND)
 
     # Check if the authenticated user is the owner of the comment
     if request.user != comment.user:
-        return Response({'detail': 'Not authorized to proceed.'}, status=status.HTTP_403_FORBIDDEN)
-
-    if request.method == 'DELETE':
+        return Response({'message': 'Not authorized to proceed'}, status=status.HTTP_403_FORBIDDEN)
+    else:
         comment.delete()
-        return Response({'detail': 'Comment deleted successfully.'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Comment deleted'}, status=status.HTTP_204_NO_CONTENT)
 
-    return Response({'detail': 'Invalid request.'}, status=status.HTTP_400_BAD_REQUEST)
 
+@api_view(['GET', 'PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def update_user_page(request):
+    user = request.user
+
+    if request.method == 'GET':
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+    elif request.method == 'PUT':
+        serializer = UserSerializer(request.data, instance=user)
+        password = request.data.get('password')
+
+        if serializer.is_valid():
+            serializer.save()
+
+            if password:
+                user.set_password(password)
+                user.save()
+
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])
@@ -436,8 +614,17 @@ def topics_page(request):
     return Response(response_data, status=status.HTTP_200_OK)
 
 
+@swagger_auto_schema(
+    method='get',
+    responses={
+        200: UserSerializer(many=True),
+    }
+)
 @api_view(['GET'])
 def who_to_follow_page(request):
+    """
+    Your function-based view documentation here.
+    """
     q = request.GET.get('q') if request.GET.get('q') != None else ''
     users = User.objects.filter(name__icontains=q).annotate(followers_count=Count('followers')).order_by('-followers_count')
     user_serializer = UserSerializer(users, many=True)
@@ -445,125 +632,33 @@ def who_to_follow_page(request):
 
 
 @api_view(['POST'])
-def mass_users_upload(request):
-    serializer = UserSerializer(data=request.data, many=True)
-
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def report_list_page(request, pk):
+    serializer = ReportSerializer(data=request.data, many=False)
+    list = get_object_or_404(List, id=pk)
     if serializer.is_valid():
         serializer.save()
-
-        return Response({"outcome": "successful upload"}, status=status.HTTP_201_CREATED)
-    else:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['GET', 'POST', 'DELETE'])
-def users(request):
-    """
-    Retrieve/delete users or make one.
-    """
-
-    if request.method == 'GET':
-        users = User.objects.all()
-        serializer = UserSerializer(users, many=True)
-        return Response(serializer.data)
-    
-    elif request.method == 'POST':
-        serializer = UserSerializer(data=request.data, many=False)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == 'DELETE':
-        users = User.objects.all()
-        users.delete()
-        return Response({"outcome": "users deleted"}, status=status.HTTP_204_NO_CONTENT)
-    
-
-@api_view(['GET', 'PUT', 'DELETE'])
-def user(request, pk):
-    """
-    Retrieve, update or delete a user.
-    """
-    try:
-        user = User.objects.get(id=pk)
-    except User.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    if request.method == 'GET':
-        serializer = UserSerializer(user, many=False)
-        return Response(serializer.data)
-
-    elif request.method == 'PUT':
-        serializer = UserSerializer(user, data=request.data, many=False, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == 'DELETE':
-        user.delete()
-        return Response({"outcome": "user deleted"}, status=status.HTTP_204_NO_CONTENT)
-
-
-@api_view(['GET', 'POST', 'DELETE'])
-def reports(request):
-    """
-    Retrieve/delete reports or make one.
-    """
-
-    if request.method == 'GET':
-        reports = Report.objects.all()
-        serializer = ReportSerializer(reports, many=True)
-        return Response(serializer.data)
-    
-    elif request.method == 'POST':
-        serializer = ReportSerializer(data=request.data, many=False)
-        list = get_object_or_404(List, id=request.data['list'])
-        if serializer.is_valid():
-            serializer.save()
-            # Sending notification to the WebSocket group
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                "notifications_group",
-                {
-                    'type': 'send_notification',
-                    'notification': f'Your list "{list.name}" has been reported by an user.',
-                    'creator_id': request.user.id,
-                    'receiver_id': list.author.id,
-                    'url': request.build_absolute_uri('/') + 'list/' + str(list.id) + '/',
-                }
-            )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    elif request.method == 'DELETE':
-        reports.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    
-
-@api_view(['GET', 'DELETE'])
-def report(request, pk):
-    """
-    Retrieve or delete a report.
-    """
-    try:
-        report = Report.objects.get(id=pk)
-    except Report.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-    if request.method == 'GET':
-        serializer = ReportSerializer(report, many=False)
-        return Response(serializer.data)
-
-    elif request.method == 'DELETE':
-        report.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        # Sending notification to the WebSocket group
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "notifications_group",
+            {
+                'type': 'send_notification',
+                'notification': f'Your list "{list.name}" has been reported by an user.',
+                'creator_id': request.user.id,
+                'receiver_id': list.author.id,
+                'url': request.build_absolute_uri('/') + 'list/' + str(list.id) + '/',
+            }
+        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def delete_account(request):
+def delete_user_page(request):
     password = request.data.get('password')
     confirm_delete = request.data.get('confirm_delete')
     feedback = request.data.get('feedback')
@@ -576,14 +671,15 @@ def delete_account(request):
         # Delete the user account
         user.delete()
         logout(request)
-        return Response({'message': 'Your account has been deleted.'}, status=status.HTTP_200_OK)
+        return Response({'message': 'Your account has been deleted'}, status=status.HTTP_200_OK)
     else:
-        return Response({'error': 'Invalid password or confirmation.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'message': 'Invalid password or confirmation'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET', 'POST'])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def list_pr(request, pk):
+def list_pr_page(request, pk):
     list_instance = get_object_or_404(List, id=pk)
     suggestions = EditSuggestion.objects.filter(list=list_instance, is_accepted=False)
     pr_comments = EditComment.objects.filter(edit_suggestion__list=list_instance)
@@ -641,8 +737,9 @@ def list_pr(request, pk):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def approve_suggestion(request, suggestion_id):
+def approve_suggestion_action(request, suggestion_id):
     suggestion = get_object_or_404(EditSuggestion, id=suggestion_id)
 
     # Check if the current user is the author of the list or a superuser
@@ -673,8 +770,9 @@ def approve_suggestion(request, suggestion_id):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def decline_suggestion(request, suggestion_id):
+def decline_suggestion_action(request, suggestion_id):
     suggestion = get_object_or_404(EditSuggestion, id=suggestion_id)
 
     # Check if the current user is the author of the list or a superuser
@@ -701,20 +799,21 @@ def decline_suggestion(request, suggestion_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
-def delete_pr_comment(request, comment_id):
+def delete_pr_comment_action(request, comment_id):
     comment = get_object_or_404(EditComment, id=comment_id)
 
     # Check if the current user is the author of the comment
     if comment.commenter == request.user:
         comment.delete()
-        return Response({'message': 'Comment deleted successfully'}, status=status.HTTP_200_OK)
+        return Response({'message': 'Comment deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
 
     return Response({'message': 'Permission denied'}, status=status.HTTP_403_FORBIDDEN)
 
 
 @api_view(['GET'])
-def saved_lists(request, pk):
+def saved_lists_page(request, pk):
     q = request.GET.get('q', '')
     user_saved_lists = SavedList.objects.filter(user__id=pk, list__name__icontains=q)
     serializer = SavedListSerializer(user_saved_lists, many=True)
@@ -746,142 +845,119 @@ def mark_notification_as_read(request, notification_id):
         return JsonResponse({'status': 'Notification marked as read.'})
     except Notification.DoesNotExist:
         return JsonResponse({'error': 'Notification not found.'}, status=404)
-    
-
-@api_view(['POST'])
-def register_user(request):
-    form = MyUserCreationForm(request.data)
-
-    if form.is_valid():
-        user = form.save(commit=False)
-        user.email = user.email.lower()
-        user.save()
-
-        login(request, user)
-
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
-
-        data = {
-            "access_token": access_token,
-            "refresh_token": str(refresh),
-            "expiration_time": refresh.access_token['exp'] * 1000  # Convert expiration time to milliseconds
-        }
-
-        return Response(data, status=status.HTTP_201_CREATED)
-    else:
-        return Response({"error": "An error occurred during registration"}, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['POST'])
-@authentication_classes([JWTAuthentication])  # Use JSONWebTokenAuthentication for secure authentication
-@permission_classes([IsAuthenticated])  # Ensure that the user is authenticated
-def password_reset(request):
-    email = request.data.get('email', '')
-    try:
-        user = User.objects.get(email=email)
-        context = {
-            'email': email,
-            'user': user,
-            'domain': request.META['HTTP_HOST'],
-            'site_name': 'SapiensLink',
-            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-            'token': default_token_generator.make_token(user),
-            'protocol': 'https' if request.is_secure() else 'http',
-        }
-        reset_url = reverse('password_reset_confirm', kwargs={'uidb64': context['uid'], 'token': context['token']})
-        reset_url = f"{context['protocol']}://{context['domain']}{reset_url}"
-        context['reset_url'] = reset_url
+# Admin Utils
 
-        # Send email using SendGrid
-        message = Mail(
-            from_email=app_secrets.FROM_EMAIL,  # Replace with your email
-            to_emails=[email],
-            subject='Password Reset',
-            html_content=f'Click the following link to reset your password: {reset_url}',
-        )
-        sg = SendGridAPIClient(app_secrets.SENDGRID_API_KEY)  # Replace with your SendGrid API key
-        sg.send(message)
+@swagger_auto_schema(
+    method='get',
+    operation_summary='Display all lists',
+    responses={
+        200: ListSerializer(many=True),
+    }
+)
+@swagger_auto_schema(
+    method='post',
+    operation_summary='Creating multiple lists',
+    request_body=ListSerializer(many=True),
+    responses={
+        201: "Successful Upload",
+        400: "Bad Request",
+    }
+)
+@swagger_auto_schema(
+    method='delete',
+    operation_summary='Deleting all lists',
+    responses={
+        204: "All Lists Deleted",
+    }
+)
+@api_view(['GET', 'POST', 'DELETE'])
+@authentication_classes([JWTAuthentication])
+# TODO: Uncomment before deployment
+# @permission_classes([IsAdminUser])
+def lists_db_setup(request):
+    """
+        Util to upload many lists at the same time, display them and delete them.
+        This can be useful to populate and empty a local development db.
+    """
+    if request.method == 'GET':
+        paginator = PageNumberPagination()
+        paginator.page_size = LISTS_PER_PAGE  # Set the number of items per page
 
-        return Response({'detail': 'Password reset email sent.'}, status=status.HTTP_200_OK)
-    except ObjectDoesNotExist:
-        return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
-
-
-@api_view(['POST'])
-@csrf_exempt
-def password_reset_confirm(request, uidb64, token):
-    try:
-        uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
+        lists = List.objects.all()
+        paginated_queryset = paginator.paginate_queryset(lists, request)
+        serializer = ListSerializer(paginated_queryset, many=True)
         
-        new_password = request.data.get('new_password', '')
-        # Validate the new password
-        try:
-            validate_password(new_password, user)
-        except ValidationError as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return paginator.get_paginated_response(serializer.data)
+    elif request.method == 'POST':
+        serializer = ListSerializer(data=request.data, many=True)
 
-        if default_token_generator.check_token(user, token):
-            # Handle password reset confirmation logic here
-            user.set_password(new_password)
-            user.save()
-            return Response({'detail': 'Password reset successful.'}, status=status.HTTP_200_OK)
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response({"message": "Successful Upload"}, status=status.HTTP_201_CREATED)
         else:
-            return Response({'error': 'Invalid token.'}, status=status.HTTP_400_BAD_REQUEST)
-    except ObjectDoesNotExist:
-        return Response({'error': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
-    except ValueError:
-        return Response({'error': 'Invalid user ID.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        lists = List.objects.all()
+        lists.delete()
+        return Response({"message": "All Lists Deleted"}, status=status.HTTP_204_NO_CONTENT)
+
+
+@swagger_auto_schema(
+    method='get',
+    operation_summary='Display all users',
+    responses={
+        200: ListSerializer(many=True),
+    }
+)
+@swagger_auto_schema(
+    method='post',
+    operation_summary='Creating multiple users',
+    request_body=UserSerializer(many=True),
+    responses={
+        201: "Successful Upload",
+        400: "Bad Request",
+    }
+)
+@swagger_auto_schema(
+    method='delete',
+    operation_summary='Deleting all users',
+    responses={
+        204: "All Users deleted",
+    }
+)
+@api_view(['GET', 'POST', 'DELETE'])
+@authentication_classes([JWTAuthentication])
+# TODO: Uncomment before deployment
+# @permission_classes([IsAdminUser])
+def users_db_setup(request):
+    """
+        Util to upload many users at the same time, display them and delete them.
+        This can be useful to populate and empty a local development db.
+    """
+    if request.method == 'GET':
+        paginator = PageNumberPagination()
+        paginator.page_size = LISTS_PER_PAGE  # Set the number of items per page
+
+        users = User.objects.all()
+        paginated_queryset = paginator.paginate_queryset(users, request)
+        serializer = UserSerializer(paginated_queryset, many=True)
+        
+        return paginator.get_paginated_response(serializer.data)
     
+    elif request.method == 'POST':
+        serializer = UserSerializer(data=request.data, many=True)
 
+        if serializer.is_valid():
+            serializer.save()
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def login_user(request):
-
-    serializer = LoginSerializer(data=request.data)
-    if serializer.is_valid():
-        email = serializer.validated_data['email']
-        password = serializer.validated_data['password']
-
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            return Response({'error': 'User does not exist'}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Manually authenticate the user using the authenticate function
-        user = authenticate(request=request, username=email, password=password)
-
-        if user is not None:
-            # Use DRF's login function to log in the user
-            login(request, user)
-            refresh = RefreshToken.for_user(user)
-            access_token = str(refresh.access_token)
-            # Return JSON response
-            response_data = {
-                'access_token': access_token,
-                'refresh_token': str(refresh),
-                'expiration_time': refresh.access_token['exp'] * 1000  # Convert expiration time to milliseconds
-            }
-
-            return Response(response_data, status=status.HTTP_200_OK)
+            return Response({"message": "Successful Upload"}, status=status.HTTP_201_CREATED)
         else:
-            return Response({'error': 'Email or password does not exist'}, status=status.HTTP_401_UNAUTHORIZED)
-    else:
-        return Response({'error': 'Invalid input'}, status=status.HTTP_400_BAD_REQUEST)
-    
-
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def logout_user(request):
-    # TODO: on frontend when users logs out tokens are deleted and blacklisted so 
-    # people can't use them before the expire
-
-    # Clear session data
-    request.session.pop("access_token", None)
-    request.session.pop("refresh_token", None)
-    request.session.pop("expiration_time", None)
-
-    logout(request)
-    return Response({'detail': 'Logout successful'}, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+    elif request.method == 'DELETE':
+        users = User.objects.all()
+        users.delete()
+        return Response({"message": "All Users deleted"}, status=status.HTTP_204_NO_CONTENT)

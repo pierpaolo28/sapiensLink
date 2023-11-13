@@ -69,7 +69,7 @@ class List(models.Model):
     author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     topic = models.ManyToManyField(Topic)
     name = models.CharField(max_length=200)
-    content = models.TextField(null=True, blank=True)
+    content = models.TextField()
     participants = models.ManyToManyField(
         User, related_name='participants', blank=True)
     updated = models.DateTimeField(auto_now=True)
@@ -131,6 +131,7 @@ class Report(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
     reason = models.TextField()
+    resolved = models.BooleanField(default=False) 
 
     def __str__(self):
         return f"Report on list {self.list} at {self.timestamp}"
@@ -138,6 +139,7 @@ class Report(models.Model):
 
 class Feedback(models.Model):
     feedback = models.TextField()
+    resolved = models.BooleanField(default=False) 
 
     def __str__(self):
         return self.feedback[0:50]

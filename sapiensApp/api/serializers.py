@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField, CharField, ValidationError, Serializer, EmailField
+from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField, CharField, ValidationError, Serializer, EmailField, ImageField
 from sapiensApp.models import List, Topic, User, Report, Comment, EditSuggestion, SavedList, EditComment
 from django.contrib.auth.forms import UserCreationForm
 import csv
@@ -43,7 +43,6 @@ class ListSerializer(ModelSerializer):
     class Meta:
         model = List
         fields = '__all__'
-        extra_kwargs = {'source': {'required': False}}
 
     def create(self, validated_data):
         # Just foreign keys and many to many relations additions creations 
@@ -64,23 +63,24 @@ class ListSerializer(ModelSerializer):
     def update(self, instance, validated_data):
         # For update ANY entity we want to change needs to be 
         # explicitly handled here
-        topics_data = validated_data.pop('topic', [])
-        participants_data = validated_data.pop('participants', [])
+        topics_data = validated_data.pop('topic', None)
+        participants_data = validated_data.pop('participants', None)
 
         # Update fields on the existing instance
         instance.name = validated_data.get('name', instance.name)
         instance.content = validated_data.get('content', instance.content)
         instance.source = validated_data.get('source', instance.source)
-        instance.author = validated_data.get('author', instance.author)
 
-        # Clear existing topics and add the updated ones
-        instance.topic.clear()
-        for topic_dic in topics_data:
-            topic_instance, _ = Topic.objects.get_or_create(name=topic_dic['name'])
-            instance.topic.add(topic_instance)
+        # Clear existing topics and add the updated ones if provided
+        if topics_data is not None:
+            instance.topic.clear()
+            for topic_dic in topics_data:
+                topic_instance, _ = Topic.objects.get_or_create(name=topic_dic['name'])
+                instance.topic.add(topic_instance)
 
-        # Use set method for the many-to-many relationship with participants
-        instance.participants.set(participants_data)
+        # Use set method for the many-to-many relationship with participants if provided
+        if participants_data is not None:
+            instance.participants.set(participants_data)
 
         # Save the updated instance
         instance.save()
@@ -98,6 +98,8 @@ class UserSerializer(ModelSerializer):
     password = CharField(write_only=True)
     followers = FollowSerializer(many=True, read_only=True)
     following = FollowSerializer(many=True, read_only=True)
+    avatar = ImageField(allow_null=True, required=False)
+    
 
     def clean_name(self):
         data = self.cleaned_data['name']
