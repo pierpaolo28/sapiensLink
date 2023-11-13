@@ -54,7 +54,7 @@ def getRoutes(request):
         'POST /api/create_list_page/',
         'GET-POST /api/list_page/:pk/',
         'DELETE /api/delete_comment_action/:pk/',
-        'GET-PUT-POST /api/update_list_page/',
+        'GET-PUT-POST /api/update_list_page/:pk/',
         'GET-POST /api/list_pr_page/:pk/',
         'POST /api/approve_suggestion_action/:suggestion_id/',
         'POST /api/decline_suggestion_action/:suggestion_id/',
@@ -506,13 +506,6 @@ def list_page(request, pk):
     operation_summary='Vote on a list',
     manual_parameters=[
         openapi.Parameter(
-            name='pk',
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description='ID of the list to vote on',
-            required=True,
-        ),
-        openapi.Parameter(
             name='action',
             in_=openapi.IN_PATH,
             type=openapi.TYPE_STRING,
@@ -561,15 +554,6 @@ def vote_action(request, pk, action):
 @swagger_auto_schema(
     method='get',
     operation_summary='Get user profile details',
-    manual_parameters=[
-        openapi.Parameter(
-            name='pk',
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description='ID of the user profile to retrieve',
-            required=True,
-        ),
-    ],
     responses={
         200: openapi.Response(description='User profile details retrieved successfully'),
         404: openapi.Response(description='User not found'),
@@ -578,15 +562,6 @@ def vote_action(request, pk, action):
 @swagger_auto_schema(
     method='post',
     operation_summary='Follow/Unfollow a user',
-    manual_parameters=[
-        openapi.Parameter(
-            name='pk',
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description='ID of the user to follow/unfollow',
-            required=True,
-        ),
-    ],
     responses={
         200: openapi.Response(description='Follow/Unfollow action successful'),
         404: openapi.Response(description='User not found'),
@@ -644,32 +619,65 @@ def user_profile_page(request, pk):
 @swagger_auto_schema(
     method='get',
     operation_summary='Get private lists for a user',
-    manual_parameters=[
-        openapi.Parameter(
-            name='pk',
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description='ID of the user to retrieve private lists',
-            required=True,
-        ),
-    ],
     responses={
-        200: openapi.Response(description='Private lists retrieved successfully'),
+        200: openapi.Response(
+            description='Private lists retrieved successfully',
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'pagination': {
+                        'type': openapi.TYPE_OBJECT,
+                        'properties': {
+                            'next_page': {'type': openapi.TYPE_STRING, 'description': 'Next page URL'},
+                            'previous_page': {'type': openapi.TYPE_STRING, 'description': 'Previous page URL'},
+                            'total_pages': {'type': openapi.TYPE_INTEGER, 'description': 'Total number of pages'},
+                            'current_page': {'type': openapi.TYPE_INTEGER, 'description': 'Current page number'},
+                        },
+                    },
+                    'lists': {'type': openapi.TYPE_ARRAY, 'items': {
+                        'type': openapi.TYPE_OBJECT,
+                        'properties': {
+                            'id': {'type': openapi.TYPE_INTEGER},
+                            'name': {'type': openapi.TYPE_STRING},
+                            'content': {'type': openapi.TYPE_STRING},
+                            'participants': {'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_INTEGER}},
+                            'updated': {'type': openapi.TYPE_STRING, 'format': 'date-time'},
+                            'created': {'type': openapi.TYPE_STRING, 'format': 'date-time'},
+                            'score': {'type': openapi.TYPE_INTEGER},
+                            'source': {'type': openapi.TYPE_STRING},
+                            'public': {'type': openapi.TYPE_BOOLEAN},
+                        },
+                    }},
+                    'user': {'type': openapi.TYPE_OBJECT, 'properties': {
+                        'id': {'type': openapi.TYPE_INTEGER},
+                        'name': {'type': openapi.TYPE_STRING},
+                        'email': {'type': openapi.TYPE_STRING},
+                        'bio': {'type': openapi.TYPE_STRING},
+                        'avatar': {'type': openapi.TYPE_STRING},
+                        'social': {'type': openapi.TYPE_STRING},
+                        'followers': {'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_INTEGER}},
+                        'following': {'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_INTEGER}},
+                    }},
+                    'lists_count': {'type': openapi.TYPE_INTEGER, 'description': 'Total public lists count for the user'},
+                    'is_following': {'type': openapi.TYPE_BOOLEAN, 'description': 'Indicates whether the authenticated user is following the target user'},
+                    'saved_lists': {'type': openapi.TYPE_ARRAY, 'items': {
+                        'type': openapi.TYPE_OBJECT,
+                        'properties': {
+                            'id': {'type': openapi.TYPE_INTEGER},
+                            'user': {'type': openapi.TYPE_INTEGER},
+                            'list': {'type': openapi.TYPE_INTEGER},
+                            'saved_at': {'type': openapi.TYPE_STRING, 'format': 'date-time'},
+                        },
+                    }},
+                },
+            )
+        ),
         404: openapi.Response(description='User not found'),
     },
 )
 @swagger_auto_schema(
     method='post',
     operation_summary='Follow/Unfollow a user',
-    manual_parameters=[
-        openapi.Parameter(
-            name='pk',
-            in_=openapi.IN_PATH,
-            type=openapi.TYPE_INTEGER,
-            description='ID of the user to follow/unfollow',
-            required=True,
-        ),
-    ],
     responses={
         200: openapi.Response(description='Follow/Unfollow action successful'),
         404: openapi.Response(description='User not found'),
@@ -750,7 +758,7 @@ def create_list_page(request):
     method='get',
     operation_summary='Retrieve a list for updating',
     responses={
-        200: openapi.Response(description='List data for updating'),
+        200: openapi.Response(description='List data for updating', schema=ListSerializer),
         404: openapi.Response(description='List Not Found'),
         403: openapi.Response(description='Not authorized to proceed'),
     },
@@ -760,7 +768,7 @@ def create_list_page(request):
     operation_summary='Update a list',
     request_body=ListSerializer,
     responses={
-        200: openapi.Response(description='List data after update'),
+        200: openapi.Response(description='List data after update', schema=ListSerializer),
         400: openapi.Response(description='Bad Request'),
     },
 )
@@ -784,8 +792,8 @@ def update_list_page(request, pk):
         list = List.objects.get(id=pk)
     except List.DoesNotExist:
         return Response({"message": "List Not Found"}, status=status.HTTP_404_NOT_FOUND)
-    
-    if request.user != list.author:
+
+    if request.user != list.author or request.user.is_superuser == False:
         return Response({"message": "Not authorized to proceed"}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'GET':
@@ -1232,7 +1240,7 @@ def saved_lists_page(request, pk):
 
 @swagger_auto_schema(
     method='GET',
-    operation_summary='Get an user latest 5 notifications',
+    operation_summary='Get an user latest notifications',
     manual_parameters=[
         openapi.Parameter(
             'limit',

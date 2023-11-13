@@ -36,7 +36,7 @@ urlpatterns = [
     path('create_list_page', views.create_list_page),
     path('list_page/<str:pk>/', views.list_page),
     path('delete_comment_action/<str:pk>/', views.delete_comment_action),
-    path('update_list_page', views.update_list_page),
+    path('update_list_page/<str:pk>/', views.update_list_page),
     path('list_pr_page/<str:pk>/', views.list_pr_page),
     path('approve_suggestion_action/<str:suggestion_id>/', views.approve_suggestion_action),
     path('approve_suggestion_action/<str:suggestion_id>/', views.approve_suggestion_action),
