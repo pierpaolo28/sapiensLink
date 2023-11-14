@@ -23,10 +23,12 @@ class TokenRevocationMiddleware:
 
     def extract_token_from_session(self, request):
         # Extract the token from the session
-        access_token = request.session.get("access_token")
-        return access_token
+        authorization_header = request.headers.get('Authorization')
+        if authorization_header and authorization_header.startswith('Bearer '):
+            return authorization_header.split(' ')[1]
+        return None
 
     def is_token_revoked(self, token):
         # Check if the token is in the blacklist
         now = timezone.now()
-        return RevokedToken.objects.filter(token=token, expiration_date__gte=now).exists()
+        return RevokedToken.objects.filter(token=token, expiration_date__lt=now).exists()

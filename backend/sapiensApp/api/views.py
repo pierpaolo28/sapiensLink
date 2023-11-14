@@ -31,7 +31,6 @@ import app_secrets
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.utils import timezone
-import json
 
 
 LISTS_PER_PAGE = 10
@@ -74,6 +73,13 @@ def getRoutes(request):
         'GET-POST-DELETE /api/users_db_setup/',
     ]
     return Response(routes)
+
+
+def extract_token_from_authorization_header(request):
+    authorization_header = request.headers.get('Authorization')
+    if authorization_header and authorization_header.startswith('Bearer '):
+        return authorization_header.split(' ')[1]
+    return None
 
 
 # Web Application Utils
@@ -144,21 +150,21 @@ def login_user(request):
         required=['token'],
     ),
     responses={
-        200: 'Token revoked',
-        400: 'Token not provided',
+        200: openapi.Response(description='Token revoked', schema=openapi.Schema(type=openapi.TYPE_OBJECT)),
+        400: openapi.Response(description='Token not provided', schema=openapi.Schema(type=openapi.TYPE_OBJECT)),
     },
 )
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def revoke_token(request):
-    token = request.data.get('access_token')
+    token = extract_token_from_authorization_header(request)
     if token:
-        expiration_date = timezone.now()  # Set an appropriate expiration date
+        expiration_date = timezone.now() 
         RevokedToken.objects.create(token=token, expiration_date=expiration_date)
         return Response({'message': 'Token revoked'}, status=status.HTTP_200_OK)
     else:
         return Response({'message': 'Token not provided'}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 @swagger_auto_schema(
@@ -181,7 +187,7 @@ def revoke_token(request):
                 },
             ),
         ),
-        400: 'Bad Request - Invalid JSON data or missing access_token',
+        400: openapi.Response(description='Bad Request - Invalid JSON data or missing access_token', schema=openapi.Schema(type=openapi.TYPE_OBJECT)),
     }
 )
 @api_view(['POST'])
@@ -191,18 +197,11 @@ def logout_user(request):
     # TODO: on frontend when users logs out or close account: access, refresh and expire time of token are deleted.
     # If the revoke_token function and the middleware work as expected, users will not be 
     # allowed to continue using an access token (even if not expired) since the token would have been added to a blacklist
-    try:
-        body_unicode = request.body.decode('utf-8')
-        body = json.loads(body_unicode)
-        access_token = body.get('access_token')
-    except json.JSONDecodeError:
-        return Response({'message': 'Invalid JSON data'}, status=status.HTTP_400_BAD_REQUEST)
-
-    if not access_token:
-        return Response({'message': 'Access token is required'}, status=status.HTTP_400_BAD_REQUEST)
-
+    
     # Revoke the current user's token
-    revoke_token(request._request)
+    token = extract_token_from_authorization_header(request)
+    if token:
+        revoke_token(request._request)
 
     logout(request)
     return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
@@ -1038,7 +1037,7 @@ def report_list_page(request, pk):
     ),
     responses={
         200: openapi.Response(description='Account deleted successfully'),
-        400: openapi.Response(description='Bad Request - Invalid JSON data or missing access_token'),
+        400: openapi.Response(description='Bad Request - Invalid JSON data or missing access_token', schema=openapi.Schema(type=openapi.TYPE_OBJECT)),
     },
 )
 @api_view(['POST'])
@@ -1057,18 +1056,10 @@ def delete_user_page(request):
         # Delete the user account
         user.delete()
         
-        try:
-            body_unicode = request.body.decode('utf-8')
-            body = json.loads(body_unicode)
-            access_token = body.get('access_token')
-        except json.JSONDecodeError:
-            return Response({'message': 'Invalid JSON data'}, status=status.HTTP_400_BAD_REQUEST)
-
-        if not access_token:
-            return Response({'message': 'Access token is required'}, status=status.HTTP_400_BAD_REQUEST)
-
         # Revoke the current user's token
-        revoke_token(request._request)
+        token = extract_token_from_authorization_header(request)
+        if token:
+            revoke_token(request._request)
 
         logout(request)
         return Response({'message': 'Your account has been deleted'}, status=status.HTTP_200_OK)
