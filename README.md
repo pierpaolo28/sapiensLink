@@ -2,11 +2,11 @@
 
 This project is built with [Django](https://www.djangoproject.com/).
 
-Run a django project with `python manage.py runserver`
+Run a django project with `python manage.py runserver` from the backend folder.
 
 You might need to create a local DB and/or superuser credentials to access the admin panel.
 
-## Make sure to work in your virtualenv
+## Make sure to work in your virtualenv in the backend folder
 
 If you don't have virtualenv installed use: `pip install virtualenv`.
 
@@ -20,7 +20,7 @@ If you need to install any missing package someone else might have added since y
 
 Once finished developing use: `deactivate`.
 
-## Create Your Local DB
+## Create Your Local DB in the backend folder
 
 Run the following commands:
 
@@ -30,7 +30,7 @@ Run the following commands:
 
 The server can then be launched using: `python manage.py runserver` and the front end reachable at [http://127.0.0.1:8000](http://127.0.0.1:8000).
 
-## Create Superuser
+### Create Superuser
 
 If you want to create a superuser account to access the admin interface, run the following commands:
 
@@ -45,12 +45,12 @@ Access the admin panel by navigating to [http://127.0.0.1:8000/admin](http://127
 
 ## Run Redis Server
 
-In order to have the web application notification system up and running, you need to make sure to have the Redis Server up and running (opening a new terminal window at the root of the project and running the following command):
+In order to have the web application notification system up and running, you need to make sure to have the Redis Server up and running (opening a new terminal window in the backend folder and running the following command):
 
 - `redis-server`
 
 ## Visualizing the database
 
-In order to create a snapshot of the database architecture, the following command can be used: `python manage.py graph_models -a sapinesApp -o db.png`
+In order to create a snapshot of the database architecture, the following command can be used: `python manage.py graph_models -a sapinesApp -o ../db.png` from the backend folder.
 
 ![](db.png)

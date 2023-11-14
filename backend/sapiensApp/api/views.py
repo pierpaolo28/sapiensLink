@@ -797,7 +797,8 @@ def update_list_page(request, pk):
         return Response({"message": "Not authorized to proceed"}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'GET':
-        # When going to update list page, we first get the data needed to prefill the form
+        # TODO: When going to update list page, we first get the data needed to prefill the form which
+        # is then passed in PUT request
         serializer = ListSerializer(list, many=False)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
