@@ -59,9 +59,9 @@
               refresh_token: "{{ request.session.refresh_token }}",
               expiration_time: "{{ request.session.expiration_time }}"
           };
-          localStorage.setItem('token', data.access_token);
-          localStorage.setItem('refreshToken', data.refresh_token);
-          localStorage.setItem('expirationTime', data.expiration_time);
+          localStorage.setItem('access_token', data.access_token);
+          localStorage.setItem('refresh_token', data.refresh_token);
+          localStorage.setItem('expiration_time', data.expiration_time);
         </script>
       {% endif %}
 

@@ -43,11 +43,19 @@ The superuser is a special type of user with elevated privileges, typically used
 Access the admin panel by navigating to [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) and login with your superuser credentials
 
 
-## Run Redis Server
+## Run Redis Server (notifications and task execution)
 
 In order to have the web application notification system up and running, you need to make sure to have the Redis Server up and running (opening a new terminal window in the backend folder and running the following command):
 
 - `redis-server`
+
+## Celery
+
+Celery is a distributed task queue system which can be used to schedule recurring tasks (e.g. clearing up read notifications, etc.). In order to be correctly working we
+need to have the celery worker (executing tasks) and beat (scheduling periodic tasks at the specified intervals) running in two separate terminal windows (both from the backend folder) using the following commands:
+
+- `celery -A sapiensLink worker --loglevel=info`
+- `celery -A sapiensLink beat --loglevel=info`
 
 ## Visualizing the database
 

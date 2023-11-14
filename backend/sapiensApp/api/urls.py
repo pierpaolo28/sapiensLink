@@ -21,6 +21,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('',  views.getRoutes),
     path('login_user/', views.login_user),
+    path('revoke_token/', views.revoke_token),
     path('logout_user/', views.logout_user),
     path('register_user/', views.register_user),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

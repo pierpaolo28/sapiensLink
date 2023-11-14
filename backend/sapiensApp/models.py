@@ -170,3 +170,11 @@ class Notification(models.Model):
 
     def __str__(self):
         return self.message
+    
+
+class RevokedToken(models.Model):
+    token = models.CharField(max_length=500, unique=True)
+    expiration_date = models.DateTimeField()
+
+    def __str__(self):
+        return self.token

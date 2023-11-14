@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import Q
-from sapiensApp.models import List, Topic, User, Report, Notification, SavedList, Vote, EditSuggestion, Comment, Feedback, EditComment
+from sapiensApp.models import List, Topic, User, Report, Notification, SavedList, Vote, EditSuggestion, Comment, Feedback, EditComment, RevokedToken
 from .serializers import ListSerializer, UserSerializer, ReportSerializer, CommentSerializer, EditSuggestionSerializer, SavedListSerializer, EditCommentSerializer, MyUserCreationForm, LoginSerializer, RegisterSerializer
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
@@ -30,6 +30,8 @@ from django.urls import reverse
 import app_secrets
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from django.utils import timezone
+import json
 
 
 LISTS_PER_PAGE = 10
@@ -39,6 +41,7 @@ def getRoutes(request):
     routes = [
         'GET /api/',
         'POST /api/login_user/',
+        'POST /api/revoke_token/'
         'POST /api/logout_user/',
         'POST /api/register_user/',
         'GET /api/token/',
@@ -133,7 +136,41 @@ def login_user(request):
 
 @swagger_auto_schema(
     method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'token': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        required=['token'],
+    ),
+    responses={
+        200: 'Token revoked',
+        400: 'Token not provided',
+    },
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def revoke_token(request):
+    token = request.data.get('access_token')
+    if token:
+        expiration_date = timezone.now()  # Set an appropriate expiration date
+        RevokedToken.objects.create(token=token, expiration_date=expiration_date)
+        return Response({'message': 'Token revoked'}, status=status.HTTP_200_OK)
+    else:
+        return Response({'message': 'Token not provided'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+@swagger_auto_schema(
+    method='post',
     operation_summary='Logging out users',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'access_token': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        required=['access_token'],
+    ),
     responses={
         200: openapi.Response(
             description='Logout successful',
@@ -144,19 +181,28 @@ def login_user(request):
                 },
             ),
         ),
+        400: 'Bad Request - Invalid JSON data or missing access_token',
     }
 )
 @api_view(['POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def logout_user(request):
-    # TODO: on frontend when users logs out tokens are deleted and blacklisted so 
-    # people can't use them before the expire
+    # TODO: on frontend when users logs out or close account: access, refresh and expire time of token are deleted.
+    # If the revoke_token function and the middleware work as expected, users will not be 
+    # allowed to continue using an access token (even if not expired) since the token would have been added to a blacklist
+    try:
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        access_token = body.get('access_token')
+    except json.JSONDecodeError:
+        return Response({'message': 'Invalid JSON data'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Clear session data
-    request.session.pop("access_token", None)
-    request.session.pop("refresh_token", None)
-    request.session.pop("expiration_time", None)
+    if not access_token:
+        return Response({'message': 'Access token is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Revoke the current user's token
+    revoke_token(request._request)
 
     logout(request)
     return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
@@ -528,7 +574,7 @@ def vote_action(request, pk, action):
     try:
         vote = Vote.objects.get(user=user, list=list_instance)
         if vote.action == action:
-            return Response({'detail': f'Already {action}d'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message': f'Already {action}d'}, status=status.HTTP_400_BAD_REQUEST)
         elif vote.action == 'upvote' or vote.action == 'downvote':
             vote.action = 'neutral'
             vote.save()
@@ -986,12 +1032,13 @@ def report_list_page(request, pk):
             'password': openapi.Schema(type=openapi.TYPE_STRING),
             'confirm_delete': openapi.Schema(type=openapi.TYPE_STRING),
             'feedback': openapi.Schema(type=openapi.TYPE_STRING),
+            'access_token': openapi.Schema(type=openapi.TYPE_STRING),
         },
-        required=['password', 'confirm_delete', 'feedback'],
+        required=['password', 'confirm_delete', 'feedback', 'access_token'],
     ),
     responses={
         200: openapi.Response(description='Account deleted successfully'),
-        400: openapi.Response(description='Bad Request'),
+        400: openapi.Response(description='Bad Request - Invalid JSON data or missing access_token'),
     },
 )
 @api_view(['POST'])
@@ -1009,6 +1056,20 @@ def delete_user_page(request):
     if user is not None and confirm_delete == 'on':
         # Delete the user account
         user.delete()
+        
+        try:
+            body_unicode = request.body.decode('utf-8')
+            body = json.loads(body_unicode)
+            access_token = body.get('access_token')
+        except json.JSONDecodeError:
+            return Response({'message': 'Invalid JSON data'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not access_token:
+            return Response({'message': 'Access token is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Revoke the current user's token
+        revoke_token(request._request)
+
         logout(request)
         return Response({'message': 'Your account has been deleted'}, status=status.HTTP_200_OK)
     else:

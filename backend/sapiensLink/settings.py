@@ -69,6 +69,9 @@ CHANNEL_LAYERS = {
     },
 }
 
+CELERY_BROKER_URL = 'redis://localhost:6379/0'  # Use your Redis server configuration
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+
 AUTH_USER_MODEL = 'sapiensApp.User'
 
 MIDDLEWARE = [
@@ -80,6 +83,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'sapiensApp.middleware.TokenRevocationMiddleware',
 ]
 
 ROOT_URLCONF = 'sapiensLink.urls'

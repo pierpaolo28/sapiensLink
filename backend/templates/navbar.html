@@ -48,7 +48,7 @@
             const dropdown = document.getElementById('notification-dropdown');
             const notificationList = document.getElementById('notification-list');
             let unreadNotificationCount = 0;
-            let token = localStorage.getItem('token');
+            let token = localStorage.getItem('access_token');
 
             function getExpirationTime(token) {
             const decodedToken = JSON.parse(atob(token.split('.')[1]));
@@ -78,10 +78,10 @@
                         return;
                     }
                     const data = await response.json();
-                    localStorage.setItem('token', data.access); // Store the new access token
+                    localStorage.setItem('access_token', data.access); // Store the new access token
                     const expirationTime = getExpirationTime(data.access);
                     if (expirationTime) {
-                        localStorage.setItem('expirationTime', expirationTime); // Update the expiration time in localStorage
+                        localStorage.setItem('expiration_time', expirationTime); // Update the expiration time in localStorage
                     }
                     token = data.access; // Update the token variable
                 } catch (error) {
@@ -94,7 +94,7 @@
             function isAccessTokenExpired() {
                 // Implement the logic to check if the access token is expired
                 // Compare the expiration time with the current time
-                const expirationTime = localStorage.getItem('expirationTime'); // Get the token expiration time from localStorage
+                const expirationTime = localStorage.getItem('expiration_time'); // Get the token expiration time from localStorage
                 const currentTime = new Date().getTime(); // Get the current time
                 return currentTime > expirationTime; // Compare the current time with the expiration time
             }
@@ -121,7 +121,7 @@
             async function fetchNotifications() {
                 try {
                     if (isAccessTokenExpired()) {
-                        const refreshToken = localStorage.getItem('refreshToken');
+                        const refreshToken = localStorage.getItem('refresh_token');
                         if (refreshToken) {
                             await refreshAccessToken(refreshToken);
                         } else {
@@ -221,7 +221,7 @@
                     if (!isAccessTokenExpired()) {
                         initWebSocket(); // Initialize the WebSocket connection on page load if the token is not expired
                     } else {
-                        const refreshToken = localStorage.getItem('refreshToken');
+                        const refreshToken = localStorage.getItem('refresh_token');
                         if (refreshToken) {
                             refreshAccessToken(refreshToken);
                         }
