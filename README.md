@@ -1,6 +1,8 @@
 # Sapiens link
 
-This project is built with [Django](https://www.djangoproject.com/).
+This project is built with [React](https://react.dev/) and [Django](https://www.djangoproject.com/).
+
+## Django Backend
 
 Run a django project with `python manage.py runserver` from the backend folder.
 
@@ -62,3 +64,15 @@ need to have the celery worker (executing tasks) and beat (scheduling periodic t
 In order to create a snapshot of the database architecture, the following command can be used: `python manage.py graph_models -a sapinesApp -o ../db.png` from the backend folder.
 
 ![](db.png)
+
+## React Frontend
+
+Run a React project with `npm run start` from the _frontend_ folder.
+
+To run a React project, you need to install its dependencies first. </br>
+Inside the _frontend_ folder, run `npm install`.
+
+If you need to fetch data from the Django server, you will need to:
+
+- run React with `npm start` from the _frontend_ folder
+- run Django with `python manage.py runserver` from the sapiensLink folder. You might also need to create your local DB as reported above.
