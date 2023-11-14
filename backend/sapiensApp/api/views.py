@@ -142,6 +142,7 @@ def login_user(request):
 
 @swagger_auto_schema(
     method='post',
+    operation_summary='Add access token to a blacklist, to invalidate it',
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
