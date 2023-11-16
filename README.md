@@ -2,6 +2,10 @@
 
 This project is built with [React](https://react.dev/) and [Django](https://www.djangoproject.com/).
 
+The overall architecture design can be found below:
+
+![](architecture_system.png)
+
 ## Django Backend
 
 Run a django project with `python manage.py runserver` from the backend folder.
