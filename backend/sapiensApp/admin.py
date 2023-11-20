@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import List, Topic, Comment, User, Feedback, Vote, Report, EditSuggestion, EditComment, SavedList, Notification
+from .models import List, Topic, Comment, User, Feedback, Vote, Report, EditSuggestion, EditComment, SavedList, Notification, RevokedToken
 
 # Register your models here.
 
@@ -13,6 +13,7 @@ admin.site.register(EditSuggestion)
 admin.site.register(EditComment)
 admin.site.register(SavedList)
 admin.site.register(Notification)
+admin.site.register(RevokedToken)
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):

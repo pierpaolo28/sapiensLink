@@ -177,4 +177,4 @@ class RevokedToken(models.Model):
     expiration_date = models.DateTimeField()
 
     def __str__(self):
-        return self.token
+        return str(self.expiration_date)
