@@ -92,6 +92,7 @@ Once created the database and accordingly updated the settings.py file we can ru
 `python manage.py migrate --run-syncdb`
 
 `python manage.py runserver`
+
 ## React Frontend
 
 Run a React project with `npm run start` from the _frontend_ folder.
