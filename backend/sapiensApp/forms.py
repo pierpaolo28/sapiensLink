@@ -45,6 +45,12 @@ class ListForm(ModelForm):
         if profanity.contains_profanity(data):
             raise forms.ValidationError("Unacceptable language detected in the name.")
         return data
+    
+    def clean_description(self):
+        data = self.cleaned_data['description']
+        if profanity.contains_profanity(data):
+            raise forms.ValidationError("Unacceptable language detected in the description.")
+        return data
 
     def clean_content(self):
         data = self.cleaned_data['content']

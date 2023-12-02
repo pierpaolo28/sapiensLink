@@ -79,6 +79,9 @@
             <button type="submit">Downvote</button>
           </form>
           <div class="list__content">
+            {% if list.description|length > 0 %}
+              {{list.description}}
+            {% endif %}
             {{list.content}}
             {% if list.source|length > 0 %}
               {{list.source}}

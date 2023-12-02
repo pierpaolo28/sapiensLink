@@ -30,6 +30,12 @@ class ListSerializer(ModelSerializer):
         if profanity.contains_profanity(data):
             raise ValidationError("Unacceptable language detected in the name.")
         return data
+    
+    def clean_description(self):
+        data = self.cleaned_data['description']
+        if profanity.contains_profanity(data):
+            raise ValidationError("Unacceptable language detected in the description.")
+        return data
 
     def clean_content(self):
         data = self.cleaned_data['content']
@@ -68,6 +74,7 @@ class ListSerializer(ModelSerializer):
 
         # Update fields on the existing instance
         instance.name = validated_data.get('name', instance.name)
+        instance.description = validated_data.get('description', instance.description)
         instance.content = validated_data.get('content', instance.content)
         instance.source = validated_data.get('source', instance.source)
 

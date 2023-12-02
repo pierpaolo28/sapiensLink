@@ -15,6 +15,9 @@
     </div>
     <div class="listListList__content">
         <a href="{% url 'list' list.id %}">{{list.name}}</a>
+        {% if list.description|length > 0 %}
+            <p>{{list.description}}</p>
+        {% endif %}
         <p>{{list.content}}</p>
     </div>
     <div class="listListList__meta">

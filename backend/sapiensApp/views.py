@@ -96,6 +96,7 @@ def home(request, follow='follow_false', top_voted='top_voted_false'):
     lists = all_lists.filter(
         Q(topic__name__icontains=q) |
         Q(name__icontains=q) |
+        Q(description__icontains=q) | 
         Q(content__icontains=q)
     )
 

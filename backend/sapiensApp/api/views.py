@@ -414,6 +414,7 @@ def home_page(request):
     lists = all_lists.filter(
         Q(topic__name__icontains=q) |
         Q(name__icontains=q) |
+        Q(description__icontains=q) |
         Q(content__icontains=q)
     )
 
@@ -685,6 +686,7 @@ def user_profile_page(request, pk):
                         'properties': {
                             'id': {'type': openapi.TYPE_INTEGER},
                             'name': {'type': openapi.TYPE_STRING},
+                            'description': {'type': openapi.TYPE_STRING},
                             'content': {'type': openapi.TYPE_STRING},
                             'participants': {'type': openapi.TYPE_ARRAY, 'items': {'type': openapi.TYPE_INTEGER}},
                             'updated': {'type': openapi.TYPE_STRING, 'format': 'date-time'},
@@ -1384,6 +1386,7 @@ def mark_notification_as_read(request, notification_id):
                 'author': openapi.Schema(type=openapi.TYPE_INTEGER, description='Author ID'),
                 'topic': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)),
                 'name': openapi.Schema(type=openapi.TYPE_STRING, description='List name'),
+                'description': openapi.Schema(type=openapi.TYPE_STRING, description='List description'),
                 'content': openapi.Schema(type=openapi.TYPE_STRING, description='List content'),
                 'participants': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_INTEGER)),
                 'source': openapi.Schema(type=openapi.TYPE_STRING, description='Source URL'),
