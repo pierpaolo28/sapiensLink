@@ -14,7 +14,7 @@
               </path>
             </svg>
           </a>
-          <h3>Saved Lists</h3>
+          <h3>Saved Items</h3>
         </div>
       </div>
 
@@ -31,6 +31,7 @@
           </label>
         </form>
 
+        <h3>Saved Lists</h3>
         <ul class="users__list">
           {% for saved_list in saved_lists %}
           <li>
@@ -38,6 +39,17 @@
           </li>
           {% empty %}
             <li>No saved lists found.</li>
+          {% endfor %}
+        </ul>
+
+        <h3>Saved Ranks</h3>
+        <ul class="users__list">
+          {% for saved_rank in saved_ranks %}
+          <li>
+            <a href="{% url 'rank' saved_rank.rank.id %}">{{saved_rank.rank.name}}</a>
+          </li>
+          {% empty %}
+            <li>No saved ranks found.</li>
           {% endfor %}
         </ul>
       </div>

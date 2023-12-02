@@ -179,3 +179,61 @@ class RevokedToken(models.Model):
 
     def __str__(self):
         return str(self.expiration_date)
+
+
+class RankTopic(models.Model):
+    name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name
+
+
+class Rank(models.Model):
+    topic = models.ManyToManyField(RankTopic)
+    name = models.CharField(max_length=200)
+    description = models.TextField(null=True, blank=True)
+    content = models.JSONField(default=dict)
+    contributors = models.ManyToManyField(
+        User, related_name='contributors', blank=True)
+    score = models.IntegerField(default=0)
+    updated = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-updated', '-created']
+
+    def __str__(self):
+        return self.name
+    
+
+class RankVote(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rank = models.ForeignKey(Rank, on_delete=models.CASCADE)
+    content_index = models.CharField() 
+    action = models.CharField(default='neutral', max_length=15) 
+
+    def __str__(self):
+        return f"{self.user} voted for {self.action} on element {self.content_index}"
+
+
+class RankSaved(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rank = models.ForeignKey(Rank, on_delete=models.CASCADE)
+    saved_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-saved_at']
+
+    def __str__(self):
+        return f"{self.user.name} saved {self.rank.name}"
+    
+
+class RankReport(models.Model):
+    rank = models.ForeignKey(Rank, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    reason = models.TextField()
+    resolved = models.BooleanField(default=False) 
+
+    def __str__(self):
+        return f"Report on rank {self.rank} at {self.timestamp}"

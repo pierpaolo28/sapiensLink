@@ -2,14 +2,16 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q, Count
+from django.db.models import Q, Count, Sum
 from django.contrib.auth import authenticate, login, logout
-from .models import List, Topic, Comment, User, Vote, Report, Feedback, EditSuggestion, EditComment, SavedList
-from .forms import ListForm, CommentForm, UserForm, MyUserCreationForm, ReportForm, EditSuggestionForm, EditCommentForm
+from .models import *
+from .forms import *
 from django.core.paginator import Paginator
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync, sync_to_async
 from rest_framework_simplejwt.tokens import RefreshToken
+import uuid
+from django.utils import timezone
 
 # Create your views here.
 LISTS_PER_PAGE = 20
@@ -127,6 +129,46 @@ def home(request, follow='follow_false', top_voted='top_voted_false'):
     return render(request, 'pages/home.html', context)
 
 
+def rank_home(request, top_voted='top_voted_false'):
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+    all_ranks = Rank.objects.distinct()
+    all_rank_count = all_ranks.count()
+    topics = RankTopic.objects.filter(name__icontains=q)
+
+    # Creating the topic counts dictionary for the filtered topics
+    topic_counts = {topic.name: all_ranks.filter(topic=topic).count() for topic in topics}
+
+    filtered_topic_counts = {key: topic_counts[key] for key in topic_counts if key in [topic.name for topic in topics]}
+
+    sorted_topic_counts = sorted(filtered_topic_counts.items(), key=lambda item: item[1], reverse=True)
+
+    ranks = all_ranks.filter(
+        Q(topic__name__icontains=q) |
+        Q(name__icontains=q) |
+        Q(description__icontains=q) | 
+        Q(content__icontains=q)
+    )
+
+    rank_count = ranks.count()
+    
+    if top_voted=='top_voted_true':
+        ranks = ranks.order_by('-score')
+
+    # Create a paginator instance
+    paginator = Paginator(ranks, LISTS_PER_PAGE)
+    
+    # Get the current page number from the request's GET parameters
+    page_number = request.GET.get('page')
+
+    # Get the Page object for the current page
+    page = paginator.get_page(page_number)
+
+    context = {'page': page, 
+               'rank_count': rank_count, 'topic_counts': sorted_topic_counts,
+               'all_rank_count': all_rank_count}
+    return render(request, 'pages/rank_home.html', context)
+
+
 def index(request):
     return render(request, 'pages/index.html')
 
@@ -187,6 +229,73 @@ def list(request, pk):
     return render(request, 'pages/list.html', context)
 
 
+@sync_to_async
+def rank(request, pk):
+    rank = Rank.objects.get(id=pk)
+    contributors = rank.contributors.all()
+    user = request.user
+    # Check if the user has already reported this rank
+    if user.is_authenticated:
+        has_reported = RankReport.objects.filter(user=user, rank=rank).exists()
+        saved_rank_ids = RankSaved.objects.filter(user=request.user).values_list('rank_id', flat=True)
+    else:
+        has_reported = False
+        saved_rank_ids = []
+
+    if request.method == 'POST':
+        if 'element' in request.POST:
+
+            # Combine timestamp and random component for uniqueness
+            unique_id = f"{timezone.now().isoformat()}-{uuid.uuid4()}"
+
+            # Update the content dictionary
+            rank.content[unique_id] = {
+                'element': request.POST['element'],
+                'user_id': user.id
+            }
+            rank.save()
+
+            rank.contributors.add(request.user)
+
+            for receiver in rank.contributors.all():
+                if receiver != request.user:
+                    # Sending notification to the WebSocket group
+                    channel_layer = get_channel_layer()
+                    async_to_sync(channel_layer.group_send)(
+                        "notifications_group",
+                        {
+                            'type': 'send_notification',
+                            'notification': f'A new element was added on the rank "{rank.name}".',
+                            'creator_id': user.id,
+                            'receiver_id': receiver.id,
+                            'url': request.build_absolute_uri()
+                        }
+                    )
+
+            return redirect('rank', pk=rank.id)
+        elif 'save' in request.POST:
+            RankSaved.objects.get_or_create(user=request.user, rank=rank)
+            return redirect('rank', pk=rank.id)
+        elif 'unsave' in request.POST:
+            saved_rank = get_object_or_404(RankSaved, user=request.user, rank=rank)
+            saved_rank.delete()
+            return redirect('rank', pk=rank.id)
+        
+    content_scores = {}
+    for index in rank.content:
+        votes = RankVote.objects.filter(rank=rank, content_index=index)
+        upvotes = votes.filter(action='upvote').count()
+        downvotes = votes.filter(action='downvote').count()
+        score = upvotes - downvotes
+        content_scores[index] = score
+
+    context = {'rank': rank,
+               'contributors': contributors, 'has_reported': has_reported, 
+               'saved_rank_ids': saved_rank_ids, 
+               'content_scores': content_scores}
+    return render(request, 'pages/rank.html', context)
+
+
 @login_required(login_url='login')
 def vote(request, pk, action):
     list = get_object_or_404(List, pk=pk)
@@ -212,13 +321,46 @@ def vote(request, pk, action):
     return redirect('../../../list/' + pk)
 
 
+@login_required(login_url='login')
+def vote_rank(request, pk, content_index, action):
+    rank = get_object_or_404(Rank, pk=pk)
+    user = request.user
+
+    try:
+        vote = RankVote.objects.get(user=user, rank=rank, content_index=content_index)
+
+        if vote.action == action:
+            return redirect('../../../../rank/' + pk)
+        elif vote.action in ['upvote', 'downvote']:
+            vote.action = 'neutral'
+        else:
+            vote.action = action
+
+        vote.save()
+
+    except RankVote.DoesNotExist:
+        if action in ['upvote', 'downvote']:
+            RankVote.objects.create(user=user, rank=rank, content_index=content_index, action=action)
+
+    if action == 'upvote':
+        rank.score += 1
+    elif action == 'downvote':
+        rank.score -= 1
+
+    rank.save()
+
+    return redirect('../../../../rank/' + pk)
+
+
 def userProfile(request, pk):
     user = User.objects.get(id=pk)
     lists_count = List.objects.filter(author_id = pk, public=True).count()
     lists = user.list_set.filter(public=True)
     list_comments = user.comment_set.all()
     saved_lists = SavedList.objects.filter(user=user)
-    contributions = EditSuggestion.objects.filter(suggested_by=pk, is_accepted=True).order_by('-id')[:5]
+    saved_ranks = RankSaved.objects.filter(user=user)
+    lists_contributions = EditSuggestion.objects.filter(suggested_by=pk, is_accepted=True).order_by('-id')[:3]
+    ranks_contributions = user.contributors.all().order_by('-updated')[:3]
 
     # Create a paginator instance
     paginator = Paginator(lists, LISTS_PER_PAGE)
@@ -252,7 +394,9 @@ def userProfile(request, pk):
                 'list_comments': list_comments, 
                 "is_following": is_following,
                 'saved_lists': saved_lists,
-                'contributions': contributions,
+                'saved_ranks': saved_ranks,
+                'lists_contributions': lists_contributions,
+                'ranks_contributions': ranks_contributions,
             }
             current_user_profile.save()
             return render(request, 'pages/profile.html', context)
@@ -263,7 +407,9 @@ def userProfile(request, pk):
         'list_comments': list_comments, 
         'is_following': is_following,
         'saved_lists': saved_lists,
-        'contributions': contributions,
+        'saved_ranks': saved_ranks,
+        'lists_contributions': lists_contributions,
+        'ranks_contributions': ranks_contributions,
     }
     return render(request, 'pages/profile.html', context)
 
@@ -275,6 +421,7 @@ def private_lists(request, pk):
     private_lists = user.list_set.filter(public=False)
     list_comments = user.comment_set.all()
     saved_lists = SavedList.objects.filter(user=user)
+    saved_ranks = RankSaved.objects.filter(user=user)
 
     # Create a paginator instance
     paginator = Paginator(private_lists, LISTS_PER_PAGE)
@@ -307,7 +454,8 @@ def private_lists(request, pk):
                 'page': page,
                 'list_comments': list_comments, 
                 "is_following": is_following,
-                'saved_lists': saved_lists
+                'saved_lists': saved_lists,
+                'saved_ranks': saved_ranks,
             }
             current_user_profile.save()
             return render(request, 'pages/private_lists.html', context)
@@ -317,7 +465,8 @@ def private_lists(request, pk):
         'page': page,
         'list_comments': list_comments, 
         'is_following': is_following,
-        'saved_lists': saved_lists
+        'saved_lists': saved_lists,
+        'saved_ranks': saved_ranks,
     }
     return render(request, 'pages/private_lists.html', context)
 
@@ -340,6 +489,25 @@ def createList(request):
 
     context = {'form': form}
     return render(request, 'pages/list_form.html', context)
+
+
+@login_required(login_url='login')
+def createRank(request):
+    form = RankForm(request.POST or None, request=request)
+    if request.method == 'POST' and form.is_valid():
+        rank_instance = form.save(commit=False)
+        rank_instance.save()
+        # Assuming you want to create Topic instances for the selected topics
+        for topic_name in form.cleaned_data['topic']:
+            topic, created = RankTopic.objects.get_or_create(name=topic_name)
+            rank_instance.topic.add(topic)
+        # Don't forget to handle other ManyToMany fields like 'contributors' if necessary
+        rank_instance.contributors.add(request.user)
+        rank_instance.save()
+        return redirect('rank_home')
+
+    context = {'form': form}
+    return render(request, 'pages/rank_form.html', context)
 
 
 @login_required(login_url='login')
@@ -489,6 +657,25 @@ def report_list(request, pk):
 
 
 @login_required(login_url='login')
+def report_rank(request, pk):
+    # Retrieve the back_url parameter from GET parameters
+    back_url = request.GET.get('back_url')
+    rank = get_object_or_404(Rank, id=pk)
+    if request.method == 'POST':
+        form = ReportRankForm(request.POST)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.rank = rank
+            report.user = request.user
+            report.save()
+            return redirect(back_url)
+    else:
+        form = ReportRankForm()
+
+    return render(request, 'pages/report_rank.html', {'form': form, 'rank': rank})
+
+
+@login_required(login_url='login')
 def delete_account(request):
     if request.method == 'POST':
         password = request.POST.get('password')
@@ -629,4 +816,6 @@ def savedListsPage(request, pk):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
     user = User.objects.get(id=pk)
     saved_lists = SavedList.objects.filter(user=user).filter(list__name__icontains=q)
-    return render(request, 'pages/saved_lists.html', {'saved_lists': saved_lists})
+    saved_ranks = RankSaved.objects.filter(user=user).filter(rank__name__icontains=q)
+    return render(request, 'pages/saved_lists.html', {'saved_lists': saved_lists,
+                                                      'saved_ranks': saved_ranks})

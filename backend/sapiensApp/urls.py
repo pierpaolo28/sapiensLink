@@ -34,4 +34,10 @@ urlpatterns = [
     path('reset_password_sent', auth_views.PasswordResetDoneView.as_view(template_name='pages/password_reset_done.html'), name="password_reset_done"),
     path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='pages/password_reset_confirm.html'), name="password_reset_confirm"),
     path('reset_password_complete', auth_views.PasswordResetCompleteView.as_view(template_name='pages/password_reset_complete.html'), name="password_reset_complete"),
+    path('rank_home', views.rank_home, name="rank_home"),
+    path('rank_home/<str:top_voted>', views.rank_home, name="custom_rank_home"),
+    path('create_rank/', views.createRank, name="create_rank"),
+    path('rank/<str:pk>/', views.rank, name="rank"),
+    path('report_rank/<str:pk>/', views.report_rank, name='report_rank'),
+    path('vote_rank/<str:pk>/<str:content_index>/<str:action>/', views.vote_rank, name='vote_rank'),
 ]

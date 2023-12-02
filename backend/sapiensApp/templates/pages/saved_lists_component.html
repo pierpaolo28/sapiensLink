@@ -3,12 +3,19 @@
         <h2>Recent Contributions</h2>
     </div>
     <ul class="saved_lists__list">
-        {% for contribution in contributions %}
+        {% for contribution in lists_contributions %}
         <li>
             <a href="{% url 'list' contribution.list.id %}">{{contribution.list}}</a>
         </li>
         {% empty %}
-        <li>No recent contributions.</li>
+        <li>No recent list contributions.</li>
+        {% endfor %}
+        {% for contribution in ranks_contributions %}
+        <li>
+            <a href="{% url 'rank' contribution.id %}">{{contribution.name}}</a>
+        </li>
+        {% empty %}
+        <li>No recent list contributions.</li>
         {% endfor %}
     </ul>
     <div class="saved_lists_component__header">
@@ -23,6 +30,20 @@
         <li>No saved lists found.</li>
         {% endfor %}
     </ul>
+
+    <div class="saved_lists_component__header">
+        <h2>Saved Ranks</h2>
+    </div>
+    <ul class="saved_lists__list">
+        {% for saved_rank in saved_ranks %}
+        <li>
+            <a href="{% url 'rank' saved_rank.rank.id %}">{{saved_rank.rank.name}}</a>
+        </li>
+        {% empty %}
+        <li>No saved ranks found.</li>
+        {% endfor %}
+    </ul>
+
     <a class="btn btn--link" href="{% url 'saved_lists' user.id %}">
         More
         <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">

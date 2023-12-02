@@ -1,0 +1,107 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<main class="profile-page layout layout--2">
+  <div class="container">
+    <!-- List Start -->
+    <div class="rank">
+      <div class="rank__top">
+        <div class="rank__topLeft">
+          <a  href="javascript:history.back()">
+            <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+              <title>Left Arrow</title>
+              <path
+                d="M13.723 2.286l-13.723 13.714 13.719 13.714 1.616-1.611-10.96-10.96h27.625v-2.286h-27.625l10.965-10.965-1.616-1.607z">
+              </path>
+            </svg>
+          </a>
+          <h3>Rank</h3>
+        </div>
+
+      </div>
+      <div class="rank__box scroll">
+        <div class="rank__header scroll">
+          <div class="rank__info">
+            <h3>{{rank.name}}</h3>
+            <span>Last activity: {{rank.updated|timesince}} ago</span>
+          </div>
+          <div class="rank__score">
+            <span>Overall score: {{rank.score}} </span>
+          </div>
+          <div class="rank__content">
+            {% if rank.description|length > 0 %}
+              {{rank.description}}
+            {% endif %}
+            {% for key, value in rank.content.items %}
+                <div>
+                    <!-- Display the content of the array item -->
+                    <p>{{ value|default:"" }}</p>
+                    {% for key2, value2 in content_scores.items %}
+                        {% if key == key2 %}
+                        <p>Score: {{ value2|default:0 }}</p>
+                        {% endif %}
+                    {% endfor %}
+                    <a href="{% url 'vote_rank' rank.pk key 'upvote' %}">Upvote</a>
+                    <a href="{% url 'vote_rank' rank.pk key 'downvote' %}">Downvote</a>
+                </div>
+            {% endfor %}
+          </div>
+          <p>Rank Topics</p>
+          <ul>
+            {% for topic in rank.topic.all %}
+                <li>{{ topic.name }}</li>
+            {% endfor %}
+          </ul>
+          {% if not has_reported %}
+              <a href="{% url 'report_rank' rank.id %}?back_url={{ request.path }}">Report</a>
+          {% endif %}
+          {% if request.user.is_authenticated and request.user != rank.author %}
+            {% if rank.id in saved_rank_ids %}
+              <form action="" method="POST">
+                {% csrf_token %}
+                <button type="submit" name="unsave">Unsave Rank</button>
+              </form>
+            {% else %}
+              <form action="" method="POST">
+                {% csrf_token %}
+                <button type="submit" name="save">Save Rank</button>
+              </form>
+            {% endif %}
+          {% endif %}
+        </div>
+
+      </div>
+      <div class="rank__comment">
+        {% if request.user.is_authenticated %}
+          <form action="" method="POST">
+            {% csrf_token %}
+            <input name="element" placeholder="Write your element here..." />
+          </form>
+        {% else %}
+        <p class="rank__login__element"> <a href="{% url 'login' %}">Log in </a> to add your element </p>
+        {% endif %}
+      </div>
+    </div>
+    <!-- List End -->
+
+    <!--   Start -->
+    <div class="participants">
+      <h3 class="participants__top">Contributors <span>({{contributors.count}})</span></h3>
+      <div class="participants__rank scroll">
+        {% for user in contributors %}
+        <a href="{%  url 'profile' user.id %}" class="participant">
+          <div class="avatar avatar--medium">
+            <img src="{{user.avatar.url}}" />
+          </div>
+          <p>
+            {{user.name}}
+          </p>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+    <!--  End -->
+  </div>
+</main>
+<!-- <script src="TODO.js"></script> -->
+{% endblock content %}
