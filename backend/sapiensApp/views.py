@@ -149,6 +149,7 @@ def rank_home(request, top_voted='top_voted_false'):
         Q(content__icontains=q)
     )
 
+    users = User.objects.annotate(followers_count=Count('followers')).order_by('-followers_count')[0:5]
     rank_count = ranks.count()
     
     if top_voted=='top_voted_true':
@@ -163,7 +164,7 @@ def rank_home(request, top_voted='top_voted_false'):
     # Get the Page object for the current page
     page = paginator.get_page(page_number)
 
-    context = {'page': page, 
+    context = {'page': page, 'users': users,
                'rank_count': rank_count, 'topic_counts': sorted_topic_counts,
                'all_rank_count': all_rank_count}
     return render(request, 'pages/rank_home.html', context)
