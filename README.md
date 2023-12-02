@@ -26,15 +26,35 @@ If you need to install any missing package someone else might have added since y
 
 Once finished developing use: `deactivate`.
 
-## Create Your Local DB in the backend folder
+## PostgreSQL (Create Your Local DB in the backend folder)
 
-Run the following commands:
+To install postgresql on Mac and the Pgadmin user interface use the following commands:
 
-- `python manage.py makemigrations` (create db migration files based on the Django models)
-- `python manage.py migrate` (apply migration files to db)
-- `python manage.py migrate --run-syncdb` (sync db schema with state of Django models)
+`brew install postgresql`
+
+`brew install --cask pgadmin4`
+
+Finally, make sure your environment is up to date with the requirements.txt file.
+
+Now open pgadmin4, click on servers, register servers, then choose a name for the server. For host name/address put localhost, port 5432, and choose an username/password (if needed, create a user for the database by using the Login/Group Roles tab in the Server from where you can also specify its permissions). Now we can create a database and specify its name and access in the app_secrets.py.
+
+Once created the database and accordingly updated the settings.py file we can run the following commands:
+
+`python manage.py makemigrations` (create db migration files based on the Django models)
+
+`python manage.py migrate` (apply migration files to db)
+
+`python manage.py migrate auth`
+
+`python manage.py migrate --run-syncdb` (sync db schema with state of Django models)
 
 The server can then be launched using: `python manage.py runserver` and the front end reachable at [http://127.0.0.1:8000](http://127.0.0.1:8000).
+
+## Visualizing the database
+
+In order to create a snapshot of the database architecture, the following command can be used: `python manage.py graph_models -a sapinesApp -o ../db.png` from the backend folder.
+
+![](db.png)
 
 ### Create Superuser
 
@@ -47,7 +67,6 @@ Add an email address and a password as requested.
 The superuser is a special type of user with elevated privileges, typically used for administering and managing the application.
 
 Access the admin panel by navigating to [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin) and login with your superuser credentials
-
 
 ## Run Redis Server (notifications and task execution)
 
@@ -62,36 +81,6 @@ need to have the celery worker (executing tasks) and beat (scheduling periodic t
 
 - `celery -A sapiensLink worker --loglevel=info`
 - `celery -A sapiensLink beat --loglevel=info`
-
-## Visualizing the database
-
-In order to create a snapshot of the database architecture, the following command can be used: `python manage.py graph_models -a sapinesApp -o ../db.png` from the backend folder.
-
-![](db.png)
-
-## PostgreSQL
-
-To install postgresql on Mac and the Pgadmin user interface use the following commands:
-
-`brew install postgresql`
-
-`brew install --cask pgadmin4`
-
-Finally, make sure your environment is up to date with the requirements.txt file.
-
-Now open pgadmin4, click on servers, register servers, then choose a name for the server. For host name/address put localhost, port 5432, and choose an username/password. Now we can create a database.
-
-Once created the database and accordingly updated the settings.py file we can run the following commands:
-
-`python manage.py makemigrations`
-
-`python manage.py migrate`
-
-`python manage.py migrate auth`
-
-`python manage.py migrate --run-syncdb`
-
-`python manage.py runserver`
 
 ## React Frontend
 
