@@ -163,3 +163,4 @@ app_secrets.py
 dump.rdb
 
 backend/celerybeat-schedule.db
+backend/sapiensApp/migrations/0*
