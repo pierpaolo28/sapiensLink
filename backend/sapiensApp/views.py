@@ -614,6 +614,24 @@ def topicsPage(request):
                                                  'all_list_count': all_list_count})
 
 
+def rankTopicsPage(request):
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+    
+    all_ranks = Rank.objects.all()
+    all_topics = RankTopic.objects.filter(name__icontains=q)
+    all_rank_count = all_ranks.count()
+
+    # Creating the topic counts dictionary for the filtered topics
+    topic_counts = {topic.name: all_ranks.filter(topic=topic).count() for topic in all_topics}
+
+    filtered_topic_counts = {key: topic_counts[key] for key in topic_counts if key in [topic.name for topic in all_topics]}
+
+    sorted_topic_counts = sorted(filtered_topic_counts.items(), key=lambda item: item[1], reverse=True)
+
+    return render(request, 'pages/rank_topics.html', {'topic_counts': sorted_topic_counts,
+                                                      'all_rank_count': all_rank_count})
+
+
 def whoToFollowPage(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
     users = User.objects.filter(name__icontains=q).annotate(followers_count=Count('followers')).order_by('-followers_count')
