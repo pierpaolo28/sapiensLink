@@ -1,0 +1,33 @@
+<div class="saved_lists_component">
+    <div class="saved_lists_component__header">
+        <h2>Recent Contributions</h2>
+    </div>
+    <ul class="saved_lists__list">
+        {% for contribution in contributions %}
+        <li>
+            <a href="{% url 'list' contribution.list.id %}">{{contribution.list}}</a>
+        </li>
+        {% empty %}
+        <li>No recent contributions.</li>
+        {% endfor %}
+    </ul>
+    <div class="saved_lists_component__header">
+        <h2>Saved Lists</h2>
+    </div>
+    <ul class="saved_lists__list">
+        {% for saved_list in saved_lists %}
+        <li>
+            <a href="{% url 'list' saved_list.list.id %}">{{saved_list.list.name}}</a>
+        </li>
+        {% empty %}
+        <li>No saved lists found.</li>
+        {% endfor %}
+    </ul>
+    <a class="btn btn--link" href="{% url 'saved_lists' user.id %}">
+        More
+        <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+            <title>chevron-down</title>
+            <path d="M16 21l-13-13h-3l16 16 16-16h-3l-13 13z"></path>
+        </svg>
+    </a>
+</div>
