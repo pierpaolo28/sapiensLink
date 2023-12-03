@@ -24,6 +24,12 @@
         </div>
       </div>
       <div class="layout__body">
+        {% if similar_ranks %}
+          <h3>Error: similar ranks already exist</h3>
+          {% for rank in similar_ranks %}
+            <li><a href="{% url 'rank' rank.id %}">{{ rank.name }}</a></li>
+          {% endfor %}
+        {% endif %}
         <form class="form" action="" method="POST">
           {% csrf_token %}
 

@@ -87,7 +87,7 @@ class RankForm(ModelForm):
 
     content = forms.CharField(
         widget=forms.Textarea(attrs={'class': 'your-textarea-class'}),
-        required=True
+        required=False
     )
 
     def __init__(self, *args, **kwargs):
@@ -111,21 +111,24 @@ class RankForm(ModelForm):
         if profanity.contains_profanity(data):
             raise forms.ValidationError("Unacceptable language detected in the content.")
 
-        # Assuming you have access to the current user (you may need to modify this part based on your view)
-        user_id = self.request.user.id if self.request and self.request.user.is_authenticated else None
+        if len(data) > 1:
+            # Assuming you have access to the current user (you may need to modify this part based on your view)
+            user_id = self.request.user.id if self.request and self.request.user.is_authenticated else None
 
-        # Generate a unique ID combining timestamp and UUID
-        unique_id = f"{timezone.now().isoformat()}-{uuid.uuid4()}"
+            # Generate a unique ID combining timestamp and UUID
+            unique_id = f"{timezone.now().isoformat()}-{uuid.uuid4()}"
 
-        # Convert the input text to a dictionary with the unique ID as the key and element, user ID as values
-        content_dict = {unique_id: {'element': data, 'user_id': user_id}} if user_id else None
+            # Convert the input text to a dictionary with the unique ID as the key and element, user ID as values
+            content_dict = {unique_id: {'element': data, 'user_id': user_id}} if user_id else None
 
-        return content_dict if content_dict is not None else None
+            return content_dict if content_dict is not None else None
+        else:
+            return {}
     
     class Meta:
         model = Rank
         fields = '__all__'
-        exclude = ['contributors', 'score', 'topic']  # Exclude 'topic' since we define it manually
+        exclude = ['contributors', 'score', 'topic', 'embeddings']  # Exclude 'topic' since we define it manually
 
 
 class CommentForm(ModelForm):

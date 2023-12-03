@@ -1,6 +1,11 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from django.db import models
+from sentence_transformers import SentenceTransformer, util
+import pickle
+import numpy as np
+import base64
+import json
 
 
 """Declare models for YOUR_APP app."""
@@ -198,6 +203,43 @@ class Rank(models.Model):
     score = models.IntegerField(default=0)
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
+    # New field for storing BERT embeddings
+    embeddings = models.JSONField(null=True, blank=True)
+
+    @staticmethod
+    def calculate_similarity(embeddings1, embeddings2):
+        # Calculate cosine similarity between embeddings
+        return util.pytorch_cos_sim(embeddings1, embeddings2).item()
+
+    
+    def calculate_and_save_embeddings(self):
+        model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+        # Calculate embeddings using BERT model
+        embeddings = model.encode(f'{self.name} {self.description}')
+
+        self.embeddings = embeddings.tolist()
+        # self.save()
+
+    def is_similar_to(self, other_rank):
+        # TODO: Decide how to hardcode this threshold
+        similarity_threshold = 0.8
+
+        # Check and recalculate embeddings if they are None
+        if self.embeddings is None:
+            self.calculate_and_save_embeddings()
+        if other_rank.embeddings is None:
+            other_rank.calculate_and_save_embeddings()
+
+        similarity = Rank.calculate_similarity(self.embeddings, other_rank.embeddings)
+        return similarity > similarity_threshold
+
+    @staticmethod
+    def get_similar_ranks(new_rank):
+        similar_ranks = [
+            rank for rank in Rank.objects.exclude(id=new_rank.id)
+            if rank.embeddings and rank.is_similar_to(new_rank)
+        ][:5]
+        return similar_ranks
 
     class Meta:
         ordering = ['-updated', '-created']

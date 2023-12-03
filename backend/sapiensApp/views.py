@@ -316,12 +316,13 @@ def rank(request, pk):
     edit_element_form = EditElementForm()
         
     content_scores = {}
-    for index in rank.content:
-        votes = RankVote.objects.filter(rank=rank, content_index=index)
-        upvotes = votes.filter(action='upvote').count()
-        downvotes = votes.filter(action='downvote').count()
-        score = upvotes - downvotes
-        content_scores[index] = score
+    if rank.content:
+        for index in rank.content:
+            votes = RankVote.objects.filter(rank=rank, content_index=index)
+            upvotes = votes.filter(action='upvote').count()
+            downvotes = votes.filter(action='downvote').count()
+            score = upvotes - downvotes
+            content_scores[index] = score
 
     context = {'rank': rank,
                'contributors': contributors, 'has_reported': has_reported, 
@@ -530,20 +531,38 @@ def createList(request):
 @login_required(login_url='login')
 def createRank(request):
     form = RankForm(request.POST or None, request=request)
+
     if request.method == 'POST' and form.is_valid():
-        rank_instance = form.save(commit=False)
-        rank_instance.save()
+        new_rank = form.save(commit=False)
+
+        # Calculate similarity with existing ranks
+        new_rank.calculate_and_save_embeddings()
+        similar_ranks = Rank.get_similar_ranks(new_rank)
+
+        if similar_ranks:
+            # Display similar ranks to the user and prevent saving the new rank
+            context = {'form': form, 'similar_ranks': similar_ranks}
+            return render(request, 'pages/rank_form.html', context)
+
+        # Save the new rank first
+        new_rank.save()
+        
         # Assuming you want to create Topic instances for the selected topics
         for topic_name in form.cleaned_data['topic']:
             topic, created = RankTopic.objects.get_or_create(name=topic_name)
-            rank_instance.topic.add(topic)
+            new_rank.topic.add(topic)
+
         # Don't forget to handle other ManyToMany fields like 'contributors' if necessary
-        rank_instance.contributors.add(request.user)
-        rank_instance.save()
+        new_rank.contributors.add(request.user)
+
+        # Save the new rank
+        new_rank.save()
+        form.save_m2m()  # Save many-to-many relationships
         return redirect('rank_home')
 
     context = {'form': form}
     return render(request, 'pages/rank_form.html', context)
+
 
 
 @login_required(login_url='login')
