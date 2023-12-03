@@ -207,3 +207,29 @@ class EditCommentForm(ModelForm):
     class Meta:
         model = EditComment
         fields = ['text']
+
+
+class CreateElementForm(forms.Form):
+    element = forms.CharField(label='New Element', widget=forms.TextInput)
+
+    def clean_element(self):
+        element = self.cleaned_data['element']
+
+        # Run the profanity check
+        if profanity.contains_profanity(element):
+            raise forms.ValidationError("Unacceptable language detected in new element.")
+
+        return element
+
+
+class EditElementForm(forms.Form):
+    edit_element = forms.CharField(label='Edit Element', widget=forms.TextInput)
+
+    def clean_edit_element(self):
+        edit_element = self.cleaned_data['edit_element']
+
+        # Run the profanity check
+        if profanity.contains_profanity(edit_element):
+            raise forms.ValidationError("Unacceptable language detected in the edited element.")
+
+        return edit_element

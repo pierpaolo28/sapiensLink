@@ -43,8 +43,38 @@
                     {% endfor %}
                     <a href="{% url 'vote_rank' rank.pk key 'upvote' %}">Upvote</a>
                     <a href="{% url 'vote_rank' rank.pk key 'downvote' %}">Downvote</a>
+
+                    {% if value.user_id == request.user.id %}
+                      <form method="post" action="{% url 'rank' pk=rank.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="edit_element" value="true">
+                        <input type="hidden" name="element_index" value="{{ key }}">
+                        {{ edit_element_form.as_p }}
+                        <button type="submit">Edit Element </button>
+                        {% if edit_element_form_error %}
+                            <p>{{ edit_element_form_error }}</p>
+                        {% endif %}
+                      </form>
+                      <form method="post" action="{% url 'rank' pk=rank.id %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="delete_element" value="true">
+                        <input type="hidden" name="element_index" value="{{ key }}">
+                        <button type="submit">Delete Element</button>
+                      </form>
+                    {% endif %}
                 </div>
             {% endfor %}
+            <div class="rank__comment">
+              {% if request.user.is_authenticated %}
+                <form method="post" action="{% url 'rank' pk=rank.id %}">
+                  {% csrf_token %}
+                  {{ create_element_form.as_p }}
+                  <button type="submit">Create Element</button>
+                </form>
+              {% else %}
+              <p class="rank__login__element"> <a href="{% url 'login' %}">Log in </a> to add your element </p>
+              {% endif %}
+            </div>
           </div>
           <p>Rank Topics</p>
           <ul>
@@ -55,7 +85,7 @@
           {% if not has_reported %}
               <a href="{% url 'report_rank' rank.id %}?back_url={{ request.path }}">Report</a>
           {% endif %}
-          {% if request.user.is_authenticated and request.user != rank.author %}
+          {% if request.user.is_authenticated %}
             {% if rank.id in saved_rank_ids %}
               <form action="" method="POST">
                 {% csrf_token %}
@@ -70,16 +100,6 @@
           {% endif %}
         </div>
 
-      </div>
-      <div class="rank__comment">
-        {% if request.user.is_authenticated %}
-          <form action="" method="POST">
-            {% csrf_token %}
-            <input name="element" placeholder="Write your element here..." />
-          </form>
-        {% else %}
-        <p class="rank__login__element"> <a href="{% url 'login' %}">Log in </a> to add your element </p>
-        {% endif %}
       </div>
     </div>
     <!-- List End -->

@@ -245,35 +245,36 @@ def rank(request, pk):
 
     if request.method == 'POST':
         if 'element' in request.POST:
+            form = CreateElementForm(request.POST)
+            if form.is_valid():
+                # Combine timestamp and random component for uniqueness
+                unique_id = f"{timezone.now().isoformat()}-{uuid.uuid4()}"
 
-            # Combine timestamp and random component for uniqueness
-            unique_id = f"{timezone.now().isoformat()}-{uuid.uuid4()}"
+                # Update the content dictionary
+                rank.content[unique_id] = {
+                    'element': request.POST['element'],
+                    'user_id': user.id
+                }
+                rank.save()
 
-            # Update the content dictionary
-            rank.content[unique_id] = {
-                'element': request.POST['element'],
-                'user_id': user.id
-            }
-            rank.save()
+                rank.contributors.add(request.user)
 
-            rank.contributors.add(request.user)
+                for receiver in rank.contributors.all():
+                    if receiver != request.user:
+                        # Sending notification to the WebSocket group
+                        channel_layer = get_channel_layer()
+                        async_to_sync(channel_layer.group_send)(
+                            "notifications_group",
+                            {
+                                'type': 'send_notification',
+                                'notification': f'A new element was added on the rank "{rank.name}".',
+                                'creator_id': user.id,
+                                'receiver_id': receiver.id,
+                                'url': request.build_absolute_uri()
+                            }
+                        )
 
-            for receiver in rank.contributors.all():
-                if receiver != request.user:
-                    # Sending notification to the WebSocket group
-                    channel_layer = get_channel_layer()
-                    async_to_sync(channel_layer.group_send)(
-                        "notifications_group",
-                        {
-                            'type': 'send_notification',
-                            'notification': f'A new element was added on the rank "{rank.name}".',
-                            'creator_id': user.id,
-                            'receiver_id': receiver.id,
-                            'url': request.build_absolute_uri()
-                        }
-                    )
-
-            return redirect('rank', pk=rank.id)
+                return redirect('rank', pk=rank.id)
         elif 'save' in request.POST:
             RankSaved.objects.get_or_create(user=request.user, rank=rank)
             return redirect('rank', pk=rank.id)
@@ -281,6 +282,38 @@ def rank(request, pk):
             saved_rank = get_object_or_404(RankSaved, user=request.user, rank=rank)
             saved_rank.delete()
             return redirect('rank', pk=rank.id)
+        elif 'delete_element' in request.POST:
+            # Delete an element
+            element_index = request.POST.get('element_index')
+            if rank.content.get(element_index, {}).get('user_id') == user.id:
+                # Calculate the votes associated with the deleted element
+                votes = RankVote.objects.filter(rank=rank, content_index=element_index)
+                upvotes = votes.filter(action='upvote').count()
+                downvotes = votes.filter(action='downvote').count()
+
+                # Update the rank score by subtracting the votes associated with the deleted element
+                rank.score -= (upvotes - downvotes)
+
+                # Delete associated votes
+                votes.delete()
+
+                # Delete the element
+                del rank.content[element_index]
+                rank.save()
+                return redirect('rank', pk=rank.id)
+        elif 'edit_element' in request.POST:
+            # Edit an element
+            form = EditElementForm(request.POST)
+            if form.is_valid():
+                element_index = request.POST.get('element_index')
+                if rank.content.get(element_index, {}).get('user_id') == user.id:
+                    rank.content[element_index]['element'] = form.cleaned_data['edit_element']
+                    rank.save()
+                    return redirect('rank', pk=rank.id)
+                
+    # Create forms for adding/editing an element
+    create_element_form = CreateElementForm()
+    edit_element_form = EditElementForm()
         
     content_scores = {}
     for index in rank.content:
@@ -293,7 +326,9 @@ def rank(request, pk):
     context = {'rank': rank,
                'contributors': contributors, 'has_reported': has_reported, 
                'saved_rank_ids': saved_rank_ids, 
-               'content_scores': content_scores}
+               'content_scores': content_scores,
+               'create_element_form': create_element_form,
+               'edit_element_form': edit_element_form}
     return render(request, 'pages/rank.html', context)
 
 

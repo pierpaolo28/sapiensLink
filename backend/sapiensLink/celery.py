@@ -27,4 +27,8 @@ app.conf.beat_schedule = {
         'task': 'sapiensApp.tasks.delete_read_notifications',
         'schedule': crontab(hour=1, minute=0, day_of_week='monday'),
     },
+    'delete_elements_from_low_score_ranks': {
+        'task': 'sapiensApp.tasks.delete_elements_from_low_score_ranks',
+        'schedule': crontab(hour=0, minute=0), 
+    },
 }
