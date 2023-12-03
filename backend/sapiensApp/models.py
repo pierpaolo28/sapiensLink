@@ -2,10 +2,6 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from django.db import models
 from sentence_transformers import SentenceTransformer, util
-import pickle
-import numpy as np
-import base64
-import json
 
 
 """Declare models for YOUR_APP app."""
