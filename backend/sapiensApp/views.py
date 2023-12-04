@@ -536,7 +536,7 @@ def createRank(request):
         new_rank = form.save(commit=False)
 
         # Calculate similarity with existing ranks
-        new_rank.calculate_and_save_embeddings()
+        new_rank.calculate_embeddings()
         similar_ranks = Rank.get_similar_ranks(new_rank)
 
         if similar_ranks:
@@ -555,8 +555,6 @@ def createRank(request):
         # Don't forget to handle other ManyToMany fields like 'contributors' if necessary
         new_rank.contributors.add(request.user)
 
-        # Save the new rank
-        new_rank.save()
         form.save_m2m()  # Save many-to-many relationships
         return redirect('rank_home')
 

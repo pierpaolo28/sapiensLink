@@ -2,7 +2,9 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from django.db import models
 from sentence_transformers import SentenceTransformer, util
+import numpy as np
 
+model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
 """Declare models for YOUR_APP app."""
 
@@ -200,7 +202,7 @@ class Rank(models.Model):
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
     # New field for storing BERT embeddings
-    embeddings = models.JSONField(null=True, blank=True)
+    embeddings = models.BinaryField(null=True, blank=True)
 
     @staticmethod
     def calculate_similarity(embeddings1, embeddings2):
@@ -208,13 +210,13 @@ class Rank(models.Model):
         return util.pytorch_cos_sim(embeddings1, embeddings2).item()
 
     
-    def calculate_and_save_embeddings(self):
-        model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+    def calculate_embeddings(self):
         # Calculate embeddings using BERT model
         embeddings = model.encode(f'{self.name} {self.description}')
 
-        self.embeddings = embeddings.tolist()
-        # self.save()
+        self.embeddings = embeddings.tobytes()
+        if self.pk:
+            self.save()
 
     def is_similar_to(self, other_rank):
         # TODO: Decide how to hardcode this threshold
@@ -222,18 +224,21 @@ class Rank(models.Model):
 
         # Check and recalculate embeddings if they are None
         if self.embeddings is None:
-            self.calculate_and_save_embeddings()
+            self.calculate_embeddings()
         if other_rank.embeddings is None:
-            other_rank.calculate_and_save_embeddings()
+            other_rank.calculate_embeddings()
 
-        similarity = Rank.calculate_similarity(self.embeddings, other_rank.embeddings)
+        embeddings1 = np.frombuffer(self.embeddings, dtype=np.float32)
+        embeddings2 = np.frombuffer(other_rank.embeddings, dtype=np.float32)
+
+        similarity = Rank.calculate_similarity(embeddings1, embeddings2)
         return similarity > similarity_threshold
 
     @staticmethod
     def get_similar_ranks(new_rank):
         similar_ranks = [
             rank for rank in Rank.objects.exclude(id=new_rank.id)
-            if rank.embeddings and rank.is_similar_to(new_rank)
+            if rank.is_similar_to(new_rank)
         ][:5]
         return similar_ranks
 
