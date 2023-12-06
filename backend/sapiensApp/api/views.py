@@ -77,6 +77,9 @@ def getRoutes(request):
         'GET /api/redoc/'
         'GET-POST-DELETE /api/lists_db_setup/',
         'GET-POST-DELETE /api/users_db_setup/',
+        'PUT-PATCH /api/update_rank/:pk',
+        'DELETE /api/delete_rank/:pk',
+        'POST-DELETE /api/ranks_db_setup/',
     ]
     return Response(routes)
 
