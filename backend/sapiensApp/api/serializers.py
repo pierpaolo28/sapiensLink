@@ -160,7 +160,50 @@ class RankSerializer(ModelSerializer):
         rank_instance.contributors.set(contributors_data)
 
         return rank_instance
-        
+
+    def update(self, instance, validated_data):
+            # Allowing updating of existing elements in the rank, but new elements can't be added 
+            content_data = validated_data.pop('content', instance.content)
+            content = []
+            for key in instance.content:
+                if key in content_data:
+                    content.append({
+                        key: {
+                            'element': content_data[key]['element'],
+                            'user_id': content_data[key]['user_id']
+                        }})
+                else:
+                    content.append({
+                        key: {
+                            'element': instance.content[key]['element'],
+                            'user_id': instance.content[key]['user_id']
+                        }})
+            instance.content = {k:v for element in content for k,v in element.items()}
+            # For update ANY entity we want to change needs to be 
+            # explicitly handled here
+            topics_data = validated_data.pop('topic', None)
+            contributors_data = validated_data.pop('contributors', None)
+
+            # Update fields on the existing instance
+            instance.name = validated_data.get('name', instance.name)
+            instance.description = validated_data.get('description', instance.description)
+
+            # Clear existing topics and add the updated ones if provided
+            if topics_data is not None:
+                instance.topic.clear()
+                for topic_dic in topics_data:
+                    topic_instance, _ = RankTopic.objects.get_or_create(name=topic_dic['name'])
+                    instance.topic.add(topic_instance)
+
+            # Use set method for the many-to-many relationship with participants if provided
+            if contributors_data is not None:
+                instance.contributors.set(contributors_data)
+
+            # Save the updated instance
+            instance.save()
+
+            return instance
+
 
 class FollowSerializer(ModelSerializer):
     class Meta:

@@ -1807,6 +1807,7 @@ def mark_notification_as_read(request, notification_id):
 
 
 # Admin Utils
+# TODO Make sure before deployment these are not publicly usable
 
 @swagger_auto_schema(
     methods=['GET'],
@@ -1870,7 +1871,7 @@ def mark_notification_as_read(request, notification_id):
 @api_view(['GET', 'POST', 'DELETE'])
 @authentication_classes([JWTAuthentication])
 # TODO: Uncomment before deployment
-# @permission_classes([IsAdminUser])
+@permission_classes([IsAdminUser])
 def lists_db_setup(request):
     """
         Util to upload many lists at the same time, display them and delete them.
@@ -1962,7 +1963,7 @@ def lists_db_setup(request):
 @api_view(['GET', 'POST', 'DELETE'])
 @authentication_classes([JWTAuthentication])
 # TODO: Uncomment before deployment
-# @permission_classes([IsAdminUser])
+@permission_classes([IsAdminUser])
 def users_db_setup(request):
     """
         Util to upload many users at the same time, display them and delete them.
@@ -1992,3 +1993,133 @@ def users_db_setup(request):
         users = User.objects.all()
         users.delete()
         return Response({"message": "All Users deleted"}, status=status.HTTP_204_NO_CONTENT)
+    
+
+@swagger_auto_schema(
+    method='PUT',
+    operation_summary="Update Rank (Full)",
+    operation_description="Update a rank with full data.",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'topic': openapi.Schema(type=openapi.TYPE_STRING),
+            'name': openapi.Schema(type=openapi.TYPE_STRING),
+            'description': openapi.Schema(type=openapi.TYPE_STRING),
+            # Add other properties from your serializer here
+        },
+        required=['topic', 'name'],
+    ),
+    responses={
+        200: "OK",
+        400: "Bad Request",
+        401: "Unauthorized",
+        405: "Method Not Allowed",
+        # Add other possible responses here
+    }
+)
+@swagger_auto_schema(
+    method='PATCH',
+    operation_summary="Update Rank (Partial)",
+    operation_description="Update a rank with partial data.",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'topic': openapi.Schema(type=openapi.TYPE_STRING),
+            'name': openapi.Schema(type=openapi.TYPE_STRING),
+            'description': openapi.Schema(type=openapi.TYPE_STRING),
+            # Add other properties from your serializer here
+        },
+    ),
+    responses={
+        200: "OK",
+        400: "Bad Request",
+        401: "Unauthorized",
+        405: "Method Not Allowed",
+        # Add other possible responses here
+    }
+)
+@api_view(['PUT', 'PATCH'])
+@authentication_classes([JWTAuthentication])
+# TODO: Test it works before deployment
+@permission_classes([IsAdminUser])
+def update_rank(request, pk):
+    rank = get_object_or_404(Rank, id=pk)
+
+    if request.method == 'PUT':
+        serializer = RankSerializer(rank, data=request.data)
+    elif request.method == 'PATCH':
+        serializer = RankSerializer(rank, data=request.data, partial=True)
+    else:
+        return Response({'message': 'Method not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    if serializer.is_valid():
+        # Additional validation or logic can be added here if needed
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+@swagger_auto_schema(
+    method='DELETE',
+    operation_summary="Delete Rank",
+    operation_description="Delete a rank. Only accessible to administrators.",
+    responses={
+        204: "No Content",
+        401: "Unauthorized",
+        403: "Forbidden",
+        404: "Not Found",
+        405: "Method Not Allowed",
+        # Add other possible responses here
+    }
+)
+@api_view(['DELETE'])
+@permission_classes([IsAdminUser])
+def delete_rank(request, pk):
+    rank = get_object_or_404(Rank, id=pk)
+    rank.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@swagger_auto_schema(
+    methods=['POST', 'DELETE'],
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'rank_data_list': openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(type=openapi.TYPE_OBJECT),
+                description='List of rank data for creation',
+            ),
+        },
+        required=['rank_data_list'],
+    ),
+    responses={
+        201: 'Created',
+        204: 'No Content',
+        400: 'Bad Request',
+    },
+    operation_summary='Create or delete ranks',
+)
+@api_view(['POST', 'DELETE'])
+@permission_classes([IsAdminUser])
+def ranks_db_setup(request):
+    if request.method == 'POST':
+        # Create multiple ranks
+        rank_data_list = request.data
+        created_ranks = []
+        for rank_data in rank_data_list:
+            serializer = RankSerializer(data=rank_data)
+            if serializer.is_valid():
+                serializer.save()
+                created_ranks.append(serializer.data)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(created_ranks, status=status.HTTP_201_CREATED)
+
+    elif request.method == 'DELETE':
+        # Delete all ranks
+        Rank.objects.all().delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)

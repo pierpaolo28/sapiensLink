@@ -59,4 +59,7 @@ urlpatterns = [
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('lists_db_setup/', views.lists_db_setup),
     path('users_db_setup/', views.users_db_setup),
+    path('update_rank/<str:pk>/', views.update_rank),
+    path('delete_rank/<str:pk>/', views.delete_rank),
+    path('ranks_db_setup/', views.ranks_db_setup)
 ]
