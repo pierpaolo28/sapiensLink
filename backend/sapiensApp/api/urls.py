@@ -15,7 +15,7 @@ schema_view = get_schema_view(
         license=openapi.License(name="TODO Decide"),
     ),
     public=True,
-    permission_classes=(permissions.AllowAny,),
+    permission_classes=(permissions.AllowAny,)
 )
 
 urlpatterns = [
@@ -43,9 +43,15 @@ urlpatterns = [
     path('approve_suggestion_action/<str:suggestion_id>/', views.approve_suggestion_action),
     path('delete_pr_comment_action/<str:comment_id>/', views.delete_pr_comment_action),
     path('private_lists_page/<str:pk>/', views.private_lists_page),
-    path('saved_lists_page/<str:pk>/', views.saved_lists_page),
+    path('saved_content_page/<str:pk>/', views.saved_content_page),
     path('report_list_page/<str:pk>/', views.report_list_page),
     path('vote_action/<str:pk>/<str:action>/', views.vote_action),
+    path('rank_home/', views.rank_home),
+    path('vote_rank/<str:pk>/<str:content_index>/<str:action>/', views.vote_rank),
+    path('create_rank_page/', views.create_rank_page),
+    path('rank_topics_page/', views.rank_topics_page),
+    path('report_rank_page/', views.report_rank_page),
+    path('rank_page/<str:pk>/', views.rank_page),
     path('notifications/', views.get_notifications, name='get_notifications'),
     path('notifications/<int:notification_id>/mark_as_read/', views.mark_notification_as_read, name='mark_notification_as_read'),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),

@@ -1,8 +1,8 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import Q
-from sapiensApp.models import List, Topic, User, Report, Notification, SavedList, Vote, EditSuggestion, Comment, Feedback, EditComment, RevokedToken
-from .serializers import ListSerializer, UserSerializer, ReportSerializer, CommentSerializer, EditSuggestionSerializer, SavedListSerializer, EditCommentSerializer, MyUserCreationForm, LoginSerializer, RegisterSerializer
+from sapiensApp.models import *
+from .serializers import *
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
@@ -51,10 +51,14 @@ def getRoutes(request):
         'GET-PUT /api/update_user_page/',
         'POST /api/delete_user_page/',
         'GET /api/home_page/',
+        'GET /api/rank_home/',
         'GET /api/topics_page/',
+        'GET /api/rank_topics_page/', 
         'GET /api/who_to_follow_page/',
         'POST /api/create_list_page/',
+        'POST /api/create_rank_page/',
         'GET-POST /api/list_page/:pk/',
+        'GET-POST /api/rank_page/:pk/',
         'DELETE /api/delete_comment_action/:pk/',
         'GET-PUT-POST /api/update_list_page/:pk/',
         'GET-POST /api/list_pr_page/:pk/',
@@ -62,9 +66,11 @@ def getRoutes(request):
         'POST /api/decline_suggestion_action/:suggestion_id/',
         'DELETE /api/delete_pr_comment_action/:comment_id/',
         'GET-POST /api/private_lists_page/:pk/',
-        'GET /api/saved_lists_page/:pk/',
+        'GET /api/saved_content_page/:pk/',
         'POST /api/report_list_page/:pk/',
+        'POST /api/report_rank_page/',
         'POST /api/vote_action/:pk/:action/',
+        'POST /api/vote_rank/:pk/:content_index/:action',
         'GET /api/notifications/',
         'GET /api/notifications/<int:notification_id>/mark_as_read/',
         'GET /api/swagger/',
@@ -456,6 +462,88 @@ def home_page(request):
 
 @swagger_auto_schema(
     method='get',
+    operation_summary='Rank Home page',
+    manual_parameters=[
+        openapi.Parameter('q', openapi.IN_QUERY, description='Search query', type=openapi.TYPE_STRING),
+        openapi.Parameter('top_voted', openapi.IN_QUERY, description='Filter by top voted ranks (top_voted_true)', type=openapi.TYPE_STRING),
+    ],
+    responses={
+        200: openapi.Response(
+            description='Success',
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'pagination': openapi.Schema(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'next_page': openapi.Schema(type=openapi.TYPE_STRING),
+                            'previous_page': openapi.Schema(type=openapi.TYPE_STRING),
+                            'total_pages': openapi.Schema(type=openapi.TYPE_INTEGER),
+                            'current_page': openapi.Schema(type=openapi.TYPE_INTEGER),
+                        },
+                    ),
+                    'ranks': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_OBJECT)),
+                    'users': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_OBJECT)),
+                    'rank_count': openapi.Schema(type=openapi.TYPE_INTEGER),
+                    'topic_counts': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING))),
+                    'all_rank_count': openapi.Schema(type=openapi.TYPE_INTEGER),
+                },
+            ),
+        ),
+    },
+)
+@api_view(['GET'])
+def rank_home(request):
+    q = request.GET.get('q', '')
+    top_voted = request.GET.get('top_voted', 'top_voted_false')
+
+    all_ranks = Rank.objects.distinct()
+    all_rank_count = all_ranks.count()
+    topics = RankTopic.objects.filter(name__icontains=q)
+    topic_counts = {topic.name: all_ranks.filter(topic=topic).count() for topic in topics}
+    filtered_topic_counts = {key: topic_counts[key] for key in topic_counts if key in [topic.name for topic in topics]}
+    sorted_topic_counts = sorted(filtered_topic_counts.items(), key=lambda item: item[1], reverse=True)
+
+    ranks = all_ranks.filter(
+        Q(topic__name__icontains=q) |
+        Q(name__icontains=q) |
+        Q(description__icontains=q) |
+        Q(content__icontains=q)
+    )
+
+    users = User.objects.annotate(followers_count=Count('followers')).order_by('-followers_count')[0:5]
+    rank_count = ranks.count()
+
+    if top_voted == 'top_voted_true':
+        ranks = ranks.order_by('-score')
+
+    # Serialize the data
+    paginator = PageNumberPagination()
+    paginator.page_size = LISTS_PER_PAGE
+    paginated_queryset = paginator.paginate_queryset(ranks, request)
+    rank_serializer = RankSerializer(paginated_queryset, many=True)
+    user_serializer = UserSerializer(users, many=True)
+
+    # Construct the response JSON
+    response_data = {
+        'pagination': {
+            'next_page': paginator.get_next_link(),
+            'previous_page': paginator.get_previous_link(),
+            'total_pages': paginator.page.paginator.num_pages,
+            'current_page': paginator.page.number,
+        },
+        'ranks': rank_serializer.data,
+        'users': user_serializer.data,
+        'rank_count': rank_count,
+        'topic_counts': sorted_topic_counts,
+        'all_rank_count': all_rank_count,
+    }
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@swagger_auto_schema(
+    method='get',
     operation_summary='Get list details',
     responses={
         200: openapi.Response(
@@ -548,6 +636,152 @@ def list_page(request, pk):
     return Response(context)
 
 
+
+@swagger_auto_schema(
+    method='GET',
+    operation_summary="Retrieve or display details of a rank",
+    operation_description="Retrieve details of a rank along with contributors and content scores.",
+    responses={
+        200: openapi.Response(
+            description="Successful response",
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'rank': openapi.Schema(type=openapi.TYPE_OBJECT),
+                    'contributors': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_OBJECT)),
+                    'content_scores': openapi.Schema(type=openapi.TYPE_OBJECT),
+                },
+            ),
+        ),
+        404: "Not Found",
+    },
+    manual_parameters=[
+        openapi.Parameter(
+            name="pk",
+            in_=openapi.IN_PATH,
+            type=openapi.TYPE_INTEGER,
+            description="ID of the rank",
+            required=True,
+        ),
+    ]
+)
+@swagger_auto_schema(
+    method='POST',
+    operation_summary="Perform actions on a rank",
+    operation_description="Perform actions like adding an element, saving, unsaving, deleting, or editing an element.",
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'element': openapi.Schema(type=openapi.TYPE_STRING),
+            'save': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+            'unsave': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+            'delete_element_index': openapi.Schema(type=openapi.TYPE_STRING),
+            'edit_element_index': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+        required=['element'],  # Add other required fields if needed
+    ),
+    responses={
+        200: openapi.Response(description="Successful response"),
+        400: "Bad Request",
+        401: "Unauthorized",
+        404: "Not Found",
+    }
+)
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def rank_page(request, pk):
+    rank = get_object_or_404(Rank, id=pk)
+    contributors = rank.contributors.all()
+    contributors_serialized = UserSerializer(contributors, many=True)
+    user = request.user
+
+    if request.method == 'POST':
+        if 'element' in request.data:
+            form = CreateElementSerializer(data=request.data)
+            if form.is_valid():
+                unique_id = f"{timezone.now().isoformat()}-{uuid.uuid4()}"
+                rank.content[unique_id] = {
+                    'element': form.validated_data['element'],
+                    'user_id': user.id
+                }
+                rank.save()
+                rank.contributors.add(request.user)
+
+                for receiver in rank.contributors.all():
+                    if receiver != request.user:
+                        channel_layer = get_channel_layer()
+                        async_to_sync(channel_layer.group_send)(
+                            "notifications_group",
+                            {
+                                'type': 'send_notification',
+                                'notification': f'A new element was added on the rank "{rank.name}".',
+                                'creator_id': user.id,
+                                'receiver_id': receiver.id,
+                                'url': request.build_absolute_uri()
+                            }
+                        )
+
+                serializer = RankSerializer(rank)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        elif 'save' in request.data:
+            RankSaved.objects.get_or_create(user=request.user, rank=rank)
+            serializer = RankSerializer(rank)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        elif 'unsave' in request.data:
+            saved_rank = get_object_or_404(RankSaved, user=request.user, rank=rank)
+            saved_rank.delete()
+            serializer = RankSerializer(rank)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        elif 'delete_element_index' in request.data:
+            element_index = request.data['delete_element_index']
+            if rank.content.get(element_index, {}).get('user_id') == user.id:
+                votes = RankVote.objects.filter(rank=rank, content_index=element_index)
+                upvotes = votes.filter(action='upvote').count()
+                downvotes = votes.filter(action='downvote').count()
+                rank.score -= (upvotes - downvotes)
+                votes.delete()
+                del rank.content[element_index]
+                rank.save()
+                serializer = RankSerializer(rank)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'Not authorized'}, status=status.HTTP_401_UNAUTHORIZED)
+
+        elif 'edit_element_index' in request.data:
+            form = EditElementSerializer(data=request.data)
+            if form.is_valid():
+                element_index = request.data['edit_element_index']
+                if rank.content.get(element_index, {}).get('user_id') == user.id:
+                    rank.content[element_index]['element'] = form.validated_data['edit_element']
+                    rank.save()
+                    serializer = RankSerializer(rank)
+                    return Response(serializer.data, status=status.HTTP_200_OK)
+                else:
+                    return Response({'message': 'Not authorized'}, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    serializer = RankSerializer(rank)
+    content_scores = {}
+    if rank.content:
+        for index in rank.content:
+            votes = RankVote.objects.filter(rank=rank, content_index=index)
+            upvotes = votes.filter(action='upvote').count()
+            downvotes = votes.filter(action='downvote').count()
+            score = upvotes - downvotes
+            content_scores[index] = score
+
+    context = {'rank': serializer.data,
+               'contributors': contributors_serialized.data,
+               'content_scores': content_scores}
+    return Response(context, status=status.HTTP_200_OK)
+
+
 @swagger_auto_schema(
     method='post',
     operation_summary='Vote on a list',
@@ -598,6 +832,60 @@ def vote_action(request, pk, action):
     return Response(list_serializer.data, status=status.HTTP_200_OK)
 
 
+
+@swagger_auto_schema(
+    method='post',
+    operation_summary='Vote for a Rank',
+    responses={
+        200: openapi.Response(description='Vote successful', schema=RankSerializer),
+        404: 'Not Found',
+    },
+    manual_parameters=[
+        openapi.Parameter('pk', openapi.IN_PATH, description='ID of the Rank', type=openapi.TYPE_INTEGER),
+        openapi.Parameter('content_index', openapi.IN_PATH, description='Index of the content', type=openapi.TYPE_INTEGER),
+        openapi.Parameter('action', openapi.IN_PATH, description='Vote action (upvote, downvote, neutral)', type=openapi.TYPE_STRING),
+    ],
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def vote_rank(request, pk, content_index, action):
+    rank = get_object_or_404(Rank, pk=pk)
+    user = request.user
+
+    if content_index in rank.content:
+        try:
+            vote = RankVote.objects.get(user=user, rank=rank, content_index=content_index)
+
+            if vote.action == action:
+                # No change in action, return the current state
+                rank_serializer = RankSerializer(rank)
+                return Response(rank_serializer.data, status=status.HTTP_200_OK)
+
+            elif vote.action in ['upvote', 'downvote']:
+                vote.action = 'neutral'
+            else:
+                vote.action = action
+
+            vote.save()
+
+        except RankVote.DoesNotExist:
+            if action in ['upvote', 'downvote']:
+                RankVote.objects.create(user=user, rank=rank, content_index=content_index, action=action)
+
+        if action == 'upvote':
+            rank.score += 1
+        elif action == 'downvote':
+            rank.score -= 1
+
+        rank.save()
+
+        rank_serializer = RankSerializer(rank)
+        return Response(rank_serializer.data, status=status.HTTP_200_OK)
+    else:
+        rank_serializer = RankSerializer(rank)
+        return Response({"message": "Element in Rank Not Found"}, status=status.HTTP_404_NOT_FOUND)
+
+
 @swagger_auto_schema(
     method='get',
     operation_summary='Get user profile details',
@@ -620,7 +908,9 @@ def user_profile_page(request, pk):
     lists_count = List.objects.filter(author_id=pk, public=True).count()
     lists = user_instance.list_set.filter(public=True)
     saved_lists = SavedList.objects.filter(user=user_instance)
-    contributions = EditSuggestion.objects.filter(suggested_by=pk, is_accepted=True).order_by('-id')[:5]
+    saved_ranks = RankSaved.objects.filter(user=user_instance)
+    lists_contributions = EditSuggestion.objects.filter(suggested_by=pk, is_accepted=True).order_by('-id')[:3]
+    ranks_contributions = user_instance.contributors.all().order_by('-updated')[:3]
 
     paginator = PageNumberPagination()
     paginator.page_size = LISTS_PER_PAGE
@@ -641,9 +931,11 @@ def user_profile_page(request, pk):
 
     # Serialize the data
     list_serializer = ListSerializer(paginated_queryset, many=True)
-    contributions_serializer = EditSuggestionSerializer(contributions, many=True)
+    contributions_serializer = EditSuggestionSerializer(lists_contributions, many=True)
     user_serializer = UserSerializer(user_instance)
     saved_lists_serializer = SavedListSerializer(saved_lists, many=True)
+    rank_saved_lists_serializer = RankSavedSerializer(saved_ranks, many=True)
+    ranks_contributions_serializer = RankSerializer(ranks_contributions, many=True)
 
     context = {
         'pagination': {
@@ -657,7 +949,9 @@ def user_profile_page(request, pk):
         "lists_count": lists_count,
         'is_following': is_following,
         'saved_lists': saved_lists_serializer.data,
-        'contributions': contributions_serializer.data,
+        'saved_ranks': rank_saved_lists_serializer.data,
+        'lists_contributions': contributions_serializer.data,
+        'ranks_contributions': ranks_contributions_serializer.data,
     }
 
     return Response(context, status=status.HTTP_200_OK)
@@ -717,6 +1011,15 @@ def user_profile_page(request, pk):
                             'saved_at': {'type': openapi.TYPE_STRING, 'format': 'date-time'},
                         },
                     }},
+                    'saved_ranks': {'type': openapi.TYPE_ARRAY, 'items': {
+                        'type': openapi.TYPE_OBJECT,
+                        'properties': {
+                            'id': {'type': openapi.TYPE_INTEGER},
+                            'user': {'type': openapi.TYPE_INTEGER},
+                            'rank': {'type': openapi.TYPE_INTEGER},
+                            'saved_at': {'type': openapi.TYPE_STRING, 'format': 'date-time'},
+                        },
+                    }},
                 },
             )
         ),
@@ -739,6 +1042,7 @@ def private_lists_page(request, pk):
     lists_count = List.objects.filter(author_id=pk, public=True).count()
     private_lists = user_instance.list_set.filter(public=False)
     saved_lists = SavedList.objects.filter(user=user_instance)
+    saved_ranks = RankSaved.objects.filter(user=user_instance)
 
     paginator = PageNumberPagination()
     paginator.page_size = LISTS_PER_PAGE
@@ -761,6 +1065,7 @@ def private_lists_page(request, pk):
     list_serializer = ListSerializer(paginated_queryset, many=True)
     user_serializer = UserSerializer(user_instance)
     saved_lists_serializer = SavedListSerializer(saved_lists, many=True)
+    rank_saved_lists_serializer = RankSavedSerializer(saved_ranks, many=True)
 
     context = {
         'pagination': {
@@ -773,7 +1078,8 @@ def private_lists_page(request, pk):
         "user": user_serializer.data,
         "lists_count": lists_count,
         'is_following': is_following,
-        'saved_lists': saved_lists_serializer.data
+        'saved_lists': saved_lists_serializer.data,
+        'saved_ranks': rank_saved_lists_serializer.data,
     }
 
     return Response(context, status=status.HTTP_200_OK)
@@ -800,6 +1106,99 @@ def create_list_page(request):
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+@swagger_auto_schema(
+    method='post',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'name': openapi.Schema(type=openapi.TYPE_STRING, description='The name of the rank'),
+            'description': openapi.Schema(type=openapi.TYPE_STRING, description='The description of the rank'),
+            'content': openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'element': openapi.Schema(type=openapi.TYPE_STRING, description='The content element'),
+                        'user_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='User ID'),
+                    },
+                ),
+                description='Array of content elements',
+            ),
+            'topic': openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(type=openapi.TYPE_STRING, description='Array of topics'),
+                description='Array of topics related to the rank',
+            ),
+            'contributors': openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Schema(type=openapi.TYPE_INTEGER, description='Array of contributor user IDs'),
+                description='Array of contributor user IDs',
+            ),
+        },
+        required=['name'],  # Adjust the required fields based on your model
+    ),
+    responses={
+        201: openapi.Response(
+            description='Successful Upload',
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'message': openapi.Schema(type=openapi.TYPE_STRING, description='Success message'),
+                },
+            ),
+        ),
+        400: openapi.Response(
+            description='Bad Request - Validation Error or Similar Ranks Found',
+            schema=openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'error': openapi.Schema(type=openapi.TYPE_STRING, description='Error message'),
+                    'similar_ranks': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                'id': openapi.Schema(type=openapi.TYPE_INTEGER, description='Rank ID'),
+                                'name': openapi.Schema(type=openapi.TYPE_STRING, description='Rank name'),
+                            },
+                        ),
+                        description='Array of similar ranks',
+                    ),
+                },
+            ),
+        ),
+        401: openapi.Response(
+            description='Unauthorized - Authentication credentials were not provided',
+        ),
+    },
+    operation_summary='Create a new rank',
+    operation_description=(
+        'This API endpoint allows authenticated users to create a new rank. '
+        'The request should include the rank details in the request body.'
+    ),
+)
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def create_rank_page(request):
+    serializer = RankSerializer(data=request.data)
+
+    if serializer.is_valid():
+        rank_instance = serializer.save()
+
+        # Calculate similarity with existing ranks after saving the instance
+        similar_ranks = rank_instance.get_similar_ranks(rank_instance)
+
+        if similar_ranks:
+            # Delete the instance if similar_ranks is True
+            rank_instance.delete()
+            similar_ranks_data = [{'id': rank.id, 'name': rank.name} for rank in similar_ranks]
+            return Response({'error': 'Similar ranks found', 'similar_ranks': similar_ranks_data}, status=status.HTTP_400_BAD_REQUEST)
+    
+        return Response({"message": "Successful Upload"}, status=status.HTTP_201_CREATED)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(
@@ -975,6 +1374,44 @@ def topics_page(request):
 
 @swagger_auto_schema(
     method='GET',
+    operation_summary="Get Rank Topics",
+    operation_description="Retrieve topic counts based on ranks.",
+    manual_parameters=[
+        openapi.Parameter(
+            name="q",
+            required=False,
+            in_=openapi.IN_QUERY,
+            description="Filter topics by name (case-insensitive).",
+            type=openapi.TYPE_STRING,
+        )
+    ],
+)
+@api_view(['GET'])
+def rank_topics_page(request):
+    q = request.GET.get('q', '')
+    
+    all_ranks = Rank.objects.all()
+    all_topics = RankTopic.objects.filter(name__icontains=q)
+    all_rank_count = all_ranks.count()
+
+    # Creating the topic counts dictionary for the filtered topics
+    topic_counts = {topic.name: all_ranks.filter(topic=topic).count() for topic in all_topics}
+
+    filtered_topic_counts = {key: topic_counts[key] for key in topic_counts if key in [topic.name for topic in all_topics]}
+
+    sorted_topic_counts = sorted(filtered_topic_counts.items(), key=lambda item: item[1], reverse=True)
+
+    # Construct the response JSON
+    response_data = {
+        'topic_counts': sorted_topic_counts,
+        'all_rank_count': all_rank_count,
+    }
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
+
+@swagger_auto_schema(
+    method='GET',
     operation_summary='Retrieve users to follow based on name',
     responses={
         200: openapi.Response(description='Users to follow retrieved successfully'),
@@ -1023,7 +1460,27 @@ def report_list_page(request, pk):
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+
+@swagger_auto_schema(
+    method='POST',
+    operation_summary='Report a rank',
+    request_body=ReportRankSerializer(),
+    responses={
+        201: openapi.Response(description='Rank reported successfully'),
+        400: openapi.Response(description='Bad Request'),
+    },
+)
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def report_rank_page(request):
+    serializer = ReportRankSerializer(data=request.data, many=False)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @swagger_auto_schema(
     method='POST',
@@ -1273,7 +1730,7 @@ def delete_pr_comment_action(request, comment_id):
 
 @swagger_auto_schema(
     method='GET',
-    operation_summary='Get lists saved by an user',
+    operation_summary='Get lists and ranks saved by an user',
     manual_parameters=[
         openapi.Parameter(
             'q',
@@ -1287,11 +1744,14 @@ def delete_pr_comment_action(request, comment_id):
     }
 )
 @api_view(['GET'])
-def saved_lists_page(request, pk):
+def saved_content_page(request, pk):
     q = request.GET.get('q', '')
     user_saved_lists = SavedList.objects.filter(user__id=pk, list__name__icontains=q)
-    serializer = SavedListSerializer(user_saved_lists, many=True)
-    return Response(serializer.data)
+    user_saved_ranks = RankSaved.objects.filter(user__id=pk, rank__name__icontains=q)
+    saved_lists_serializer = SavedListSerializer(user_saved_lists, many=True)
+    saved_ranks_serializer = RankSavedSerializer(user_saved_ranks, many=True)
+    return Response({"saved_lists": saved_lists_serializer.data,
+                    "saved_ranks": saved_ranks_serializer.data})
 
 
 @swagger_auto_schema(

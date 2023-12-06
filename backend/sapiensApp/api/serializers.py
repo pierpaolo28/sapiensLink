@@ -1,8 +1,10 @@
-from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField, CharField, ValidationError, Serializer, EmailField, ImageField
-from sapiensApp.models import List, Topic, User, Report, Comment, EditSuggestion, SavedList, EditComment
+from rest_framework.serializers import *
+from sapiensApp.models import *
 from django.contrib.auth.forms import UserCreationForm
 import csv
 from better_profanity import profanity
+import uuid
+from django.utils import timezone
 
 
 def load_bad_words_from_csv(csv_file_path, column_name):
@@ -25,20 +27,17 @@ class TopicSerializer(ModelSerializer):
 
 
 class ListSerializer(ModelSerializer):
-    def clean_name(self):
-        data = self.cleaned_data['name']
+    def validate_name(self, data):
         if profanity.contains_profanity(data):
             raise ValidationError("Unacceptable language detected in the name.")
         return data
     
-    def clean_description(self):
-        data = self.cleaned_data['description']
+    def validate_description(self, data):
         if profanity.contains_profanity(data):
             raise ValidationError("Unacceptable language detected in the description.")
         return data
 
-    def clean_content(self):
-        data = self.cleaned_data['content']
+    def validate_content(self, data):
         if profanity.contains_profanity(data):
             raise ValidationError("Unacceptable language detected in the content.")
         return data
@@ -93,6 +92,74 @@ class ListSerializer(ModelSerializer):
         instance.save()
 
         return instance
+    
+
+class RankTopicSerializer(ModelSerializer):
+    class Meta:
+        model = RankTopic
+        fields = '__all__'
+
+
+class RankContentElementSerializer(Serializer):
+    element = CharField()
+    user_id = IntegerField()
+
+
+class RankSerializer(ModelSerializer):
+    topic = RankTopicSerializer(many=True)
+    contributors = PrimaryKeyRelatedField(many=True, queryset=User.objects.all())
+    content = DictField(
+        child=RankContentElementSerializer(),
+        required=False
+    )
+
+    class Meta:
+        model = Rank
+        exclude = ['embeddings']
+
+    def validate_name(self, value):
+        if profanity.contains_profanity(value):
+            raise ValidationError("Unacceptable language detected in the name.")
+        return value
+    
+    def validate_description(self, value):
+        if profanity.contains_profanity(value):
+            raise ValidationError("Unacceptable language detected in the description.")
+        return value
+
+    def validate_content(self, value):
+        element_values = ''.join([content['element'] for content in value.values()])
+        if profanity.contains_profanity(element_values):
+            raise ValidationError("Unacceptable language detected in the content.")
+        
+        return value
+
+    def create(self, validated_data):
+        # Extract 'content' data and generate unique IDs
+        content_data = validated_data.pop('content', [])  
+        validated_data['content'] = {
+            f"{timezone.now().isoformat()}-{uuid.uuid4()}": {
+                'element': content_data[key]['element'],
+                'user_id': content_data[key]['user_id']
+            }
+            for key in content_data
+        }
+
+
+        # Process 'topic' and 'contributors' fields
+        topics_data = validated_data.pop('topic', [])
+        contributors_data = validated_data.pop('contributors', [])
+
+        # Create the Rank instance
+        rank_instance = Rank.objects.create(**validated_data)
+
+        for topic_dic in topics_data:
+            topic_instance, _ = RankTopic.objects.get_or_create(name=topic_dic['name'])
+            rank_instance.topic.add(topic_instance)
+
+        rank_instance.contributors.set(contributors_data)
+
+        return rank_instance
         
 
 class FollowSerializer(ModelSerializer):
@@ -108,14 +175,12 @@ class UserSerializer(ModelSerializer):
     avatar = ImageField(allow_null=True, required=False)
     
 
-    def clean_name(self):
-        data = self.cleaned_data['name']
+    def validate_name(self, data):
         if profanity.contains_profanity(data):
             raise ValidationError("Unacceptable language detected in the name.")
         return data
     
-    def clean_bio(self):
-        data = self.cleaned_data['bio']
+    def validate_bio(self, data):
         if profanity.contains_profanity(data):
             raise ValidationError("Unacceptable language detected in the bio.")
         return data
@@ -154,6 +219,12 @@ class ReportSerializer(ModelSerializer):
         fields = '__all__'
 
 
+class ReportRankSerializer(ModelSerializer):
+    class Meta:
+        model = RankReport
+        fields = '__all__'
+
+
 class CommentSerializer(ModelSerializer):
     def validate_body(self, value):
         if profanity.contains_profanity(value):
@@ -167,8 +238,7 @@ class CommentSerializer(ModelSerializer):
 
 class EditSuggestionSerializer(ModelSerializer):
 
-    def clean_suggestion_text(self):
-        data = self.cleaned_data['suggestion_text']
+    def validate_suggestion_text(self, data):
         if profanity.contains_profanity(data):
             raise ValidationError("Unacceptable language detected in the suggested new list.")
         return data
@@ -184,10 +254,15 @@ class SavedListSerializer(ModelSerializer):
         fields = '__all__'
 
 
+class RankSavedSerializer(ModelSerializer):
+    class Meta:
+        model = RankSaved
+        fields = '__all__'
+
+
 class EditCommentSerializer(ModelSerializer):
 
-    def clean_text(self):
-        data = self.cleaned_data['text']
+    def validate_text(self, data):
         if profanity.contains_profanity(data):
             raise ValidationError("Unacceptable language detected in the comment.")
         return data
@@ -197,11 +272,28 @@ class EditCommentSerializer(ModelSerializer):
         fields = '__all__'
 
 
+class CreateElementSerializer(Serializer):
+    element = CharField(label='New Element')
+
+    def validate_element(self, value):
+        if profanity.contains_profanity(value):
+            raise ValidationError("Unacceptable language detected in new element.")
+        return value
+
+
+class EditElementSerializer(Serializer):
+    edit_element = CharField(label='Edit Element')
+
+    def validate_edit_element(self, value):
+        if profanity.contains_profanity(value):
+            raise ValidationError("Unacceptable language detected in the edited element.")
+        return value
+
+
 class MyUserCreationForm(UserCreationForm):
     name = CharField(max_length=200)
 
-    def clean_name(self):
-        data = self.cleaned_data['name']
+    def validate_name(self, data):
         if profanity.contains_profanity(data):
             raise ValidationError("Unacceptable language detected in the name.")
         return data

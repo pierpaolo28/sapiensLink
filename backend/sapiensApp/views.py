@@ -282,9 +282,9 @@ def rank(request, pk):
             saved_rank = get_object_or_404(RankSaved, user=request.user, rank=rank)
             saved_rank.delete()
             return redirect('rank', pk=rank.id)
-        elif 'delete_element' in request.POST:
+        elif 'delete_element_index' in request.POST:
             # Delete an element
-            element_index = request.POST.get('element_index')
+            element_index = request.POST.get('delete_element_index')
             if rank.content.get(element_index, {}).get('user_id') == user.id:
                 # Calculate the votes associated with the deleted element
                 votes = RankVote.objects.filter(rank=rank, content_index=element_index)
@@ -301,11 +301,11 @@ def rank(request, pk):
                 del rank.content[element_index]
                 rank.save()
                 return redirect('rank', pk=rank.id)
-        elif 'edit_element' in request.POST:
+        elif 'edit_element_index' in request.POST:
             # Edit an element
             form = EditElementForm(request.POST)
             if form.is_valid():
-                element_index = request.POST.get('element_index')
+                element_index = request.POST.get('edit_element_index')
                 if rank.content.get(element_index, {}).get('user_id') == user.id:
                     rank.content[element_index]['element'] = form.cleaned_data['edit_element']
                     rank.save()
