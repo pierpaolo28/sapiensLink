@@ -81,6 +81,7 @@ class List(models.Model):
     score = models.IntegerField(default=0)
     source = models.URLField(null=True, blank=True)
     public = models.BooleanField(default=True)
+    subscribed_users = models.ManyToManyField(User, related_name='subscribed_lists', blank=True)
 
     class Meta:
         ordering = ['-updated', '-created']
@@ -203,6 +204,7 @@ class Rank(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     # New field for storing BERT embeddings
     embeddings = models.BinaryField(null=True, blank=True)
+    subscribed_users = models.ManyToManyField(User, related_name='subscribed_ranks', blank=True)
 
     @staticmethod
     def calculate_similarity(embeddings1, embeddings2):

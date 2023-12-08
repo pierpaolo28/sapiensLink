@@ -63,7 +63,7 @@ class ListForm(ModelForm):
     class Meta:
         model = List
         fields = '__all__'
-        exclude = ['author', 'participants', 'score', 'topic']  # Exclude 'topic' since we define it manually
+        exclude = ['author', 'participants', 'score', 'topic', 'subscribed_users']  # Exclude 'topic' since we define it manually
 
 
 class RankForm(ModelForm):
@@ -127,7 +127,7 @@ class RankForm(ModelForm):
     class Meta:
         model = Rank
         fields = '__all__'
-        exclude = ['contributors', 'score', 'topic', 'embeddings']  # Exclude 'topic' since we define it manually
+        exclude = ['contributors', 'score', 'topic', 'embeddings', 'subscribed_users']  # Exclude 'topic' since we define it manually
 
 
 class CommentForm(ModelForm):

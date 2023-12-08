@@ -185,9 +185,11 @@ def list(request, pk):
     if user.is_authenticated:
         has_reported = Report.objects.filter(user=user, list=list).exists()
         saved_list_ids = SavedList.objects.filter(user=request.user).values_list('list_id', flat=True)
+        is_subscribed = user in list.subscribed_users.all()
     else:
         has_reported = False
         saved_list_ids = []
+        is_subscribed = False
 
     if request.method == 'POST':
         if 'comment' in request.POST:
@@ -199,8 +201,9 @@ def list(request, pk):
                 comment.save()
 
                 list.participants.add(request.user)
+                list.subscribed_users.add(request.user)
 
-                for receiver in list.participants.all():
+                for receiver in list.subscribed_users.all():
                     if receiver != request.user:
                         # Sending notification to the WebSocket group
                         channel_layer = get_channel_layer()
@@ -226,7 +229,8 @@ def list(request, pk):
 
     context = {'list': list, 'list_comments': list_comments, 'comment_form': comment_form,
                'participants': participants, 'has_reported': has_reported, 
-               'saved_list_ids': saved_list_ids}
+               'saved_list_ids': saved_list_ids,
+               'is_subscribed': is_subscribed}
     return render(request, 'pages/list.html', context)
 
 
@@ -239,9 +243,11 @@ def rank(request, pk):
     if user.is_authenticated:
         has_reported = RankReport.objects.filter(user=user, rank=rank).exists()
         saved_rank_ids = RankSaved.objects.filter(user=request.user).values_list('rank_id', flat=True)
+        is_subscribed = user in rank.subscribed_users.all()
     else:
         has_reported = False
         saved_rank_ids = []
+        is_subscribed = False
 
     if request.method == 'POST':
         if 'element' in request.POST:
@@ -258,8 +264,9 @@ def rank(request, pk):
                 rank.save()
 
                 rank.contributors.add(request.user)
+                rank.subscribed_users.add(request.user)
 
-                for receiver in rank.contributors.all():
+                for receiver in rank.subscribed_users.all():
                     if receiver != request.user:
                         # Sending notification to the WebSocket group
                         channel_layer = get_channel_layer()
@@ -329,7 +336,8 @@ def rank(request, pk):
                'saved_rank_ids': saved_rank_ids, 
                'content_scores': content_scores,
                'create_element_form': create_element_form,
-               'edit_element_form': edit_element_form}
+               'edit_element_form': edit_element_form,
+               'is_subscribed': is_subscribed}
     return render(request, 'pages/rank.html', context)
 
 
@@ -521,6 +529,7 @@ def createList(request):
             list_instance.topic.add(topic)
         # Don't forget to handle other ManyToMany fields like 'participants' if necessary
         list_instance.participants.add(request.user)
+        list_instance.subscribed_users.add(request.user)
         list_instance.save()
         return redirect('home')
 
@@ -554,6 +563,7 @@ def createRank(request):
 
         # Don't forget to handle other ManyToMany fields like 'contributors' if necessary
         new_rank.contributors.add(request.user)
+        new_rank.subscribed_users.add(request.user)
 
         form.save_m2m()  # Save many-to-many relationships
         return redirect('rank_home')

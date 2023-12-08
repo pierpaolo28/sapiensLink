@@ -1,3 +1,30 @@
+<script>
+  function toggleSubscription(event, Id, Type, isSubscribed) {
+    event.preventDefault();  // Prevent the default button click behavior
+    const lowercaseIsSubscribed = String(isSubscribed).toLowerCase();
+
+    fetch(`/api/manage_subscription/${Type}/${Id}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            // Send the current subscription status
+            action: lowercaseIsSubscribed === 'true' ? 'unsubscribe' : 'subscribe',
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update the UI based on the new subscription status
+        if (data.status === 'Subscribed successfully' || data.status === 'Unsubscribed successfully') {
+            location.reload();  // Reload the page or update the UI accordingly
+        }
+    });
+  }
+</script>
+
 {% extends 'main.html' %}
 
 {% block content %}
@@ -56,6 +83,17 @@
             <h3>{{list.name}}</h3>
             <span>Last activity: {{list.updated|timesince}} ago</span>
           </div>
+          {% if user.is_authenticated %}
+          <button onclick="toggleSubscription(event, '{{ list.id }}', 'list', '{{ is_subscribed }}')">
+            {% if is_subscribed %}
+              Unsubscribe
+            {% else %}
+              Subscribe
+            {% endif %}
+          </button>
+        {% else %}
+          <p class="list__login__notify"> <a href="{% url 'login' %}">Log in </a> to subscribe for notifications </p>
+        {% endif %}
           {% if list.author.id != None %}
           <div class="list__author">
             <p>Created By</p>

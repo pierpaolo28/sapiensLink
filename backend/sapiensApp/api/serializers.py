@@ -62,6 +62,7 @@ class ListSerializer(ModelSerializer):
 
         # Use set method for the many-to-many relationship with participants
         list_instance.participants.set(participants_data)
+        list_instance.subscribed_users.set(participants_data)
 
         return list_instance
     
@@ -87,6 +88,7 @@ class ListSerializer(ModelSerializer):
         # Use set method for the many-to-many relationship with participants if provided
         if participants_data is not None:
             instance.participants.set(participants_data)
+            instance.subscribed_users.set(participants_data)
 
         # Save the updated instance
         instance.save()
@@ -158,6 +160,7 @@ class RankSerializer(ModelSerializer):
             rank_instance.topic.add(topic_instance)
 
         rank_instance.contributors.set(contributors_data)
+        rank_instance.subscribed_users.set(contributors_data)
 
         return rank_instance
 
@@ -198,6 +201,7 @@ class RankSerializer(ModelSerializer):
             # Use set method for the many-to-many relationship with participants if provided
             if contributors_data is not None:
                 instance.contributors.set(contributors_data)
+                instance.subscribed_users.set(contributors_data)
 
             # Save the updated instance
             instance.save()

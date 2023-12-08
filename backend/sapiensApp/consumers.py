@@ -31,3 +31,5 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     def create_notification(self, notification_message, creator, receiver, url):
         Notification.objects.create(message=notification_message,
                                     creator=creator, receiver=receiver, url=url)
+        
+        

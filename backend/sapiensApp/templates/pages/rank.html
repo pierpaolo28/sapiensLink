@@ -1,3 +1,30 @@
+<script>
+  function toggleSubscription(event, Id, Type, isSubscribed) {
+    event.preventDefault(); 
+    const lowercaseIsSubscribed = String(isSubscribed).toLowerCase();
+
+    fetch(`/api/manage_subscription/${Type}/${Id}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            // Send the current subscription status
+            action: lowercaseIsSubscribed === 'true' ? 'unsubscribe' : 'subscribe',
+        }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Update the UI based on the new subscription status
+        if (data.status === 'Subscribed successfully' || data.status === 'Unsubscribed successfully') {
+            location.reload();  // Reload the page or update the UI accordingly
+        }
+    });
+  }
+</script>
+
 {% extends 'main.html' %}
 
 {% block content %}
@@ -25,6 +52,17 @@
             <h3>{{rank.name}}</h3>
             <span>Last activity: {{rank.updated|timesince}} ago</span>
           </div>
+          {% if user.is_authenticated %}
+          <button onclick="toggleSubscription(event, '{{ rank.id }}', 'rank', '{{ is_subscribed }}')">
+            {% if is_subscribed %}
+              Unsubscribe
+            {% else %}
+              Subscribe
+            {% endif %}
+          </button>
+        {% else %}
+          <p class="rank__login__notify"> <a href="{% url 'login' %}">Log in </a> to subscribe for notifications </p>
+        {% endif %}
           <div class="rank__score">
             <span>Overall score: {{rank.score}} </span>
           </div>

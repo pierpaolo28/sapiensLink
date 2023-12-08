@@ -53,6 +53,7 @@ urlpatterns = [
     path('report_rank_page/', views.report_rank_page),
     path('rank_page/<str:pk>/', views.rank_page),
     path('notifications/', views.get_notifications, name='get_notifications'),
+    path('manage_subscription/<str:type>/<str:id>/', views.manage_subscription, name="manage_subscription"),
     path('notifications/<int:notification_id>/mark_as_read/', views.mark_notification_as_read, name='mark_notification_as_read'),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),

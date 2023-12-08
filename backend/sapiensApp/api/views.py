@@ -72,7 +72,8 @@ def getRoutes(request):
         'POST /api/vote_action/:pk/:action/',
         'POST /api/vote_rank/:pk/:content_index/:action',
         'GET /api/notifications/',
-        'GET /api/notifications/<int:notification_id>/mark_as_read/',
+        'GET /api/notifications/:notification_id/mark_as_read/',
+        'POST /api/manage_subscription/:type/:id/',
         'GET /api/swagger/',
         'GET /api/redoc/'
         'GET-POST-DELETE /api/lists_db_setup/',
@@ -559,6 +560,7 @@ def rank_home(request):
                     'participants': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_OBJECT)),
                     'has_reported': openapi.Schema(type=openapi.TYPE_BOOLEAN),
                     'saved_list_ids': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_INTEGER)),
+                    'is_subscribed': openapi.Schema(type=openapi.TYPE_BOOLEAN), 
                 },
             ),
         ),
@@ -572,8 +574,9 @@ def rank_home(request):
         201: openapi.Response(description='Comment added successfully'),
         200: openapi.Response(description='List saved successfully or unsaved successfully'),
         400: openapi.Response(description='Bad Request'),
-    },
+    }
 )
+@api_view(['GET', 'POST'])
 @api_view(['GET', 'POST'])
 def list_page(request, pk):
     list_instance = List.objects.get(id=pk)
@@ -584,10 +587,12 @@ def list_page(request, pk):
     user = request.user
     has_reported = False
     saved_list_ids = []
+    is_subscribed = False
 
     if user.is_authenticated:
         has_reported = Report.objects.filter(user=user, list=list_instance).exists()
         saved_list_ids = SavedList.objects.filter(user=user).values_list('list_id', flat=True)
+        is_subscribed = user in list_instance.subscribed_users.all()
 
     # TODO: the comment button should be hidden on the user interface if the user is not logged in
     if request.method == 'POST':
@@ -596,10 +601,11 @@ def list_page(request, pk):
             if comment_serializer.is_valid():
                 comment = comment_serializer.save(user=user, list=list_instance)
                 list_instance.participants.add(user)
+                list_instance.subscribed_users.add(user)
 
                 # Sending notification to the WebSocket group
                 channel_layer = get_channel_layer()
-                for receiver in list_instance.participants.all():
+                for receiver in list_instance.subscribed_users.all():
                     if receiver != request.user:
                         async_to_sync(channel_layer.group_send)(
                             'notifications_group',
@@ -616,7 +622,8 @@ def list_page(request, pk):
                 list_serializer = ListSerializer(list_instance)
                 return Response(list_serializer.data, status=status.HTTP_201_CREATED)
             else:
-                return Response(comment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Comment could not be added', 'details': comment_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
 
         elif 'save' in request.data:
             SavedList.objects.get_or_create(user=user, list=list_instance)
@@ -633,7 +640,8 @@ def list_page(request, pk):
         'list_comments': CommentSerializer(list_comments, many=True).data,
         'participants': UserSerializer(participants, many=True).data,
         'has_reported': has_reported,
-        'saved_list_ids': saved_list_ids
+        'saved_list_ids': saved_list_ids,
+        'is_subscribed': is_subscribed
     }
 
     return Response(context)
@@ -653,6 +661,9 @@ def list_page(request, pk):
                     'rank': openapi.Schema(type=openapi.TYPE_OBJECT),
                     'contributors': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_OBJECT)),
                     'content_scores': openapi.Schema(type=openapi.TYPE_OBJECT),
+                    'has_reported': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                    'saved_ranks_ids': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_INTEGER)),
+                    'is_subscribed': openapi.Schema(type=openapi.TYPE_BOOLEAN), 
                 },
             ),
         ),
@@ -698,6 +709,15 @@ def rank_page(request, pk):
     contributors_serialized = UserSerializer(contributors, many=True)
     user = request.user
 
+    has_reported = False
+    saved_ranks_ids = []
+    is_subscribed = False
+
+    if user.is_authenticated:
+        has_reported = RankReport.objects.filter(user=user, list=rank).exists()
+        saved_ranks_ids = RankSaved.objects.filter(user=user).values_list('rank_id', flat=True)
+        is_subscribed = user in rank.subscribed_users.all()
+
     if request.method == 'POST':
         if 'element' in request.data:
             form = CreateElementSerializer(data=request.data)
@@ -709,8 +729,9 @@ def rank_page(request, pk):
                 }
                 rank.save()
                 rank.contributors.add(request.user)
+                rank.subscribed_users.add(request.user)
 
-                for receiver in rank.contributors.all():
+                for receiver in rank.subscribed_users.all():
                     if receiver != request.user:
                         channel_layer = get_channel_layer()
                         async_to_sync(channel_layer.group_send)(
@@ -727,7 +748,7 @@ def rank_page(request, pk):
                 serializer = RankSerializer(rank)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Element could not be added', 'details': form.errors}, status=status.HTTP_400_BAD_REQUEST)
 
         elif 'save' in request.data:
             RankSaved.objects.get_or_create(user=request.user, rank=rank)
@@ -781,7 +802,10 @@ def rank_page(request, pk):
 
     context = {'rank': serializer.data,
                'contributors': contributors_serialized.data,
-               'content_scores': content_scores}
+               'content_scores': content_scores,
+               'has_reported': has_reported,
+               'saved_ranks_ids': saved_ranks_ids,
+               'is_subscribed': is_subscribed}
     return Response(context, status=status.HTTP_200_OK)
 
 
@@ -1462,7 +1486,7 @@ def report_list_page(request, pk):
             }
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'error': 'List could not be reported', 'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(
@@ -1603,7 +1627,8 @@ def list_pr_page(request, pk):
                     )
                 return Response({'message': 'Edit suggestion created successfully'}, status=status.HTTP_201_CREATED)
             else:
-                return Response(edit_suggestion_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Edit suggestion could not be created', 'details': edit_suggestion_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+                
 
         elif 'comment' in request.data:
             comment_serializer = EditCommentSerializer(data=request.data['comment'])
@@ -1623,7 +1648,7 @@ def list_pr_page(request, pk):
                 )
                 return Response({'message': 'Comment added successfully'}, status=status.HTTP_201_CREATED)
             else:
-                return Response(comment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Comment could not be created', 'details': comment_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response({'message': 'Invalid request'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1807,6 +1832,46 @@ def mark_notification_as_read(request, notification_id):
         return JsonResponse({'status': 'Notification marked as read.'})
     except Notification.DoesNotExist:
         return JsonResponse({'error': 'Notification not found.'}, status=404)
+
+
+
+@swagger_auto_schema(
+    method='POST',
+    operation_summary='Toggle subscription status',
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'action': openapi.Schema(type=openapi.TYPE_STRING),
+        },
+    ),
+    responses={
+        200: "Subscription status updated successfully",
+        401: "Unauthorized",
+    }
+)
+@api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def manage_subscription(request, type, id):
+    if type == 'list':
+        post = get_object_or_404(List, id=id)
+    elif type == 'rank':
+        post = get_object_or_404(Rank, id=id)
+    else:
+        return JsonResponse({'error': 'Invalid type'}, status=400)
+
+    user = request.user
+    action = request.data.get('action')
+
+    if action == 'subscribe':
+        post.subscribed_users.add(user)
+        return JsonResponse({'status': 'Subscribed successfully'})
+    elif action == 'unsubscribe':
+        post.subscribed_users.remove(user)
+        return JsonResponse({'status': 'Unsubscribed successfully'})
+    else:
+        return JsonResponse({'error': 'Invalid action'}, status=400)
+
 
 
 # Admin Utils
