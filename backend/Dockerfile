@@ -29,11 +29,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the application code into the container
 COPY . /app/
 
+RUN python manage.py collectstatic --noinput
+
 # Set execute permissions for the entrypoint script
 RUN chmod +x docker-entrypoint.sh
 
-# Run Gunicorn
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "sapiensLink.wsgi:application"]
-# Set the entrypoint script
-# ENTRYPOINT ["/bin/bash", "./docker-entrypoint.sh"]
+
 
