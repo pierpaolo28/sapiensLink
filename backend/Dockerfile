@@ -1,34 +1,39 @@
 # Use an official Python runtime as a parent image
-FROM python:3.9
+FROM python:3.9-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# Create and set the working directory
+# Set the working directory in the container
 WORKDIR /app
 
-ENV PIP_TIMEOUT=120
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y \
+        python3-dev \
+        graphviz \
+        libgraphviz-dev \
+        pkg-config \
+        gcc \
+        && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
-RUN apt-get update \
-    && apt-get install -y postgresql-client graphviz libgraphviz-dev pkg-config \
-    && rm -rf /var/lib/apt/lists/*
-RUN pip install --upgrade pip
-RUN pip install celery
+# Copy the requirements file into the container at /app
 COPY requirements.txt /app/
-RUN pip install -r requirements.txt
-COPY wait-for-it.sh /usr/local/bin/wait-for-it
-RUN chmod +x /usr/local/bin/wait-for-it
 
-# Copy the project code into the container
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application code into the container
 COPY . /app/
 
-# Expose the port the app runs on
-EXPOSE 8000
+# Set execute permissions for the entrypoint script
+RUN chmod +x docker-entrypoint.sh
 
-# Run the application
-ENTRYPOINT ["wait-for-it", "db:5432", "--"]
-CMD ["gunicorn", "sapiensLink.wsgi:application", "--bind", "0.0.0.0:8000"]
-
+# Run Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "sapiensLink.wsgi:application"]
+# Set the entrypoint script
+# ENTRYPOINT ["/bin/bash", "./docker-entrypoint.sh"]
 
