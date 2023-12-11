@@ -4,7 +4,7 @@ services:
   postgres:
     image: postgres:latest
     environment:
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_DB: "sapiensdb"
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
 
@@ -13,14 +13,14 @@ services:
 
   celery:
     build:
-      context: ./backend  # Correct path to Dockerfile
+      context: ./backend  
     depends_on:
       - postgres
       - redis
 
   backend:
     build:
-      context: ./backend  # Correct path to Dockerfile
+      context: ./backend  
     ports:
       - "8000:8000"
     depends_on:
@@ -28,13 +28,13 @@ services:
       - redis
       - celery
     environment:
-      DB_NAME: ${DB_NAME}
+      DB_NAME: "sapiensdb"
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
 
   frontend:
     build:
-      context: ./frontend  # Correct path to Dockerfile
+      context: ./frontend 
     ports:
       - "3000:3000"
     depends_on:

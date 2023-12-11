@@ -129,11 +129,11 @@ WSGI_APPLICATION = 'sapiensLink.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': app_secrets.POSTGRESQL_NAME,
+        'NAME': 'sapiensdb',
         'USER': app_secrets.POSTGRESQL_USERNAME,
         'PASSWORD': app_secrets.POSTGRESQL_PASSWORD,
-        'HOST': app_secrets.POSTGRESQL_HOST,
-        'PORT': app_secrets.POSTGRESQL_PORT,
+        'HOST': 'postgres',
+        'PORT': '5432',
     }
 }
 

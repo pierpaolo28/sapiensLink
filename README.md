@@ -10,7 +10,7 @@ The overall architecture design can be found below:
 
 Once installed Docker on your local machine, run the following command from the root of the project:
 
-`DB_NAME='YOUR_DB_NAME' DB_USER='YOUR_USER_NAME' DB_PASSWORD='YOUR_USER_PASSWORD' docker-compose up --build`
+`DB_USER='YOUR_USER_NAME' DB_PASSWORD='YOUR_USER_PASSWORD' docker-compose up`
 
 Before running this command, make sure you have a `app_secrets.py` file in the backend directory.
 
