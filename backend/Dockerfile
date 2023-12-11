@@ -26,15 +26,20 @@ COPY requirements.txt /app/
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+COPY wait-for-it.sh /usr/local/bin/wait-for-it
+RUN chmod +x /usr/local/bin/wait-for-it
+
 # Copy the rest of the application code into the container
 COPY . /app/
 
+# Run the collectstatic command
 RUN python manage.py collectstatic --noinput
 
 # Set execute permissions for the entrypoint script
 RUN chmod +x docker-entrypoint.sh
 
-ENTRYPOINT ["./docker-entrypoint.sh"]
+# Set the entrypoint for the container
+ENTRYPOINT ["wait-for-it", "db:5432", "--", "./docker-entrypoint.sh"]
+
+# Set the default command to run when the container starts
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "sapiensLink.wsgi:application"]
-
-

@@ -1937,9 +1937,9 @@ def manage_subscription(request, type, id):
     }
 )
 @api_view(['GET', 'POST', 'DELETE'])
-@authentication_classes([JWTAuthentication])
-# TODO: Uncomment before deployment
-@permission_classes([IsAdminUser])
+# @authentication_classes([JWTAuthentication])
+# # TODO: Uncomment before deployment
+# @permission_classes([IsAdminUser])
 def lists_db_setup(request):
     """
         Util to upload many lists at the same time, display them and delete them.
@@ -2029,9 +2029,9 @@ def lists_db_setup(request):
     }
 )
 @api_view(['GET', 'POST', 'DELETE'])
-@authentication_classes([JWTAuthentication])
-# TODO: Uncomment before deployment
-@permission_classes([IsAdminUser])
+# @authentication_classes([JWTAuthentication])
+# # TODO: Uncomment before deployment
+# @permission_classes([IsAdminUser])
 def users_db_setup(request):
     """
         Util to upload many users at the same time, display them and delete them.
@@ -2107,9 +2107,9 @@ def users_db_setup(request):
     }
 )
 @api_view(['PUT', 'PATCH'])
-@authentication_classes([JWTAuthentication])
+# @authentication_classes([JWTAuthentication])
 # TODO: Test it works before deployment
-@permission_classes([IsAdminUser])
+# @permission_classes([IsAdminUser])
 def update_rank(request, pk):
     rank = get_object_or_404(Rank, id=pk)
 
@@ -2142,7 +2142,7 @@ def update_rank(request, pk):
     }
 )
 @api_view(['DELETE'])
-@permission_classes([IsAdminUser])
+# @permission_classes([IsAdminUser])
 def delete_rank(request, pk):
     rank = get_object_or_404(Rank, id=pk)
     rank.delete()
@@ -2170,7 +2170,7 @@ def delete_rank(request, pk):
     operation_summary='Create or delete ranks',
 )
 @api_view(['POST', 'DELETE'])
-@permission_classes([IsAdminUser])
+# @permission_classes([IsAdminUser])
 def ranks_db_setup(request):
     if request.method == 'POST':
         # Create multiple ranks
