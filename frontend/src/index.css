@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+.container-w {
+  max-width: 1170px;
+}
+
+@layer components {
+  .btn {
+    @apply disabled:bg-blue-200 disabled:cursor-not-allowed hover:no-underline bg-blue-500 tracking-wider w-full text-center text-white font-bold cursor-pointer uppercase px-4 py-2 rounded-md hover:bg-blue-600 transition-colors block;
+  }
+
+  .generate-btn {
+    @apply disabled:bg-[#DEE2E6] disabled:cursor-not-allowed hover:no-underline bg-[#1098AD] tracking-wider w-full text-center text-white font-bold cursor-pointer py-2 rounded-md hover:bg-[#0B7285] transition-colors block;
+  }
+
+  /* doesn't prevent keyboard enter */
+  .generate-btn-disabled {
+    @apply bg-[#0B7285] cursor-not-allowed hover:no-underline tracking-wider w-full text-center text-[#868E96] font-bold py-2 rounded-md hover:bg-[#0B7285] transition-colors block pointer-events-none;
+  }
+
+  .auth-btn {
+    @apply hover:no-underline bg-[#1098AD] tracking-wider w-[150px] h-[40.8px] text-center text-white font-bold cursor-pointer py-2 rounded-sm hover:bg-[#0B7285] transition-colors block;
+  }
+}
