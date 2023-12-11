@@ -16,18 +16,14 @@ services:
 
   celery:
     container_name: sapienslink_celery_1
-    build:
-      context: ./backend  
+    build: ./backend  
     depends_on:
       - postgres
       - redis
 
   backend:
     container_name: sapienslink_backend_1
-    build:
-      context: ./backend  
-    ports:
-      - "8000:8000"
+    build: ./backend  # Correct path to Dockerfile
     depends_on:
       - postgres
       - redis
@@ -37,14 +33,17 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
 
+  # Next.js frontend supporting SSR
   frontend:
-    container_name: sapienslink_frontend_1
-    build:
-      context: ./frontend 
-    ports:
-      - "3000:3000"
+    image: node:lts
     depends_on:
       - backend
+    volumes:
+      - ./frontend:/frontend
+    working_dir: /frontend
+    # This will automatically build the frontend in production
+    # more and serve the application in development mode
+    command: sh -c 'npm run build_and_start'
 
   nginx:
     container_name: sapienslink_nginx_1
@@ -58,3 +57,4 @@ services:
 
 volumes:
   postgres_data:
+    - frontend
