@@ -6,6 +6,37 @@ The overall architecture design can be found below:
 
 ![](architecture_system.png)
 
+# Docker Setup Option
+
+Once installed Docker on your local machine, run the following command from the root of the project:
+
+`DB_NAME='YOUR_DB_NAME' DB_USER='YOUR_USER_NAME' DB_PASSWORD='YOUR_USER_PASSWORD' docker-compose up --build`
+
+Before running this command, make sure you have a `app_secrets.py` file in the backend directory.
+
+```
+SENDGRID_API_KEY = 'YOUR_SENDRY_API_KEY'
+POSTGRESQL_NAME = 'YOUR_DB_NAME'
+POSTGRESQL_USERNAME = 'YOUR_USER_NAME'
+POSTGRESQL_PASSWORD = 'YOUR_USER_PASSWORD'
+POSTGRESQL_HOST = 'postgres'
+POSTGRESQL_PORT = '5432'
+FROM_EMAIL = 'YOUR_SENDGRID_FROM_EMAIL'
+```
+
+The Django frontend should be accessible from [localhost](http://localhost/) and the REACT frontend from [localhost:3000](http://localhost:3000/)
+
+To create an admin user, run these commands from the terminal and follow the instructions:
+
+```
+docker exec -it sapienslink_backend_1 /bin/bash
+python manage.py createsuperuser
+```
+
+Make sure to first login through the application [login page](http://localhost/login/) and then go to the admin panel from [this address](http://localhost/admin/).
+
+# Local Setup Option
+
 ## Django Backend
 
 Run a django project with `python manage.py runserver` from the backend folder.
