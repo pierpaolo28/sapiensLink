@@ -31,13 +31,15 @@ RUN apt-get update && \
 RUN apt-get update && apt-get install -y gosu && rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements file into the container at /app
-COPY requirements.txt /app/
+COPY requirements-all.txt /app/
+COPY requirements-base.txt /app/
+COPY requirements-ml.txt /app/
 COPY wait-for-it.sh /app/
 
 RUN chmod +x /app/wait-for-it.sh 
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Install any needed packages specified in requirements-all.txt
+RUN pip install --no-cache-dir -r requirements-all.txt
 
 # Copy the rest of the application code into the container
 COPY . /app/

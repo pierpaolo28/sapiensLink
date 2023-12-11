@@ -16,8 +16,10 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Copy only necessary files for installing dependencies
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements-all.txt /app/
+COPY requirements-base.txt /app/
+COPY requirements-ml.txt /app/
+RUN pip install --no-cache-dir -r requirements-all.txt
 
 # Copy the rest of the application code
 COPY . /app/
