@@ -1,4 +1,3 @@
-import React from 'react';
 import DBSetup from './components/DBSetup';
 
 const DBSetupExample = () => {

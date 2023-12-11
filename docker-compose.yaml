@@ -1,20 +1,6 @@
 version: '3'
 
 services:
-  backend:
-    build:
-      context: ./backend  # Correct path to Dockerfile
-    ports:
-      - "8000:8000"
-    depends_on:
-      - postgres
-      - redis
-      - celery
-    environment:
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-
   postgres:
     image: postgres:latest
     environment:
@@ -31,6 +17,20 @@ services:
     depends_on:
       - postgres
       - redis
+
+  backend:
+    build:
+      context: ./backend  # Correct path to Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+      - celery
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
 
   frontend:
     build:

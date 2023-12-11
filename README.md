@@ -35,6 +35,8 @@ python manage.py createsuperuser
 
 Make sure to first login through the application [login page](http://localhost/login/) and then go to the admin panel from [this address](http://localhost/admin/).
 
+To clear resources after usage use: `docker-compose down -v`
+
 # Local Setup Option
 
 ## Django Backend

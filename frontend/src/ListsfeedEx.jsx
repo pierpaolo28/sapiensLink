@@ -1,4 +1,3 @@
-import React from 'react';
 import ListsFeed from './components/ListsFeed';
 
 const ListsfeedExample = () => {
