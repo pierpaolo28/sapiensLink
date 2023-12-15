@@ -381,3 +381,8 @@ class RegisterSerializer(Serializer):
 class LoginSerializer(Serializer):
     email = EmailField()
     password = CharField()
+
+
+class EmailUnsubscribeSerializer(Serializer):
+    inactive = BooleanField(required=False)
+    unread = BooleanField(required=False)

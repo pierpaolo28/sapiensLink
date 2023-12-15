@@ -73,6 +73,7 @@ def getRoutes(request):
         'POST /api/vote_rank/:pk/:content_index/:action',
         'GET /api/notifications/',
         'GET /api/notifications/:notification_id/mark_as_read/',
+        'POST /api/email_unsubscribe/'
         'POST /api/manage_subscription/:type/:id/',
         'GET /api/swagger/',
         'GET /api/redoc/'
@@ -1834,6 +1835,30 @@ def mark_notification_as_read(request, notification_id):
         return JsonResponse({'error': 'Notification not found.'}, status=404)
 
 
+@swagger_auto_schema(
+    method='post',
+    request_body=EmailUnsubscribeSerializer,
+    responses={200: 'Subscription preferences updated successfully.'},
+)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def email_unsubscribe(request):
+    user = request.user
+    email_subscription = user.email_subscription
+
+    # Use the serializer to validate the request data
+    serializer = EmailUnsubscribeSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+
+    # Update subscription preferences
+    if serializer.validated_data.get('inactive'):
+        email_subscription.receive_inactive_user_notifications = False
+    if serializer.validated_data.get('unread'):
+        email_subscription.receive_unread_notification_reminders = False
+    
+    email_subscription.save()
+    return Response({'detail': 'Subscription preferences updated successfully.'}, status=status.HTTP_200_OK)
+
 
 @swagger_auto_schema(
     method='POST',
@@ -1871,6 +1896,7 @@ def manage_subscription(request, type, id):
         return JsonResponse({'status': 'Unsubscribed successfully'})
     else:
         return JsonResponse({'error': 'Invalid action'}, status=400)
+        
 
 
 
