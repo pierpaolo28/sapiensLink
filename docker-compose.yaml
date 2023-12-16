@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:latest
+    container_name: sapienslink_postgres_1
+    environment:
+      POSTGRES_DB: "sapiensdb"
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: "redis:alpine"
+
+  celery:
+    container_name: sapienslink_celery_1
+    build:
+      context: ./backend  
+    depends_on:
+      - postgres
+      - redis
+
+  backend:
+    container_name: sapienslink_backend_1
+    build:
+      context: ./backend  
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+      - celery
+    environment:
+      DB_NAME: "sapiensdb"
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+  frontend:
+    container_name: sapienslink_frontend_1
+    build:
+      context: ./frontend 
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  nginx:
+    container_name: sapienslink_nginx_1
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
