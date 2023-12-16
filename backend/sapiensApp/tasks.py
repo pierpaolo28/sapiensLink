@@ -11,9 +11,6 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 import app_secrets
 import markdown
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
 from django.urls import reverse
 
 
@@ -93,9 +90,7 @@ def send_inactive_user_notifications():
     # Send email to each inactive user
     for user in inactive_users:
         if user.email_subscription.receive_inactive_user_notifications:
-            # Generate a unique token for the user
-            token = PasswordResetTokenGenerator().make_token(user)
-            unsubscribe_url = f"{DOMAIN}/login/?next={reverse('email_unsubscribe')}?token={urlsafe_base64_encode(force_bytes(f'{user.pk}.{token}'))}&inactive=true"
+            unsubscribe_url = f"{DOMAIN}/login/?next={reverse('email_unsubscribe')}?inactive=true"
 
             # Construct the email using SendGrid
             message = Mail(
@@ -148,8 +143,7 @@ def send_unread_notification_reminders():
     # Send email to each user with unread notifications
     for user in users_with_unread_notifications:
         if user.email_subscription.receive_unread_notification_reminders:
-            token = PasswordResetTokenGenerator().make_token(user)
-            unsubscribe_url = f"{DOMAIN}/login/?next={reverse('email_unsubscribe')}?token={urlsafe_base64_encode(force_bytes(f'{user.pk}.{token}'))}&unread=true"
+            unsubscribe_url = f"{DOMAIN}/login/?next={reverse('email_unsubscribe')}?unread=true"
 
             unread_notifications = Notification.objects.filter(
                 receiver=user.id,

@@ -131,7 +131,7 @@ DATABASES = {
         'NAME': 'sapiensdb',
         'USER': app_secrets.POSTGRESQL_USERNAME,
         'PASSWORD': app_secrets.POSTGRESQL_PASSWORD,
-        'HOST': 'localhost',
+        'HOST': 'postgres',
         'PORT': '5432',
     }
 }
