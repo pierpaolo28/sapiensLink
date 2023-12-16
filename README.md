@@ -4,7 +4,7 @@ This project is built with [React](https://react.dev/) and [Django](https://www.
 
 The overall architecture design can be found below:
 
-![](architecture_system.png)
+![](docs/images/architecture_system.png)
 
 # Docker Setup Option
 
@@ -87,7 +87,7 @@ The server can then be launched using: `python manage.py runserver` and the fron
 
 In order to create a snapshot of the database architecture, the following command can be used: `python manage.py graph_models -a sapinesApp -o ../db.png` from the backend folder.
 
-![](db.png)
+![](docs/images/db.png)
 
 ### Create Superuser
 

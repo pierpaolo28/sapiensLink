@@ -3,6 +3,7 @@ version: '3'
 services:
   postgres:
     image: postgres:latest
+    container_name: sapienslink_postgres_1
     environment:
       POSTGRES_DB: "sapiensdb"
       POSTGRES_USER: ${DB_USER}
@@ -14,6 +15,7 @@ services:
     image: "redis:alpine"
 
   celery:
+    container_name: sapienslink_celery_1
     build:
       context: ./backend  
     depends_on:
@@ -21,6 +23,7 @@ services:
       - redis
 
   backend:
+    container_name: sapienslink_backend_1
     build:
       context: ./backend  
     ports:
@@ -35,6 +38,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD}
 
   frontend:
+    container_name: sapienslink_frontend_1
     build:
       context: ./frontend 
     ports:
@@ -43,6 +47,7 @@ services:
       - backend
 
   nginx:
+    container_name: sapienslink_nginx_1
     build:
       context: ./backend/
       dockerfile: Dockerfile.nginx
