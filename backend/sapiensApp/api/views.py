@@ -31,8 +31,14 @@ import app_secrets
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.utils import timezone
+from django.shortcuts import redirect
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from rest_framework.exceptions import NotFound
 
-
+# TODO: Update Domain
+DOMAIN = 'http://127.0.0.1:8000'
 LISTS_PER_PAGE = 10
 
 @api_view(['GET'])
@@ -1835,29 +1841,51 @@ def mark_notification_as_read(request, notification_id):
         return JsonResponse({'error': 'Notification not found.'}, status=404)
 
 
-@swagger_auto_schema(
-    method='post',
-    request_body=EmailUnsubscribeSerializer,
-    responses={200: 'Subscription preferences updated successfully.'},
-)
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
+@api_view(['GET'])
 def email_unsubscribe(request):
-    user = request.user
-    email_subscription = user.email_subscription
+    # Extract the token from the query parameters
+    token = request.query_params.get('token')
+    # Decode the token to get the user
+    user = get_user_from_token(token)
+    if user:
+        # Extract 'inactive' and 'unread' parameters from the query parameters
+        inactive_param = request.query_params.get('inactive', 'false').lower()
+        unread_param = request.query_params.get('unread', 'false').lower()
 
-    # Use the serializer to validate the request data
-    serializer = EmailUnsubscribeSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
+        # Update subscription preferences directly in the database
+        email_subscription = user.email_subscription
+        email_subscription.receive_inactive_user_notifications = inactive_param == 'true'
+        email_subscription.receive_unread_notification_reminders = unread_param == 'true'
 
-    # Update subscription preferences
-    if serializer.validated_data.get('inactive'):
-        email_subscription.receive_inactive_user_notifications = False
-    if serializer.validated_data.get('unread'):
-        email_subscription.receive_unread_notification_reminders = False
-    
-    email_subscription.save()
-    return Response({'detail': 'Subscription preferences updated successfully.'}, status=status.HTTP_200_OK)
+        # Save the changes to the EmailSubscription instance
+        email_subscription.save()
+
+        return Response({'detail': 'Subscription preferences updated successfully.'}, status=status.HTTP_200_OK)
+
+def get_user_from_token(token):
+    try:
+        # Decode the entire token
+        decoded_token = urlsafe_base64_decode(token).decode('utf-8')
+
+        # Split the decoded token to get uidb64 and token
+        uidb64, token = decoded_token.split('.')
+        
+        # Convert uidb64 to bytes (needed for Django 3.2+)
+        uidb64_bytes = uidb64.encode('utf-8')
+
+        # Decode uidb64 to get the user ID
+        uid = uidb64_bytes.decode('utf-8')
+
+        # Retrieve the user
+        user = User.objects.get(pk=uid)
+
+        # Check if the token is valid for the user
+        if PasswordResetTokenGenerator().check_token(user, token):
+            return user
+        else:
+            raise NotFound("Invalid token")
+    except (ValueError, User.DoesNotExist, NotFound):
+        raise NotFound("Invalid token")
 
 
 @swagger_auto_schema(

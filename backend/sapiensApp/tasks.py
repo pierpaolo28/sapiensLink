@@ -3,11 +3,19 @@ from celery import shared_task
 from django.utils import timezone
 from sapiensApp.models import RevokedToken, Notification, Rank, RankVote, User, List
 from django.conf import settings
+from django.db.models import IntegerField
+from django.db.models.functions import Cast
+from django.db.models import Subquery
 import json
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 import app_secrets
 import markdown
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.urls import reverse
+
 
 # TODO: Update Domain
 DOMAIN = 'http://127.0.0.1:8000'
@@ -71,37 +79,42 @@ def calculate_element_score(rank, content_index):
 @shared_task
 def send_inactive_user_notifications():
     # Define the threshold for "recently"
-    threshold_date = timezone.now() - timezone.timedelta(days=30)
+    threshold_date = timezone.now() - timezone.timedelta(days=0)
 
     # Get inactive users
     inactive_users = User.objects.filter(last_login__lt=threshold_date)
 
     # Get latest posts
-    latest_lists = List.objects.order_by('-created_at')[:5]
-    latest_ranks = Rank.objects.order_by('-created_at')[:5]
-    lists_html = "\n".join([f"<li><a href='{DOMAIN}/list/{post.id}'>{markdown.markdown(post.title)}</a></li>" for post in latest_lists])
-    ranks_html = "\n".join([f"<li><a href='{DOMAIN}/rank/{post.id}'>{markdown.markdown(post.title)}</a></li>" for post in latest_ranks])
+    latest_lists = List.objects.order_by('-created')[:5]
+    latest_ranks = Rank.objects.order_by('-created')[:5]
+    lists_html = "\n".join([f"<li><a href='{DOMAIN}/list/{post.id}'>{markdown.markdown(post.name)}</a></li>" for post in latest_lists])
+    ranks_html = "\n".join([f"<li><a href='{DOMAIN}/rank/{post.id}'>{markdown.markdown(post.name)}</a></li>" for post in latest_ranks])
+
     # Send email to each inactive user
     for user in inactive_users:
         if user.email_subscription.receive_inactive_user_notifications:
+            # Generate a unique token for the user
+            token = PasswordResetTokenGenerator().make_token(user)
+            unsubscribe_url = f"{DOMAIN}/login/?next={reverse('email_unsubscribe')}?token={urlsafe_base64_encode(force_bytes(f'{user.pk}.{token}'))}&inactive=true"
+
             # Construct the email using SendGrid
             message = Mail(
                 from_email=app_secrets.FROM_EMAIL,
                 to_emails=user.email,
                 subject='Latest from SapiensLink',
                 html_content=f'''
-                                <p>Dear {user.username},</p>
-                                <p>Check out the latest posts on SapiensLink:</p>
-                                <p>Lists</p>
-                                <ul>
-                                    {lists_html}
-                                </ul>
-                                <p>Ranks</p>
-                                <ul>
-                                    {ranks_html}
-                                </ul>
-                                <p>To stop getting reminders about new content on SapiensLink, click <a href="{DOMAIN}/api/email_unsubscribe/" data-preference="inactive">here</a>.</p>
-                                '''
+                    <p>Dear {user.username},</p>
+                    <p>Check out the latest posts on SapiensLink:</p>
+                    <p>Lists</p>
+                    <ul>
+                        {lists_html}
+                    </ul>
+                    <p>Ranks</p>
+                    <ul>
+                        {ranks_html}
+                    </ul>
+                    <p>To stop getting reminders about new content on SapiensLink, click <a href="{unsubscribe_url}">here</a>.</p>
+                '''
             )
 
             try:
@@ -114,21 +127,34 @@ def send_inactive_user_notifications():
 @shared_task
 def send_unread_notification_reminders():
     # Define the threshold for unread notifications
-    threshold_date = timezone.now() - timezone.timedelta(days=7)
+    threshold_date = timezone.now() - timezone.timedelta(days=0)
 
-    # Get users with unread notifications
+    # Get distinct user IDs from the Notification model
+    distinct_user_ids = Notification.objects.filter(
+        read=False,
+        timestamp__lt=threshold_date,
+    ).values('receiver').distinct()
+
+    # Ensure distinct_user_ids are cast to integer
+    casted_user_ids = distinct_user_ids.annotate(
+        user_id_as_integer=Cast('receiver', IntegerField())
+    ).values('user_id_as_integer').distinct()
+
+    # Use the casted_user_ids in the User query
     users_with_unread_notifications = User.objects.filter(
-        notification__is_read=False,
-        notification__created_at__lt=threshold_date
-    ).distinct()
+        id__in=Subquery(casted_user_ids)
+    )
 
     # Send email to each user with unread notifications
     for user in users_with_unread_notifications:
         if user.email_subscription.receive_unread_notification_reminders:
+            token = PasswordResetTokenGenerator().make_token(user)
+            unsubscribe_url = f"{DOMAIN}/login/?next={reverse('email_unsubscribe')}?token={urlsafe_base64_encode(force_bytes(f'{user.pk}.{token}'))}&unread=true"
+
             unread_notifications = Notification.objects.filter(
-                user=user,
-                is_read=False,
-                created_at__lt=threshold_date
+                receiver=user.id,
+                read=False,
+                timestamp__lt=threshold_date
             )
 
             # Convert unread notifications to HTML using Markdown
@@ -141,7 +167,7 @@ def send_unread_notification_reminders():
             <ul>
                 {notifications_html}
             </ul>
-            <p>To stop getting reminders about unread notifications, click <a href="{DOMAIN}/api/email_unsubscribe/" data-preference="unread">here</a>.</p>
+            <p>To stop getting reminders about unread notifications, click <a href="{unsubscribe_url}">here</a>.</p>
             '''
 
             message = Mail(

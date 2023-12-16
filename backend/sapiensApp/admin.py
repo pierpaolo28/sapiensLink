@@ -19,6 +19,7 @@ admin.site.register(Rank)
 admin.site.register(RankVote)
 admin.site.register(RankSaved)
 admin.site.register(RankReport)
+admin.site.register(EmailSubscription)
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):

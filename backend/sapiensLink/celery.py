@@ -33,10 +33,10 @@ app.conf.beat_schedule = {
     },
     'send-inactive-user-notifications': {
         'task': 'sapiensApp.tasks.send_inactive_user_notifications',
-        'schedule': crontab(minute=0, hour=12, day_of_week=1),
+        'schedule': crontab(minute='*/1'),
     },
     'send-unread-notification-reminders': {
        'task': 'sapiensApp.tasks.send_unread_notification_reminders',
-       'schedule': crontab(minute=0, hour=12, day_of_week=1),  # Run once a week on Monday at noon
+       'schedule': crontab(minute='*/1'),  # Run once a week on Monday at noon
    },
 }
