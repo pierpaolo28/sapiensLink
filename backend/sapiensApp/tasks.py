@@ -76,7 +76,7 @@ def calculate_element_score(rank, content_index):
 @shared_task
 def send_inactive_user_notifications():
     # Define the threshold for "recently"
-    threshold_date = timezone.now() - timezone.timedelta(days=0)
+    threshold_date = timezone.now() - timezone.timedelta(days=14)
 
     # Get inactive users
     inactive_users = User.objects.filter(last_login__lt=threshold_date)
@@ -90,7 +90,7 @@ def send_inactive_user_notifications():
     # Send email to each inactive user
     for user in inactive_users:
         if user.email_subscription.receive_inactive_user_notifications:
-            unsubscribe_url = f"{DOMAIN}/login/?next={reverse('email_unsubscribe')}?inactive=true"
+            unsubscribe_url = f"{DOMAIN}/login/?next={reverse('email_unsubscribe')}?inactive=True"
 
             # Construct the email using SendGrid
             message = Mail(
@@ -122,7 +122,7 @@ def send_inactive_user_notifications():
 @shared_task
 def send_unread_notification_reminders():
     # Define the threshold for unread notifications
-    threshold_date = timezone.now() - timezone.timedelta(days=0)
+    threshold_date = timezone.now() - timezone.timedelta(days=7)
 
     # Get distinct user IDs from the Notification model
     distinct_user_ids = Notification.objects.filter(
@@ -143,7 +143,7 @@ def send_unread_notification_reminders():
     # Send email to each user with unread notifications
     for user in users_with_unread_notifications:
         if user.email_subscription.receive_unread_notification_reminders:
-            unsubscribe_url = f"{DOMAIN}/login/?next={reverse('email_unsubscribe')}?unread=true"
+            unsubscribe_url = f"{DOMAIN}/login/?next={reverse('email_unsubscribe')}?unread=True"
 
             unread_notifications = Notification.objects.filter(
                 receiver=user.id,

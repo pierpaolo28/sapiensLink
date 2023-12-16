@@ -77,7 +77,7 @@ In order to have the web application notification system up and running, you nee
 ## Celery
 
 Celery is a distributed task queue system which can be used to schedule recurring tasks (e.g. clearing up read notifications, etc.). In order to be correctly working we
-need to have the celery worker (executing tasks) and beat (scheduling periodic tasks at the specified intervals) running in two separate terminal windows (both from the backend folder) using the following commands:
+need to have the celery worker (executing tasks) and beat (scheduling periodic tasks at the specified intervals) running in two separate terminal windows (both from the backend folder) using the following commands (sudo permissions might be required):
 
 - `celery -A sapiensLink worker --loglevel=info`
 - `celery -A sapiensLink beat --loglevel=info`
