@@ -41,7 +41,7 @@ To clear resources after usage use: `docker-compose down -v`
 
 ## Django Backend
 
-Run a django project with `python manage.py runserver` from the backend folder.
+Run a django project with `python manage.py runserver` from the backend folder (in this case make sure to setup DEBUG=True and 'HOST': 'localhost' in the settings.py).
 
 You might need to create a local DB and/or superuser credentials to access the admin panel.
 
