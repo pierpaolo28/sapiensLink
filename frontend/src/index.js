@@ -3,6 +3,8 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import Home from "./Home";
+import ListsfeedExample from "./ListsfeedEx";
+import DBSetup from "./DBSetupEx";
 import reportWebVitals from "./reportWebVitals";
 import { MantineProvider, createTheme } from "@mantine/core";
 import "@mantine/core/styles.css";
@@ -28,6 +30,14 @@ const router = createBrowserRouter([
   {
     path: "/home",
     element: <Home />,
+  },
+  {
+    path: "/listsfeed",
+    element: <ListsfeedExample />,
+  },
+  {
+    path: "/dbsetup",
+    element: <DBSetup />,
   },
 ]);
 

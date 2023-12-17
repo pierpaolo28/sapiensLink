@@ -32,6 +32,12 @@ function App() {
   const getReactHome = () => {
     navigate('/home');
   };
+  const getReactListFeed = () => {
+    navigate('/listsfeed');
+  };
+  const getReactDBSetup = () => {
+    navigate('/dbsetup');
+  };
   return (
     <div id="page-container">
       <div id="content-wrap">
@@ -53,6 +59,12 @@ function App() {
               </li>
               <li>
                 <button onClick={getReactHome}>Go to home in React </button>
+              </li>
+              <li>
+              <button onClick={getReactDBSetup}>Setup Empty DB</button>
+              </li>
+              <li>
+              <button onClick={getReactListFeed}>Go to List Feed </button>
               </li>
             </ul>
           </div>

@@ -4,7 +4,40 @@ This project is built with [React](https://react.dev/) and [Django](https://www.
 
 The overall architecture design can be found below:
 
-![](architecture_system.png)
+![](docs/images/architecture_system.png)
+
+# Docker Setup Option
+
+Once installed Docker on your local machine, run the following command from the root of the project:
+
+`DB_USER='YOUR_USER_NAME' DB_PASSWORD='YOUR_USER_PASSWORD' docker-compose up`
+
+Before running this command, make sure you have a `app_secrets.py` file in the backend directory.
+
+```
+SENDGRID_API_KEY = 'YOUR_SENDRY_API_KEY'
+POSTGRESQL_NAME = 'YOUR_DB_NAME'
+POSTGRESQL_USERNAME = 'YOUR_USER_NAME'
+POSTGRESQL_PASSWORD = 'YOUR_USER_PASSWORD'
+POSTGRESQL_HOST = 'postgres'
+POSTGRESQL_PORT = '5432'
+FROM_EMAIL = 'YOUR_SENDGRID_FROM_EMAIL'
+```
+
+The Django frontend should be accessible from [localhost](http://localhost/) and the REACT frontend from [localhost:3000](http://localhost:3000/)
+
+To create an admin user, run these commands from the terminal and follow the instructions:
+
+```
+docker exec -it sapienslink_backend_1 /bin/bash
+python manage.py createsuperuser
+```
+
+Make sure to first login through the application [login page](http://localhost/login/) and then go to the admin panel from [this address](http://localhost/admin/).
+
+To clear resources after usage use: `docker-compose down -v`
+
+# Local Setup Option
 
 ## Django Backend
 
@@ -54,7 +87,7 @@ The server can then be launched using: `python manage.py runserver` and the fron
 
 In order to create a snapshot of the database architecture, the following command can be used: `python manage.py graph_models -a sapinesApp -o ../db.png` from the backend folder.
 
-![](db.png)
+![](docs/images/db.png)
 
 ### Create Superuser
 

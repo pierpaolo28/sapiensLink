@@ -1,0 +1,38 @@
+[
+    {
+        "name": "Tech Blogs",
+        "description": "Cool list of tech blogs",
+        "content": "Example",
+        "source": "",
+        "topic": [
+            {"name": "Tech"},
+            {"name": "Education"}
+        ],
+        "participants": [
+        ]
+    },
+    {
+        "name": "Remote Work Websites",
+        "content": "Remote.co, remote.coremote-jobs \nRemote OK, remoteok.com \nWe Work Remotely, weworkremotely.com",
+        "updated": "2023-10-24T12:09:32.576162Z",
+        "created": "2023-10-24T12:09:32.576228Z",
+        "source": "",
+        "topic": [
+            {"name": "Work"}
+        ],
+        "participants": [
+            1, 2
+        ]
+    },
+    {
+        "name": "Personal Finance & FIRE",
+        "content": "Retire In Progress, retireinprogress.com \nAccidentally Retired, accidentallyretired.com  \nPortfolio Charts, portfoliocharts.com  \nReddit Personal Finance, reddit.comrpersonalfinancewikiindex  \nJustETF, justetf.comen  \nMorning Star, morningstar.com  \nETF.com, etf.cometfanalyticsetf-finder  \nJL Collins, jlcollinsnh.com  \nMr Money Mustache, mrmoneymustache.com  \nMustachian Post Discussion Forum, forum.mustachianpost.com  \nEarly Retirement Extreme,  earlyretirementextreme.com  \nInvestopedia, investopedia.com  \nGlobal Property Guide, globalpropertyguide.com  \nOptimized Portfolio, optimizedportfolio.com  \nLazy Portfolio ETF,  lazyportfolioetf.com  \nBogleHeads, bogleheads.orgindex.php  \nPortfolio Visualizer (with Backtesting), portfoliovisualizer.com  \nWise Money (EU Investing), bankeronwheels.com  \nIndex Fund Investor (EU Investing), indexfundinvestor.eu",
+        "source": "",
+        "topic": [
+            {"name": "Personal Finance"}
+        ],
+        "participants": [
+            1
+        ]
+    }
+]
