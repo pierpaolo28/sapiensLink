@@ -166,3 +166,4 @@ backend/celerybeat-schedule.db
 backend/sapiensApp/migrations/0*
 backend/.DS_Store
 .DS_Store
+.DS_Store
