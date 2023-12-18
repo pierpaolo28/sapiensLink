@@ -67,12 +67,9 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_rest_passwordreset',
     'drf_yasg',
-    'social_django',
 ]
 
 AUTHENTICATION_BACKENDS = [
-    'allauth.account.auth_backends.AuthenticationBackend',
-    'social_core.backends.google.GoogleOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
@@ -122,7 +119,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'sapiensApp.middleware.TokenRevocationMiddleware',
-    'allauth.account.middleware.AccountMiddleware',
 ]
 
 ROOT_URLCONF = 'sapiensLink.urls'
