@@ -43,5 +43,4 @@ urlpatterns = [
     path('report_rank/<str:pk>/', views.report_rank, name='report_rank'),
     path('vote_rank/<str:pk>/<str:content_index>/<str:action>/', views.vote_rank, name='vote_rank'),
     path('rank_topics/', views.rankTopicsPage, name="rank_topics"),
-    path('auth/', include('social_django.urls', namespace='social')),
 ]

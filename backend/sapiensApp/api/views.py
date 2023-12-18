@@ -290,8 +290,11 @@ def register_user(request):
         user = User.objects.filter(email=google_data['email']).first()
         if not user:
             # User does not exist, create a new user
-            user = User.objects.create_user(username=google_data['email'], email=google_data['email'])
+            user = User.objects.create_user(email=google_data['email'])
         
+        # Manually specify the backend
+        user.backend = 'django.contrib.auth.backends.ModelBackend'
+
         # Log in the user
         login(request, user)
 
