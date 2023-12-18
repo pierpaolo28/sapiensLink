@@ -1,6 +1,6 @@
 # Sapiens link
 
-This project is built with [React](https://react.dev/) and [Django](https://www.djangoproject.com/).
+This project is built with [Next.js](https://nextjs.org/) and [Django](https://www.djangoproject.com/).
 
 The overall architecture design can be found below:
 
@@ -24,7 +24,7 @@ POSTGRESQL_PORT = '5432'
 FROM_EMAIL = 'YOUR_SENDGRID_FROM_EMAIL'
 ```
 
-The Django frontend should be accessible from [localhost](http://localhost/) and the REACT frontend from [localhost:3000](http://localhost:3000/)
+The Django frontend should be accessible from [localhost](http://localhost/) and the Next.js frontend from [localhost:3000](http://localhost:3000/)
 
 To create an admin user, run these commands from the terminal and follow the instructions:
 
