@@ -250,21 +250,23 @@ def logout_user(request):
 
 @swagger_auto_schema(
     method='post',
-    operation_summary='User registration',
-    request_body=RegisterSerializer,
+    request_body=openapi.Schema(
+        type=openapi.TYPE_OBJECT,
+        properties={
+            'token': openapi.Schema(type=openapi.TYPE_STRING, description='Google ID token for sign-in'),
+            'email': openapi.Schema(type=openapi.TYPE_STRING, description='Email for registration'),
+            'password': openapi.Schema(type=openapi.TYPE_STRING, description='Password for registration'),
+        }
+    ),
     responses={
-        201: openapi.Response(
-            description='User registered successfully',
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'access_token': openapi.Schema(type=openapi.TYPE_STRING),
-                    'refresh_token': openapi.Schema(type=openapi.TYPE_STRING),
-                    'expiration_time': openapi.Schema(type=openapi.TYPE_INTEGER),
-                },
-            ),
-        ),
-        400: 'Bad Request - An error occurred during registration',
+        201: openapi.Response(description='User Created or Logged In', examples={
+            "application/json": {
+                "access_token": "string",
+                "refresh_token": "string",
+                "expiration_time": 1234567890
+            }
+        }),
+        400: openapi.Response(description='Bad Request')
     }
 )
 @api_view(['POST'])
@@ -1936,13 +1938,9 @@ def mark_notification_as_read(request, notification_id):
     },
     operation_summary="Update email subscription preferences",
     operation_description="Update the user's email subscription preferences.",
-    tags=["Email Subscription"],
 )
 @api_view(['GET'])
 def email_unsubscribe(request):
-    """
-    Update the user's email subscription preferences.
-    """
 
     # Extract access_token
     access_token_string = request.query_params.get('access_token', '')
