@@ -1,5 +1,6 @@
+<script src="https://apis.google.com/js/platform.js" async defer></script>
+<meta name="google-signin-client_id" content="129396249351-h8ei4nfegplvq2k29dkvhn3vheenf9a0.apps.googleusercontent.com">
 {% extends 'main.html' %}
-
 {% block content %}
 <main class="auth layout">
 
@@ -25,7 +26,7 @@
             <input id="password" name="password" type="password"
               placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" />
           </div>
-
+          
           <button class="btn btn--main" type="submit">
             <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
               <title>Lock</title>
@@ -40,6 +41,9 @@
             Login
           </button>
         </form>
+        <div>
+          <div class="g-signin2" data-onsuccess="onSignIn"></div>
+        </div>
 
         <p><a href="{% url 'password_reset' %}">Forgot Password?</a></p>
 
@@ -87,6 +91,9 @@
             Register
           </button>
         </form>
+        <div>
+          <div class="g-signin2" data-onsuccess="onSignIn"></div>
+        </div>
 
         <div class="auth__action">
           <p>Already have an account?</p>
@@ -98,3 +105,29 @@
   {% endif %}
 </main>
 {% endblock content %}
+
+<script type="text/javascript">
+    function onSignIn(googleUser) {
+        var id_token = googleUser.getAuthResponse().id_token;
+
+        // Send the ID token to your backend via HTTPS
+        fetch('http://127.0.0.1:8000/api/auth/google/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ token: id_token })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Handle the response from your backend
+            console.log(data);
+
+            // Redirect or perform any other actions as needed
+            // Example: window.location.href = '/dashboard';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+</script>

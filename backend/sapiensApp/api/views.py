@@ -37,7 +37,7 @@ from django.shortcuts import redirect
 from urllib.parse import urlencode
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth.models import AnonymousUser
-
+import requests
 
 # TODO: Update Domain
 DOMAIN = 'http://127.0.0.1:8000'
@@ -268,14 +268,31 @@ def logout_user(request):
     }
 )
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def register_user(request):
-    serializer = RegisterSerializer(data=request.data)
+    # Check if 'token' field is present in the request data
+    is_google_signin = 'token' in request.data
 
-    if serializer.is_valid():
-        user = MyUserCreationForm(serializer.validated_data).save(commit=False)
-        user.email = user.email.lower()
-        user.save()
-
+    if is_google_signin:
+        # Handle Google Sign-In
+        token = request.data.get('token')
+        
+        # Verify and validate the Google ID token using Google API
+        google_api_url = f'https://www.googleapis.com/oauth2/v3/tokeninfo?id_token={token}'
+        response = requests.get(google_api_url)
+        google_data = response.json()
+        
+        if google_data.get('error_description'):
+            # Invalid Google ID token
+            return Response({"message": "Invalid Google ID token"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Create or retrieve the user based on Google information
+        user = User.objects.filter(email=google_data['email']).first()
+        if not user:
+            # User does not exist, create a new user
+            user = User.objects.create_user(username=google_data['email'], email=google_data['email'])
+        
+        # Log in the user
         login(request, user)
 
         refresh = RefreshToken.for_user(user)
@@ -289,8 +306,29 @@ def register_user(request):
 
         return Response(data, status=status.HTTP_201_CREATED)
     else:
-        # TODO: provide more descriptive explaination of error (e.g. password condition, duplicate email)
-        return Response({"message": "An error occurred during registration"}, status=status.HTTP_400_BAD_REQUEST)
+        # Handle standard registration
+        serializer = RegisterSerializer(data=request.data)
+
+        if serializer.is_valid():
+            user = MyUserCreationForm(serializer.validated_data).save(commit=False)
+            user.email = user.email.lower()
+            user.save()
+
+            login(request, user)
+
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+
+            data = {
+                "access_token": access_token,
+                "refresh_token": str(refresh),
+                "expiration_time": refresh.access_token['exp'] * 1000  # Convert expiration time to milliseconds
+            }
+
+            return Response(data, status=status.HTTP_201_CREATED)
+        else:
+            # TODO: provide more descriptive explanation of error (e.g., password condition, duplicate email)
+            return Response({"message": "An error occurred during registration"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(

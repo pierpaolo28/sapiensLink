@@ -6,8 +6,6 @@ import numpy as np
 
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
-"""Declare models for YOUR_APP app."""
-
 class UserManager(BaseUserManager):
     """Define a model manager for User model with no username field."""
 
