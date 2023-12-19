@@ -12,7 +12,7 @@ Once installed Docker on your local machine, run the following command from the 
 
 `DB_USER='YOUR_USER_NAME' DB_PASSWORD='YOUR_USER_PASSWORD' docker-compose up`
 
-Before running this command, make sure you have a `app_secrets.py` file in the backend directory.
+Before running this command, make sure you have a `app_secrets.py` file in the backend directory and to have removed any pre-existing .next, node_modules folders from the frontend folder.
 
 ```
 SENDGRID_API_KEY = 'YOUR_SENDRY_API_KEY'
