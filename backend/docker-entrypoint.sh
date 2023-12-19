@@ -8,6 +8,8 @@ user="docker_user"
 useradd -m -u 1000 $user
 chown -R $user:$user /app
 
+export DJANGO_SETTINGS_MODULE=sapiensLink.settings
+
 # Wait for the PostgreSQL service to be available
 /app/wait-for-it.sh postgres:5432 --timeout=30
 

@@ -16,13 +16,14 @@ Before running this command, make sure you have a `app_secrets.py` file in the b
 
 ```
 SENDGRID_API_KEY = 'YOUR_SENDRY_API_KEY'
-POSTGRESQL_NAME = 'YOUR_DB_NAME'
 POSTGRESQL_USERNAME = 'YOUR_USER_NAME'
 POSTGRESQL_PASSWORD = 'YOUR_USER_PASSWORD'
-POSTGRESQL_HOST = 'postgres'
-POSTGRESQL_PORT = '5432'
 FROM_EMAIL = 'YOUR_SENDGRID_FROM_EMAIL'
+GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID'
+GOOGLE_CLIENT_SECRET = 'YOUR_GOOGLE_CLIENT_SECRET'
 ```
+
+If you want to rebuild making sure to not cache anything use: `DB_USER='admin' DB_PASSWORD='password' docker-compose build --no-cache` first. Or if need to clear everything use `docker system prune --volumes`.
 
 The Django frontend should be accessible from [localhost](http://localhost/) and the Next.js frontend from [localhost:3000](http://localhost:3000/)
 
@@ -35,7 +36,7 @@ python manage.py createsuperuser
 
 Make sure to first login through the application [login page](http://localhost/login/) and then go to the admin panel from [this address](http://localhost/admin/).
 
-To clear resources after usage use: `docker-compose down -v`
+To clear resources after usage use: `docker-compose down -v`.
 
 # Local Setup Option
 

@@ -16,13 +16,13 @@ services:
 
   celery:
     container_name: sapienslink_celery_1
-    build: ./backend  
+    build: ./backend 
     depends_on:
       - postgres
       - redis
 
   backend:
-    build: ./backend 
+    build: ./backend
     ports:
       - 8001:8000
     depends_on:
@@ -33,6 +33,7 @@ services:
       DB_NAME: "sapiensdb"
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
+      DJANGO_SETTINGS_MODULE: sapiensLink.settings
 
   # Next.js frontend supporting SSR
   frontend:
@@ -57,6 +58,7 @@ services:
       - "80:80"
     depends_on:
       - backend
+      - frontend
 
 volumes:
   postgres_data: {}
