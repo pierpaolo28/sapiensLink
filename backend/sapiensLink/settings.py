@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import app_secrets
-import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-pmxfauptl=)tp54ad-fi24x$%@_=8ev9tl0n^wa0fwq%%h%%xd'
+SECRET_KEY = app_secrets.DJANGO_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -132,7 +131,7 @@ DATABASES = {
         'NAME': 'sapiensdb',
         'USER': app_secrets.POSTGRESQL_USERNAME,
         'PASSWORD': app_secrets.POSTGRESQL_PASSWORD,
-        'HOST': 'postgres',
+        'HOST': 'postgresdb',
         'PORT': '5432',
     }
 }
@@ -192,15 +191,15 @@ MEDIA_ROOT = BASE_DIR / 'static' / 'images'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #TODO: Change to allow just specific url
-CORS_ALLOW_ALL_ORIGINS = True
-# CORS_URLS_REGEX = r"/api/.*"
-# CORS_ALLOWED_ORIGINS = [
-#     "http://127.0.0.1:8000",
-#     "http://127.0.0.1:3000",
-#     "http://127.0.0.1:5500",
-#     "http://localhost:3000",
-#     "http://localhost:8000"
-# ]
+# CORS_ALLOW_ALL_ORIGINS = True
+CORS_URLS_REGEX = r"/api/.*"
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5500",
+    "http://localhost:3000",
+    "http://localhost:8000"
+]
 
 
 ASGI_APPLICATION = 'sapiensLink.asgi.application'

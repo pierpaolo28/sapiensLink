@@ -25,16 +25,16 @@ GOOGLE_CLIENT_SECRET = 'YOUR_GOOGLE_CLIENT_SECRET'
 
 If you want to rebuild making sure to not cache anything use: `DB_USER='admin' DB_PASSWORD='password' docker-compose build --no-cache` first. Or if need to clear everything use `docker system prune --volumes`.
 
-The Django frontend should be accessible from [localhost](http://localhost/) and the Next.js frontend from [localhost:3000](http://localhost:3000/)
+The Django frontend should be accessible from [localhost:8001](http://localhost:8001/), the Next.js frontend from [localhost:3001](http://localhost:3000/) and the Nginx frontend from [localhost](http://localhost/)
 
 To create an admin user, run these commands from the terminal and follow the instructions:
 
 ```
-docker exec -it sapienslink_backend_1 /bin/bash
+docker exec -it sapienslink_django_1 /bin/bash
 python manage.py createsuperuser
 ```
 
-Make sure to first login through the application [login page](http://localhost/login/) and then go to the admin panel from [this address](http://localhost/admin/).
+Once created the admin user you can then access the admin panel from [this address](http://localhost/admin/).
 
 To clear resources after usage use: `docker-compose down -v`.
 
@@ -59,6 +59,8 @@ After you install any Python package, use `pip freeze > requirements.txt`.
 If you need to install any missing package someone else might have added since your last contribution, then use: `pip install -r requirements.txt`.
 
 Once finished developing use: `deactivate`.
+
+NOTE: for this project we use 2 key requirements files: requirements-base.txt and requirements-ml.txt which combined together give requirements-all.txt which can be used to run the Django application locally.
 
 ## PostgreSQL (Create Your Local DB in the backend folder)
 

@@ -64,5 +64,3 @@ typing_extensions==4.7.1
 uritemplate==4.1.1
 urllib3==2.1.0
 zope.interface==6.1
-gunicorn==21.2.0
-celery==5.0.5
