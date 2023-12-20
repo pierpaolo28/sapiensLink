@@ -21,6 +21,7 @@ POSTGRESQL_PASSWORD = 'YOUR_USER_PASSWORD'
 FROM_EMAIL = 'YOUR_SENDGRID_FROM_EMAIL'
 GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID'
 GOOGLE_CLIENT_SECRET = 'YOUR_GOOGLE_CLIENT_SECRET'
+DJANGO_SECRET_KEY = 'YOUR_DJANGO_SECRET_KEY'
 ```
 
 If you want to rebuild making sure to not cache anything use: `DB_USER='admin' DB_PASSWORD='password' docker-compose build --no-cache` first. Or if need to clear everything use `docker system prune --volumes`.
