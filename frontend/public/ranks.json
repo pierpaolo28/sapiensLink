@@ -20,7 +20,7 @@
         "name": "Rank 2",
         "description": "This is the second rank.",
         "topic": [{"name": "Finance"}, {"name": "Tech"}],
-        "contributors": [3, 4],
+        "contributors": [3, 1],
         "content": 
             {
                 "a": {
