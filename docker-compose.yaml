@@ -13,6 +13,18 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  # TODO: Hide PgAdmin credentials
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: sapienslink_pgadmin_1
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@admin.com"
+      PGADMIN_DEFAULT_PASSWORD: "root"
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgresdb
+
   django:
     container_name: sapienslink_django_1
     build: ./backend
