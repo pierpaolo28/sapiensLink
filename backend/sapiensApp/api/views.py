@@ -31,8 +31,16 @@ import app_secrets
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.utils import timezone
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.shortcuts import redirect
+from urllib.parse import urlencode
+from rest_framework_simplejwt.tokens import AccessToken
+from django.contrib.auth.models import AnonymousUser
 
 
+# TODO: Update Domain
+DOMAIN = 'http://127.0.0.1:8000'
 LISTS_PER_PAGE = 10
 
 @api_view(['GET'])
@@ -73,6 +81,7 @@ def getRoutes(request):
         'POST /api/vote_rank/:pk/:content_index/:action',
         'GET /api/notifications/',
         'GET /api/notifications/:notification_id/mark_as_read/',
+        'GET /api/email_unsubscribe/'
         'POST /api/manage_subscription/:type/:id/',
         'GET /api/swagger/',
         'GET /api/redoc/'
@@ -117,8 +126,8 @@ def extract_token_from_authorization_header(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_user(request):
-
     serializer = LoginSerializer(data=request.data)
+    
     if serializer.is_valid():
         email = serializer.validated_data['email']
         password = serializer.validated_data['password']
@@ -128,19 +137,40 @@ def login_user(request):
         except User.DoesNotExist:
             return Response({'message': 'Email does not exist'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Manually authenticate the user using the authenticate function
         user = authenticate(request=request, username=email, password=password)
 
         if user is not None:
-            # Use DRF's login function to log in the user
             login(request, user)
+
+            # Retrieve the 'next' parameter from the query string
+            next_url = request.GET.get('next')
+
+            if next_url:
+                # If 'next' is provided, preserve existing query parameters
+                existing_params = request.GET.urlencode()
+                separator = '&' if existing_params else ''
+                
+                # Include the entire response_data and existing query parameters in the redirect URL
+                refresh = RefreshToken.for_user(user)
+                response_data = {
+                    'access_token': str(refresh.access_token),
+                    'refresh_token': str(refresh),
+                    'expiration_time': refresh.access_token['exp'] * 1000
+                }
+                query_params = urlencode(response_data)
+                redirect_url = f"{next_url}?{existing_params}{separator}{query_params}"
+
+                # Redirect to the specified URL after successful login
+                return redirect(redirect_url)
+            
+            # If 'next' is not provided, return your response as before
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
-            # Return JSON response
+            
             response_data = {
                 'access_token': access_token,
                 'refresh_token': str(refresh),
-                'expiration_time': refresh.access_token['exp'] * 1000  # Convert expiration time to milliseconds
+                'expiration_time': refresh.access_token['exp'] * 1000
             }
 
             return Response(response_data, status=status.HTTP_200_OK)
@@ -1834,6 +1864,92 @@ def mark_notification_as_read(request, notification_id):
         return JsonResponse({'error': 'Notification not found.'}, status=404)
 
 
+@swagger_auto_schema(
+    methods=['GET'],
+    manual_parameters=[
+        openapi.Parameter(
+            name='access_token',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_STRING,
+            required=True,
+            description='Access token for authentication.'
+        ),
+        openapi.Parameter(
+            name='inactive',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_BOOLEAN,
+            required=False,
+            description='Set to true to unsubscribe from inactive user notifications.'
+        ),
+        openapi.Parameter(
+            name='unread',
+            in_=openapi.IN_QUERY,
+            type=openapi.TYPE_BOOLEAN,
+            required=False,
+            description='Set to true to unsubscribe from unread notification reminders.'
+        ),
+    ],
+    responses={
+        200: "Subscription preferences updated successfully.",
+        401: "Unauthorized. Invalid access token or access token not provided.",
+    },
+    operation_summary="Update email subscription preferences",
+    operation_description="Update the user's email subscription preferences.",
+    tags=["Email Subscription"],
+)
+@api_view(['GET'])
+def email_unsubscribe(request):
+    """
+    Update the user's email subscription preferences.
+    """
+
+    # Extract access_token
+    access_token_string = request.query_params.get('access_token', '')
+
+    if access_token_string:
+        try:
+            # Decode the access token
+            access_token = AccessToken(access_token_string)
+            
+            # Retrieve the user from the decoded token
+            user = access_token.payload.get('user_id')
+            
+            # Update the request user with the retrieved user
+            request.user = User.objects.get(pk=user) if user else AnonymousUser()
+        except Exception as e:
+            return Response({'message': 'Invalid access token'}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        return Response({'message': 'Access token not provided'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    # Extract 'inactive' and 'unread' parameters from the request data
+    inactive_param = request.query_params.get('inactive')
+    unread_param = request.query_params.get('unread')
+
+    # Update subscription preferences directly in the database
+    email_subscription = request.user.email_subscription
+    if inactive_param:
+        email_subscription.receive_inactive_user_notifications = False
+    if unread_param:
+        email_subscription.receive_unread_notification_reminders = False
+
+    # Save the changes to the EmailSubscription instance
+    email_subscription.save()
+
+    # Extract access_token, refresh_token, and expiration_time from query parameters
+    access_token = request.query_params.get('access_token')
+    refresh_token = request.query_params.get('refresh_token')
+    expiration_time = request.query_params.get('expiration_time')
+
+    # Return the same response data as login_user view
+    response_data = {
+        'access_token': access_token,
+        'refresh_token': refresh_token,
+        'expiration_time': expiration_time,
+        'detail': 'Subscription preferences updated successfully.'
+    }
+
+    return Response(response_data, status=status.HTTP_200_OK)
+
 
 @swagger_auto_schema(
     method='POST',
@@ -1871,6 +1987,7 @@ def manage_subscription(request, type, id):
         return JsonResponse({'status': 'Unsubscribed successfully'})
     else:
         return JsonResponse({'error': 'Invalid action'}, status=400)
+        
 
 
 
