@@ -3,7 +3,7 @@
     <div class="container">
         <a href="{% url 'index' %}" class="header__logo">
             <!-- TODO Add here SapiensLink logo -->
-            <img src="{% static 'images/TODO.jpeg' %}" />
+            <img src="{% static 'images/sapiens_logo.png' %}" />
             <h1>Sapiens Link</h1>
         </a>
         <form class="header__search" method="GET" action="{% url 'home' %}">
@@ -241,7 +241,7 @@
             <!-- Not Logged In -->
             <a href="{% url 'login' %}">
                 <!-- TODO Add avatar picture -->
-                <img src="{% static 'images/TODO.jpeg' %}" />
+                <img src="{% static 'images/sapiens_logo.png' %}" />
                 <p>Login</p>
             </a>
             {% endif %}

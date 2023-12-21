@@ -172,6 +172,14 @@ class Notification(models.Model):
         return self.message
     
 
+class EmailSubscription(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    receive_inactive_user_notifications = models.BooleanField(default=True)
+    receive_unread_notification_reminders = models.BooleanField(default=True)
+
+User.email_subscription = property(lambda u: EmailSubscription.objects.get_or_create(user=u)[0])
+    
+
 class RevokedToken(models.Model):
     token = models.CharField(max_length=500, unique=True)
     expiration_date = models.DateTimeField()

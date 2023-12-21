@@ -4,6 +4,7 @@ from . import views
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from rest_framework import permissions
+from django.urls import path, include
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -56,11 +57,13 @@ urlpatterns = [
     path('manage_subscription/<str:type>/<str:id>/', views.manage_subscription, name="manage_subscription"),
     path('notifications/<int:notification_id>/mark_as_read/', views.mark_notification_as_read, name='mark_notification_as_read'),
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('email_unsubscribe/', views.email_unsubscribe, name='email_unsubscribe'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
     path('lists_db_setup/', views.lists_db_setup),
     path('users_db_setup/', views.users_db_setup),
     path('update_rank/<str:pk>/', views.update_rank),
     path('delete_rank/<str:pk>/', views.delete_rank),
-    path('ranks_db_setup/', views.ranks_db_setup)
+    path('ranks_db_setup/', views.ranks_db_setup),
+    path('auth/google/', views.register_user, name='google_signin'),
 ]

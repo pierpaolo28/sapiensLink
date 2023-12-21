@@ -1,8 +1,20 @@
 from celery import shared_task
 from django.utils import timezone
-from sapiensApp.models import RevokedToken, Notification, Rank, RankVote
+from sapiensApp.models import RevokedToken, Notification, Rank, RankVote, User, List
 from django.conf import settings
+from django.db.models import IntegerField
+from django.db.models.functions import Cast
+from django.db.models import Subquery
 import json
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+import app_secrets
+import markdown
+from django.urls import reverse
+
+
+# TODO: Update Domain
+DOMAIN = 'http://127.0.0.1:8000'
 
 @shared_task
 def clean_blacklist():
@@ -58,3 +70,108 @@ def calculate_element_score(rank, content_index):
     upvotes = RankVote.objects.filter(rank=rank, content_index=content_index, action='upvote').count()
     downvotes = RankVote.objects.filter(rank=rank, content_index=content_index, action='downvote').count()
     return upvotes - downvotes
+
+
+@shared_task
+def send_inactive_user_notifications():
+    # Define the threshold for "recently"
+    threshold_date = timezone.now() - timezone.timedelta(days=14)
+
+    # Get inactive users
+    inactive_users = User.objects.filter(last_login__lt=threshold_date)
+
+    # Get latest posts
+    latest_lists = List.objects.order_by('-created')[:5]
+    latest_ranks = Rank.objects.order_by('-created')[:5]
+    lists_html = "\n".join([f"<li><a href='{DOMAIN}/list/{post.id}'>{markdown.markdown(post.name)}</a></li>" for post in latest_lists])
+    ranks_html = "\n".join([f"<li><a href='{DOMAIN}/rank/{post.id}'>{markdown.markdown(post.name)}</a></li>" for post in latest_ranks])
+
+    # Send email to each inactive user
+    for user in inactive_users:
+        if user.email_subscription.receive_inactive_user_notifications:
+            unsubscribe_url = f"{DOMAIN}/login/?next={reverse('email_unsubscribe')}?inactive=True"
+
+            # Construct the email using SendGrid
+            message = Mail(
+                from_email=app_secrets.FROM_EMAIL,
+                to_emails=user.email,
+                subject='Latest from SapiensLink',
+                html_content=f'''
+                    <p>Dear {user.username},</p>
+                    <p>Check out the latest posts on SapiensLink:</p>
+                    <p>Lists</p>
+                    <ul>
+                        {lists_html}
+                    </ul>
+                    <p>Ranks</p>
+                    <ul>
+                        {ranks_html}
+                    </ul>
+                    <p>To stop getting reminders about new content on SapiensLink, click <a href="{unsubscribe_url}">here</a>.</p>
+                '''
+            )
+
+            try:
+                sg = SendGridAPIClient(app_secrets.SENDGRID_API_KEY)
+                sg.send(message)
+            except Exception as e:
+                print(f"Error sending email to {user.email}: {str(e)}")
+
+
+@shared_task
+def send_unread_notification_reminders():
+    # Define the threshold for unread notifications
+    threshold_date = timezone.now() - timezone.timedelta(days=7)
+
+    # Get distinct user IDs from the Notification model
+    distinct_user_ids = Notification.objects.filter(
+        read=False,
+        timestamp__lt=threshold_date,
+    ).values('receiver').distinct()
+
+    # Ensure distinct_user_ids are cast to integer
+    casted_user_ids = distinct_user_ids.annotate(
+        user_id_as_integer=Cast('receiver', IntegerField())
+    ).values('user_id_as_integer').distinct()
+
+    # Use the casted_user_ids in the User query
+    users_with_unread_notifications = User.objects.filter(
+        id__in=Subquery(casted_user_ids)
+    )
+
+    # Send email to each user with unread notifications
+    for user in users_with_unread_notifications:
+        if user.email_subscription.receive_unread_notification_reminders:
+            unsubscribe_url = f"{DOMAIN}/login/?next={reverse('email_unsubscribe')}?unread=True"
+
+            unread_notifications = Notification.objects.filter(
+                receiver=user.id,
+                read=False,
+                timestamp__lt=threshold_date
+            )
+
+            # Convert unread notifications to HTML using Markdown
+            notifications_html = "\n".join([f"<li><a href='{notification.url}'>{markdown.markdown(notification.message)}</a></li>" for notification in unread_notifications])
+
+            # Construct the email using SendGrid
+            html_content = f'''
+            <p>Dear {user.username},</p>
+            <p>You have unread notifications:</p>
+            <ul>
+                {notifications_html}
+            </ul>
+            <p>To stop getting reminders about unread notifications, click <a href="{unsubscribe_url}">here</a>.</p>
+            '''
+
+            message = Mail(
+                from_email=app_secrets.FROM_EMAIL,
+                to_emails=user.email,
+                subject='SapiensLink Unread Notifications Reminder',
+                html_content=html_content,
+            )
+
+            try:
+                sg = SendGridAPIClient(app_secrets.SENDGRID_API_KEY)
+                sg.send(message)
+            except Exception as e:
+                print(f"Error sending email to {user.email}: {str(e)}")
