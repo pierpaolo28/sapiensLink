@@ -1,10 +1,7 @@
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from django.db import models
-from sentence_transformers import SentenceTransformer, util
-import numpy as np
 
-model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
 class UserManager(BaseUserManager):
     """Define a model manager for User model with no username field."""
@@ -215,11 +212,14 @@ class Rank(models.Model):
     @staticmethod
     def calculate_similarity(embeddings1, embeddings2):
         # Calculate cosine similarity between embeddings
+        from sentence_transformers import util
         return util.pytorch_cos_sim(embeddings1, embeddings2).item()
 
     
     def calculate_embeddings(self):
         # Calculate embeddings using BERT model
+        from sentence_transformers import SentenceTransformer
+        model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
         embeddings = model.encode(f'{self.name} {self.description}')
 
         self.embeddings = embeddings.tobytes()
@@ -228,6 +228,7 @@ class Rank(models.Model):
 
     def is_similar_to(self, other_rank):
         # TODO: Decide how to hardcode this threshold
+        import numpy as np
         similarity_threshold = 0.8
 
         # Check and recalculate embeddings if they are None

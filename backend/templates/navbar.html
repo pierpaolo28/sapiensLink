@@ -179,7 +179,7 @@
 
             function initWebSocket() {
                 if (socket === null) {
-                    socket = new WebSocket('ws://127.0.0.1:8000/ws/notifications/');
+                    socket = new WebSocket('ws://' + window.location.hostname + '/ws/notifications/');
 
                     socket.onopen = function (event) {
                         console.log('WebSocket is connected.');

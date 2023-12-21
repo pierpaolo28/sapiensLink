@@ -1376,7 +1376,7 @@ def update_list_page(request, pk):
 def delete_comment_action(request, pk):
     try:
         comment = Comment.objects.get(pk=pk)
-    except List.DoesNotExist:
+    except Comment.DoesNotExist:
         return Response({"message": "Comment Not Found"}, status=status.HTTP_404_NOT_FOUND)
 
     # Check if the authenticated user is the owner of the comment
@@ -2035,6 +2035,7 @@ def manage_subscription(request, type, id):
 
 @swagger_auto_schema(
     methods=['GET'],
+    tags=['admin'],
     operation_summary='Get all lists',
     responses={
         200: openapi.Response(
@@ -2062,6 +2063,7 @@ def manage_subscription(request, type, id):
 )
 @swagger_auto_schema(
     methods=['POST'],
+    tags=['admin'],
     operation_summary='Create multiple lists at the same time',
     request_body=openapi.Schema(
         type=openapi.TYPE_ARRAY,
@@ -2087,6 +2089,7 @@ def manage_subscription(request, type, id):
 )
 @swagger_auto_schema(
     methods=['DELETE'],
+    tags=['admin'],
     operation_summary='Delete all lists',
     responses={
         204: "All Lists Deleted",
@@ -2128,6 +2131,7 @@ def lists_db_setup(request):
 
 @swagger_auto_schema(
     methods=['GET'],
+    tags=['admin'],
     operation_summary='Get all users',
     responses={
         200: openapi.Response(
@@ -2156,6 +2160,7 @@ def lists_db_setup(request):
 
 @swagger_auto_schema(
     methods=['POST'],
+    tags=['admin'],
     operation_summary='Create multiple users at the same time',
     request_body=openapi.Schema(
         type=openapi.TYPE_ARRAY,
@@ -2179,6 +2184,7 @@ def lists_db_setup(request):
 )
 @swagger_auto_schema(
     methods=['DELETE'],
+    tags=['admin'],
     operation_summary='Delete all users',
     responses={
         204: "All Users Deleted",
@@ -2221,6 +2227,7 @@ def users_db_setup(request):
 
 @swagger_auto_schema(
     method='PUT',
+    tags=['admin'],
     operation_summary="Update Rank (Full)",
     operation_description="Update a rank with full data.",
     request_body=openapi.Schema(
@@ -2243,6 +2250,7 @@ def users_db_setup(request):
 )
 @swagger_auto_schema(
     method='PATCH',
+    tags=['admin'],
     operation_summary="Update Rank (Partial)",
     operation_description="Update a rank with partial data.",
     request_body=openapi.Schema(
@@ -2286,6 +2294,7 @@ def update_rank(request, pk):
 
 @swagger_auto_schema(
     method='DELETE',
+    tags=['admin'],
     operation_summary="Delete Rank",
     operation_description="Delete a rank. Only accessible to administrators.",
     responses={
@@ -2307,6 +2316,7 @@ def delete_rank(request, pk):
 
 @swagger_auto_schema(
     methods=['POST', 'DELETE'],
+    tags=['admin'],
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
