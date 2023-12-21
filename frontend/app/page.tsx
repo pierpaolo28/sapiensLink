@@ -1,7 +1,9 @@
+import DBSetup from './DBSetup';
+
 export default function Home() {
   return (
-    <main>
-      hello!
-    </main>
-  )
+    <div>
+      <DBSetup />
+    </div>
+  );
 }

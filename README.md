@@ -26,7 +26,7 @@ DJANGO_SECRET_KEY = 'YOUR_DJANGO_SECRET_KEY'
 
 If you want to rebuild making sure to not cache anything use: `DB_USER='admin' DB_PASSWORD='password' docker-compose build --no-cache` first. Or if need to clear everything use `docker system prune --volumes`.
 
-The Django frontend should be accessible from [localhost:8001](http://localhost:8001/), the Next.js frontend from [localhost:3001](http://localhost:3000/) and the Nginx frontend from [localhost](http://localhost/)
+The Django frontend should be accessible from [localhost:8001](http://localhost:8001/), the Next.js frontend from [localhost:3001](http://localhost:3000/), the Nginx frontend from [localhost](http://localhost/) and pgAdmin to access the PostgreSQL DB at [localhost:5051](http://localhost:5051/). Whenever calling the Django REST APIs, make sure to do so from the Nginx interface and not NextJS.
 
 To create an admin user, run these commands from the terminal and follow the instructions:
 

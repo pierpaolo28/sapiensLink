@@ -1,0 +1,36 @@
+[
+    {
+        "name": "Rank 1",
+        "description": "This is the first rank.",
+        "topic": [{"name": "Finance"}],
+        "contributors": [1, 2],
+        "content": 
+            {
+                "a": {
+                    "element": "first first",
+                    "user_id": 2
+                },
+                "b": {
+                    "element": "first second",
+                    "user_id": 3
+                }
+        }
+    },
+    {
+        "name": "Rank 2",
+        "description": "This is the second rank.",
+        "topic": [{"name": "Finance"}, {"name": "Tech"}],
+        "contributors": [3, 4],
+        "content": 
+            {
+                "a": {
+                    "element": "second first",
+                    "user_id": 3
+                },
+                "b": {
+                    "element": "second second",
+                    "user_id": 3
+                }
+        }
+    }
+]
