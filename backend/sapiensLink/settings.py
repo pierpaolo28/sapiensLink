@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import app_secrets
-import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,6 +29,26 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
+SITE_ID = 1
+
+AUTH_USER_MODEL = 'sapiensApp.User'
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = app_secrets.GOOGLE_CLIENT_ID
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = app_secrets.GOOGLE_CLIENT_SECRET
+# TODO: Update callback URL here and on Google Cloud
+SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = 'http://localhost:8000/api/auth/google/'
+
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
+
+LOGIN_URL = 'login'
+LOGOUT_URL = 'logout'
+LOGIN_REDIRECT_URL = 'home'
 
 # Application definition
 
@@ -48,6 +67,10 @@ INSTALLED_APPS = [
     'django_extensions',
     'django_rest_passwordreset',
     'drf_yasg',
+]
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 REST_FRAMEWORK = {
@@ -72,7 +95,6 @@ SWAGGER_SETTINGS = {
     },
 }
 
-LOGIN_URL = 'login'
 
 CHANNEL_LAYERS = {
     'default': {
@@ -86,11 +108,10 @@ CHANNEL_LAYERS = {
 CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
 
-AUTH_USER_MODEL = 'sapiensApp.User'
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.sites.middleware.CurrentSiteMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -192,7 +213,7 @@ MEDIA_ROOT = BASE_DIR / 'static' / 'images'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #TODO: Change to allow just specific url
-# CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_URLS_REGEX = r"/api/.*"
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
