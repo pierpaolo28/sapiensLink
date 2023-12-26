@@ -57,7 +57,7 @@ Then every time you are developing make sure to first activate your virtualenv u
 
 After you install any Python package, use `pip freeze > requirements.txt`.
 
-If you need to install any missing package someone else might have added since your last contribution, then use: `pip install -r requirements.txt`.
+If you need to install any missing package someone else might have added since your last contribution, then use: `pip install -r requirements/all.txt`.
 
 Once finished developing use: `deactivate`.
 
