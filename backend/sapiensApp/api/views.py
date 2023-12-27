@@ -55,6 +55,7 @@ def getRoutes(request):
         'GET /api/token/refresh/',
         'POST /api/password_reset/',
         'POST /api/password_reset_confirm/:uidb64/:token/',
+        'GET /api/get_user/:pk/',
         'GET-POST /api/user_profile_page/:pk/',
         'GET-PUT /api/update_user_page/',
         'POST /api/delete_user_page/',
@@ -984,6 +985,21 @@ def vote_rank(request, pk, content_index, action):
     else:
         rank_serializer = RankSerializer(rank)
         return Response({"message": "Element in Rank Not Found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+@swagger_auto_schema(method='get', responses={200: UserSerializer})
+@api_view(['GET'])
+def get_user(request, pk):
+    """
+    Retrieve a single user's data.
+    """
+    try:
+        user = User.objects.get(pk=pk)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = UserSerializer(user)
+    return Response(serializer.data)
 
 
 @swagger_auto_schema(
