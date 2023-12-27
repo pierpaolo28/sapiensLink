@@ -35,7 +35,7 @@ export interface List {
   score: number;
   source: string;
   public: true;
-  author?: null; // fake, match index instead
+  author?: number;
   subscribed_users: string[];
 }
 
