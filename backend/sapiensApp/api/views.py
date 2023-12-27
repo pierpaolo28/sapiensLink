@@ -651,7 +651,6 @@ def rank_home(request):
     }
 )
 @api_view(['GET', 'POST'])
-@api_view(['GET', 'POST'])
 def list_page(request, pk):
     list_instance = List.objects.get(id=pk)
 
@@ -776,7 +775,6 @@ def list_page(request, pk):
     }
 )
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
 def rank_page(request, pk):
     rank = get_object_or_404(Rank, id=pk)
     contributors = rank.contributors.all()
