@@ -985,7 +985,7 @@ def vote_rank(request, pk, content_index, action):
         return Response({"message": "Element in Rank Not Found"}, status=status.HTTP_404_NOT_FOUND)
 
 
-@swagger_auto_schema(method='get', responses={200: UserSerializer})
+@swagger_auto_schema(method='get', operation_summary="Retrieve a single user's data", responses={200: UserSerializer})
 @api_view(['GET'])
 def get_user(request, pk):
     """
