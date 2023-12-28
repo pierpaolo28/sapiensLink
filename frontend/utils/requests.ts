@@ -26,7 +26,7 @@ async function post<Q, A>(url: string, data: Q): Promise<A> {
     return req("POST", url, data);
 }
 
-const BASE_URL = "http://localhost:8001/api"
+const BASE_URL = "http://localhost/api"
 
 export function makeGet<A>(path: string): () => Promise<A> {
     return async () => get(BASE_URL + path)

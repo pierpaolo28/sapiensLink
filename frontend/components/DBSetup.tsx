@@ -9,7 +9,7 @@ export const DBSetup = () => {
   // Fetches user data
   const fetchUserData = async () => {
     try {
-      const response = await fetch("http://localhost:8001/api/users_db_setup/");
+      const response = await fetch("http://localhost/api/users_db_setup/");
       const data = await response.json();
       return data.results;
     } catch (error) {
@@ -21,7 +21,7 @@ export const DBSetup = () => {
   // Fetches list data
   const fetchListData = async () => {
     try {
-      const response = await fetch("http://localhost:8001/api/lists_db_setup/");
+      const response = await fetch("http://localhost/api/lists_db_setup/");
       const data = await response.json();
       return data.results;
     } catch (error) {
@@ -33,7 +33,7 @@ export const DBSetup = () => {
   // Fetches rank data
   const fetchRankData = async () => {
     try {
-      const response = await fetch("http://localhost:8001/api/rank_home/");
+      const response = await fetch("http://localhost/api/rank_home/");
       const data = await response.json();
       return data.ranks;
     } catch (error) {
@@ -55,7 +55,7 @@ export const DBSetup = () => {
       const usersJsonResponse = await fetch("/users.json");
       const usersJson = await usersJsonResponse.json();
 
-      await fetch("http://localhost:8001/api/users_db_setup/", {
+      await fetch("http://localhost/api/users_db_setup/", {
         method: "POST",
         body: JSON.stringify(usersJson),
         headers: {
@@ -75,7 +75,7 @@ export const DBSetup = () => {
       const listsJsonResponse = await fetch("/lists.json");
       const listsJson = await listsJsonResponse.json();
 
-      await fetch("http://localhost:8001/api/lists_db_setup/", {
+      await fetch("http://localhost/api/lists_db_setup/", {
         method: "POST",
         body: JSON.stringify(listsJson),
         headers: {
@@ -95,7 +95,7 @@ export const DBSetup = () => {
       const ranksJsonResponse = await fetch("/ranks.json");
       const ranksJson = await ranksJsonResponse.json();
 
-      await fetch("http://localhost:8001/api/ranks_db_setup/", {
+      await fetch("http://localhost/api/ranks_db_setup/", {
         method: "POST",
         body: JSON.stringify(ranksJson),
         headers: {

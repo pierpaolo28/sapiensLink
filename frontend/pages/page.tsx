@@ -9,7 +9,7 @@ import Chip from "@mui/material/Chip";
 import Grid from "@mui/material/Grid";
 import Avatar from "@mui/material/Avatar";
 import React from "react";
-// import DBSetup from "../components/DBSetup";
+import DBSetup from "../components/DBSetup";
 
 export default function Home() {
   const [home, setHome] = React.useState(null); // Initialize home as null
@@ -71,9 +71,9 @@ export default function Home() {
           <Typography>Loading...</Typography>
         )}
       </Stack>
-      {/* <div>
+      <div>
         <DBSetup></DBSetup> 
-      </div> */}
+      </div>
     </AppLayout>
   );
 }

@@ -75,13 +75,13 @@ services:
       - redis
 
   # Next.js frontend supporting SSR
-  # nextjs:
-  #   build: ./frontend
-  #   container_name: sapienslink_nextjs
-  #   ports:
-  #     - 3001:3000
-  #   depends_on:
-  #     - django
+  nextjs:
+    build: ./frontend
+    container_name: sapienslink_nextjs
+    ports:
+      - 3001:3000
+    depends_on:
+      - django
 
   nginx:
     build:
@@ -95,7 +95,7 @@ services:
       - media_volume:/app/mediafiles
     depends_on:
       - django
-      # - nextjs
+      - nextjs
 
 volumes:
   postgres_data:

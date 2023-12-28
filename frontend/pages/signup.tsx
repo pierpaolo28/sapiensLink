@@ -12,6 +12,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import {Link as MuiLink} from "@mui/material";
 
 function Copyright(props: any) {
   return (
@@ -46,7 +47,9 @@ export default function SignUp() {
             <AppBar position="static" color="default" elevation={0}>
         <Toolbar>
           <Typography variant="h6" color="inherit" noWrap>
+          <MuiLink href="/">
             <img src="/logo.svg" alt="Sapiens Logo" width={120} />
+          </MuiLink>
           </Typography>
           <Box sx={{ flexGrow: 1 }} />{" "}
           {/* This pushes the buttons to the right */}

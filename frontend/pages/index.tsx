@@ -19,7 +19,6 @@ import {
   ListItemAvatar,
   Avatar,
   Divider,
-  SvgIcon,
 } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
@@ -126,7 +125,9 @@ export default function Home() {
       <AppBar position="static" color="default" elevation={0}>
         <Toolbar>
           <Typography variant="h6" color="inherit" noWrap>
+          <MuiLink href="/">
             <img src="/logo.svg" alt="Sapiens Logo" width={120} />
+          </MuiLink>
           </Typography>
           <Box sx={{ flexGrow: 1 }} />{" "}
           {/* This pushes the buttons to the right */}
@@ -149,7 +150,7 @@ export default function Home() {
             Sharing Knowledge One link at a time
           </Typography>
           <Typography variant="subtitle1" color="textSecondary" paragraph>
-            Lorem ipsum has been the industry's standard dummy text ever since
+            Lorem ipsum has been the industry&aposs standard dummy text ever since
             the 1500s, when an unknown printer took a galley of type and
             scrambled it to make a type specimen book.
           </Typography>
@@ -243,7 +244,7 @@ export default function Home() {
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText
-                    primary="Jen O'Connor"
+                    primary="Jen O&aposConnor"
                     secondary={
                       <>
                         <Typography
@@ -338,7 +339,7 @@ export default function Home() {
                       </Avatar>
                     </ListItemAvatar>
                     <ListItemText
-                      primary="Jen O'Connor"
+                      primary="Jen O&aposConnor"
                       secondary={
                         <>
                           <Typography
@@ -384,7 +385,7 @@ export default function Home() {
                       </Avatar>
                     </ListItemAvatar>
                     <ListItemText
-                      primary="Jen O'Connor"
+                      primary="Jen O&aposConnor"
                       secondary={
                         <>
                           <Typography
