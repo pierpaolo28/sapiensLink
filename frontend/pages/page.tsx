@@ -8,18 +8,32 @@ import CardActionArea from "@mui/material/CardActionArea";
 import Chip from "@mui/material/Chip";
 import Grid from "@mui/material/Grid";
 import Avatar from "@mui/material/Avatar";
-// import DBSetup from "@/components/DBSetup";
+import React from "react";
+// import DBSetup from "../components/DBSetup";
 
-export default async function Home() {
-  const home = await getHome();
-  console.log(home);
+export default function Home() {
+  const [home, setHome] = React.useState(null); // Initialize home as null
+
+  React.useEffect(() => {
+    async function fetchData() {
+      try {
+        const homeData = await getHome();
+        setHome(homeData);
+      } catch (error) {
+        console.error("Error fetching home data:", error);
+      }
+    }
+
+    fetchData();
+  }, []);
 
   return (
     <AppLayout>
       <Stack spacing={2}>
-        {home.lists.map((list, i) => (
-          <Card key={list.id}>
-            <CardActionArea>
+        {home && home.lists ? ( // Check if home and home.lists are available
+          home.lists.map((list, i) => (
+            <Card key={list.id}>
+               <CardActionArea>
               <CardContent>
                 <Typography gutterBottom variant="h5">
                   {list.name}
@@ -50,8 +64,12 @@ export default async function Home() {
                 </Grid>
               </CardContent>
             </CardActionArea>
-          </Card>
-        ))}
+            </Card>
+          ))
+        ) : (
+          // Render loading state or an error message
+          <Typography>Loading...</Typography>
+        )}
       </Stack>
       {/* <div>
         <DBSetup></DBSetup> 
