@@ -119,7 +119,7 @@ export const DBSetup = () => {
           Add Users
         </button>
         <div>
-          {users.map((user) => (
+          {users.map((user: any) => (
             <div key={user.id}>
               <h3>{user.id}</h3>
               <p>{user.name}</p>
@@ -135,7 +135,7 @@ export const DBSetup = () => {
           Add Lists
         </button>
         <div>
-          {lists.map((list) => (
+          {lists.map((list: any) => (
             <div key={list.id}>
               <h3>{list.name}</h3>
               <p>{list.description}</p>
@@ -152,7 +152,7 @@ export const DBSetup = () => {
           Add Ranks
         </button>
         <div>
-          {ranks.map((rank) => (
+          {ranks.map((rank: any) => (
             <div key={rank.name}>
               <h3>{rank.name}</h3>
               <p>{rank.description}</p>
@@ -160,7 +160,7 @@ export const DBSetup = () => {
                 {Object.entries(rank.content).map(([key, value]) => (
                   <div key={key}>
                     <p>
-                      {value.element} (User ID: {value.user_id})
+                      {(value as any).element} (User ID: {(value as any).user_id})
                     </p>
                   </div>
                 ))}

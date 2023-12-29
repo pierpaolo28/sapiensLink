@@ -29,6 +29,7 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('password_reset/', views.password_reset),
     path('password_reset_confirm/<uidb64>/<token>/', views.password_reset_confirm),
+    path('get_user/<str:pk>/', views.get_user),
     path('user_profile_page/<str:pk>/', views.user_profile_page),
     path('update_user_page/', views.update_user_page),
     path('delete_user_page/', views.delete_user_page),

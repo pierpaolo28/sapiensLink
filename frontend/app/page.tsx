@@ -44,7 +44,7 @@ export default async function Home() {
                       justifyContent="end"
                     >
                       <Avatar sx={{ width: 32, height: 32 }} />
-                      <div>{home.users[i].name}</div>
+                      <div>{list.author}</div>
                     </Stack>
                   </Grid>
                 </Grid>
