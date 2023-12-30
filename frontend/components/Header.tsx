@@ -1,4 +1,9 @@
-import { AppBar, Toolbar, Link, Typography, Button, Box } from "@mui/material";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import Link from "@mui/material/Link";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
 
 export default function Header() {
   return (
@@ -11,7 +16,9 @@ export default function Header() {
         </Typography>
         <Box sx={{ flexGrow: 1 }} />{" "}
         {/* This pushes the buttons to the right */}
-        <Button color="inherit" href="signin">Login</Button>
+        <Button color="inherit" href="signin">
+          Login
+        </Button>
         <Button
           color="primary"
           variant="contained"
