@@ -16,7 +16,9 @@ import {
   ListItemAvatar,
   ListItemText,
   CardActions,
-  Chip
+  Chip,
+  Switch,
+  Link
 } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -35,8 +37,6 @@ const theme = createTheme({
     // other theme settings
   },
 });
-
-const drawerWidth = 240;
 
 // Define a type for the participant data
 type Participant = {
@@ -123,6 +123,13 @@ const HomePage = () => {
     }
   };
 
+  const [isWatching, setIsWatching] = useState(false);
+
+  const handleWatchToggle = (event: any) => {
+    setIsWatching(event.target.checked);
+  };
+
+
   return <ThemeProvider theme={theme}>
     <AppLayout>
     <CssBaseline />
@@ -138,10 +145,25 @@ const HomePage = () => {
                   Last activity: 6 minutes ago
                 </Typography>
 
-                <Box display="flex" alignItems="center" mb={2}>
-                  <Avatar src="/path/to/profile-image.jpg" alt="Profile image" sx={{ marginRight: 2 }} />
-                  <Typography variant="subtitle1">Username</Typography>
-                </Box>
+                <Box>
+                      <Typography component="span" sx={{ mr: 1 }}>
+                        {isWatching ? 'Unwatch' : 'Watch'} List
+                      </Typography>
+                      <Switch
+                        checked={isWatching}
+                        onChange={handleWatchToggle}
+                        color="primary"
+                      />
+                    </Box>
+
+                    <Box display="flex" alignItems="center" mb={2}>
+                    <Avatar src="/path/to/profile-image.jpg" alt="Profile image" sx={{ marginRight: 2 }} />
+                    <Typography variant="subtitle1">
+                      <Link href="/user_profile" color="inherit" underline="hover">
+                        Username
+                      </Link>
+                    </Typography>
+                  </Box>
 
                 {/* Dynamic list of links */}
                 <Box sx={{ mb: 2 }}>
