@@ -284,7 +284,7 @@ export default function Home() {
                   justifyContent="center"
                   sx={{ mt: 2 }}
                 >
-                  <Button variant="contained" href="home">Get Started</Button>
+                  <Button variant="contained" href="list">Get Started</Button>
                 </Stack>
               </Grid>
             </Grid>
