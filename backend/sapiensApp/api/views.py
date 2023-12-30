@@ -5,7 +5,7 @@ from sapiensApp.models import *
 from .serializers import *
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser, IsAuthenticatedOrReadOnly
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
@@ -38,6 +38,7 @@ from urllib.parse import urlencode
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth.models import AnonymousUser
 import requests
+from functools import wraps
 
 # TODO: Update Domain
 DOMAIN = 'http://127.0.0.1:8000'
@@ -92,6 +93,20 @@ def getRoutes(request):
         'POST-DELETE /api/ranks_db_setup/',
     ]
     return Response(routes)
+
+
+# Corrected custom decorator
+def custom_authentication_classes():
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            if request.method == 'POST':
+                request.user.authenticators = [JWTAuthentication()]
+            else:
+                request.user.authenticators = []
+            return view_func(request, *args, **kwargs)
+        return _wrapped_view
+    return decorator
 
 
 def extract_token_from_authorization_header(request):
@@ -650,7 +665,8 @@ def rank_home(request):
     }
 )
 @api_view(['GET', 'POST'])
-@api_view(['GET', 'POST'])
+@custom_authentication_classes()  # Apply custom authentication
+@permission_classes([IsAuthenticatedOrReadOnly])
 def list_page(request, pk):
     list_instance = List.objects.get(id=pk)
 
@@ -669,7 +685,9 @@ def list_page(request, pk):
 
     # TODO: the comment button should be hidden on the user interface if the user is not logged in
     if request.method == 'POST':
-        if 'comment' in request.data:
+        if not request.user.is_authenticated:
+            return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+        elif 'comment' in request.data:
             comment_serializer = CommentSerializer(data=request.data['comment'])
             if comment_serializer.is_valid():
                 comment = comment_serializer.save(user=user, list=list_instance)
@@ -775,7 +793,8 @@ def list_page(request, pk):
     }
 )
 @api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
+@custom_authentication_classes()  # Apply custom authentication
+@permission_classes([IsAuthenticatedOrReadOnly])
 def rank_page(request, pk):
     rank = get_object_or_404(Rank, id=pk)
     contributors = rank.contributors.all()
@@ -792,7 +811,9 @@ def rank_page(request, pk):
         is_subscribed = user in rank.subscribed_users.all()
 
     if request.method == 'POST':
-        if 'element' in request.data:
+        if not request.user.is_authenticated:
+            return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
+        elif 'element' in request.data:
             form = CreateElementSerializer(data=request.data)
             if form.is_valid():
                 unique_id = f"{timezone.now().isoformat()}-{uuid.uuid4()}"
@@ -1003,6 +1024,8 @@ def vote_rank(request, pk, content_index, action):
     },
 )
 @api_view(['GET', 'POST'])
+@custom_authentication_classes()  # Apply custom authentication
+@permission_classes([IsAuthenticatedOrReadOnly])
 def user_profile_page(request, pk):
     user_instance = get_object_or_404(User, pk=pk)
     lists_count = List.objects.filter(author_id=pk, public=True).count()
@@ -1019,6 +1042,8 @@ def user_profile_page(request, pk):
     is_following = request.user.following.filter(pk=pk).exists() if request.user.is_authenticated else False
 
     if request.method == "POST":
+        if not request.user.is_authenticated:
+            return Response({'error': 'Authentication required'}, status=status.HTTP_401_UNAUTHORIZED)
         current_user_profile = request.user
         if pk != request.user.id:
             if request.user.following.filter(pk=pk).exists():
@@ -1236,7 +1261,7 @@ def create_list_page(request):
                 description='Array of contributor user IDs',
             ),
         },
-        required=['name'],  # Adjust the required fields based on your model
+        required=['name'], 
     ),
     responses={
         201: openapi.Response(
@@ -1403,7 +1428,6 @@ def delete_comment_action(request, pk):
         properties={
             'name': openapi.Schema(type=openapi.TYPE_STRING, description='User name'),
             'email': openapi.Schema(type=openapi.TYPE_STRING, description='User email'),
-            # Add other properties as needed
         },
         required=['name', 'email'],
     ),
@@ -1520,9 +1544,6 @@ def rank_topics_page(request):
 )
 @api_view(['GET'])
 def who_to_follow_page(request):
-    """
-    Your function-based view documentation here.
-    """
     q = request.GET.get('q') if request.GET.get('q') != None else ''
     users = User.objects.filter(name__icontains=q).annotate(followers_count=Count('followers')).order_by('-followers_count')
     user_serializer = UserSerializer(users, many=True)
