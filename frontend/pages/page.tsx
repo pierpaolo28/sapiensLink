@@ -2,17 +2,20 @@ import Stack from "@mui/material/Stack";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import AppLayout from "../components/AppLayout";
-import { getHome } from "../utils/routes";
+import AppLayout from "@/components/AppLayout";
+import { getHome } from "@/utils/routes";
 import CardActionArea from "@mui/material/CardActionArea";
 import Chip from "@mui/material/Chip";
 import Grid from "@mui/material/Grid";
 import Avatar from "@mui/material/Avatar";
 import React from "react";
-import DBSetup from "../components/DBSetup";
+import DBSetup from "@/components/DBSetup";
+import { HomeResponse } from "../utils/types";
 
 export default function Home() {
-  const [home, setHome] = React.useState(null); // Initialize home as null
+  // const home = await getHome();
+  // console.log(home);
+  const [home, setHome] = React.useState<HomeResponse | null>(null);
 
   React.useEffect(() => {
     async function fetchData() {

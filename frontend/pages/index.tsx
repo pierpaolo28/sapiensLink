@@ -104,7 +104,17 @@ const testimonials = [
   // Add more testimonials as needed
 ];
 
-const TestimonialCard = ({ testimonial }) => {
+interface Testimonial {
+  text: string;
+  image: string;
+  name: string;
+}
+
+interface TestimonialCardProps {
+  testimonial: Testimonial;
+}
+
+const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial }) => {
   return (
     <Paper elevation={3} sx={{ p: 3, minHeight: 250, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
       <Typography variant="body1" sx={{ mb: 2 }}>
