@@ -1,7 +1,26 @@
+import { AppBar, Toolbar, Link, Typography, Button, Box } from "@mui/material";
+
 export default function Header() {
   return (
-    <div>
-      <img src="/logo.svg" width={160} />
-    </div>
+    <AppBar position="static" color="default" elevation={0}>
+      <Toolbar>
+        <Typography variant="h6" color="inherit" noWrap>
+          <Link href="/">
+            <img src="/logo.svg" alt="Sapiens Logo" width={120} />
+          </Link>
+        </Typography>
+        <Box sx={{ flexGrow: 1 }} />{" "}
+        {/* This pushes the buttons to the right */}
+        <Button color="inherit" href="signin">Login</Button>
+        <Button
+          color="primary"
+          variant="contained"
+          sx={{ marginLeft: "1rem" }}
+          href="signup"
+        >
+          Sign Up
+        </Button>
+      </Toolbar>
+    </AppBar>
   );
 }
