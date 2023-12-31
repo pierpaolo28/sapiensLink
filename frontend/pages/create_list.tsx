@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import {
   Container,
   Typography,
@@ -7,30 +7,50 @@ import {
   Button,
   Checkbox,
   FormControlLabel,
-  Select,
   MenuItem,
   InputLabel,
-  FormControl
+  FormControl,
+  Box
 } from '@mui/material';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
 import AppLayout from "@/components/AppLayout";
 
+type ListDetails = {
+  name: string;
+  description: string;
+  content: string;
+  source: string;
+  isPublic: boolean;
+  topic: string[];
+};
+
 export default function CreateListPage() {
-  const [listDetails, setListDetails] = useState({
+  const [listDetails, setListDetails] = useState<ListDetails>({
     name: '',
     description: '',
     content: '',
     source: '',
     isPublic: true,
-    topic: ''
-  });
+    topic: []
+  });  
 
-  const handleInputChange = (event: any) => {
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked, type } = event.target;
-    setListDetails({
-      ...listDetails,
+    setListDetails(prevDetails => ({
+      ...prevDetails,
       [name]: type === 'checkbox' ? checked : value
-    });
+    }));
   };
+
+  const handleTopicChange = (event: SelectChangeEvent<string[]>) => {
+    const value = event.target.value;
+    // 'value' will be a string[] for the multiple select
+    setListDetails(prevDetails => ({
+      ...prevDetails,
+      topic: typeof value === 'string' ? value.split(',') : value,
+    }));
+  };
+  
 
   const handleSubmit = (event: any) => {
     event.preventDefault();
@@ -49,6 +69,13 @@ export default function CreateListPage() {
       alert('Please fill in all mandatory fields (Name and Topic).');
     }
   };
+
+  const topics = [
+    { label: 'Finance', value: 'finance' },
+    { label: 'Technology', value: 'technology' },
+    { label: 'Health', value: 'health' },
+    // Add more topics as needed
+  ];
 
   return (
     <AppLayout>
@@ -113,20 +140,33 @@ export default function CreateListPage() {
               />
             </Grid>
             <Grid item xs={12}>
-              <FormControl fullWidth>
-                <InputLabel id="topic-label">Topic</InputLabel>
-                <Select
-                  labelId="topic-label"
-                  label="Topic"
-                  value={listDetails.topic}
-                  onChange={handleInputChange}
-                  name="topic"
-                  required
-                >
-                  <MenuItem value="finance">Finance</MenuItem>
-                  <MenuItem value="technology">Technology</MenuItem>
-                </Select>
-              </FormControl>
+            <FormControl fullWidth>
+      <InputLabel id="topic-label">Topic</InputLabel>
+      <Select
+        labelId="topic-label"
+        id="topic-select"
+        multiple
+        value={listDetails.topic}
+        onChange={handleTopicChange}
+        name="topic"
+        renderValue={(selected) => selected.join(', ')} // How the selected items will be displayed in the input
+        MenuProps={{
+          PaperProps: {
+            style: {
+              maxHeight: 224,
+              width: 250,
+            },
+          },
+        }}
+      >
+        {topics.map((topic) => (
+          <MenuItem key={topic.value} value={topic.value}>
+            {topic.label}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+
             </Grid>
             <Grid item xs={12}>
               <Button variant="outlined" onClick={() => { /* logic to cancel */ }}>

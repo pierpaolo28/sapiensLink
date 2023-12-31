@@ -240,7 +240,7 @@ export default function Home() {
                   justifyContent="center"
                   sx={{ mt: 2 }}
                 >
-                  <Button variant="contained" href="home">Get Started</Button>
+                  <Button variant="contained" href="list_pr">Get Started</Button>
                 </Stack>
               </Grid>
 
@@ -345,7 +345,7 @@ export default function Home() {
                   justifyContent="center"
                   sx={{ mt: 2 }}
                 >
-                  <Button variant="contained" href="home">Get Started</Button>
+                  <Button variant="contained" href="rank">Get Started</Button>
                 </Stack>
               </Grid>
             </Grid>

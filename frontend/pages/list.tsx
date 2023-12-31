@@ -26,7 +26,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import EditIcon from '@mui/icons-material/Edit';
 import ReportIcon from '@mui/icons-material/Report';
 import AppLayout from "@/components/AppLayout";
-import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder'; 
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 
 // Define the theme
 const theme = createTheme({
@@ -72,28 +72,28 @@ const handleSaveList = () => {
 };
 
 const HomePage = () => {
-    // List of links data
-    const linksData = [
-      { name: "Retire In Progress", url: "https://retireinprogress.com" },
-      { name: "Accidentally Retired", url: "https://accidentallyretired.com" },
-      { name: "Portfolio Charts", url: "https://portfoliocharts.com" },
-      { name: "Reddit Personal Finance", url: "https://reddit.com/r/personalfinance/wiki/index" },
-      { name: "JustETF", url: "https://justetf.com/en" },
-      { name: "Morning Star", url: "https://morningstar.com" },
-      { name: "ETF.com", url: "https://etf.com/etfanalyticsetf-finder" },
-      { name: "JL Collins", url: "https://jlcollinsnh.com" },
-      { name: "Mr Money Mustache", url: "https://mrmoneymustache.com" },
-      { name: "Mustachian Post Discussion Forum", url: "https://forum.mustachianpost.com" },
-      { name: "Early Retirement Extreme", url: "https://earlyretirementextreme.com" },
-      { name: "Investopedia", url: "https://investopedia.com" },
-      { name: "Global Property Guide", url: "https://globalpropertyguide.com" },
-      { name: "Optimized Portfolio", url: "https://optimizedportfolio.com" },
-      { name: "Lazy Portfolio ETF", url: "https://lazyportfolioetf.com" },
-      { name: "BogleHeads", url: "https://bogleheads.org/index.php" },
-      { name: "Portfolio Visualizer (with Backtesting)", url: "https://portfoliovisualizer.com" },
-      { name: "Wise Money (EU Investing)", url: "https://bankeronwheels.com" },
-      { name: "Index Fund Investor (EU Investing)", url: "https://indexfundinvestor.eu" },
-    ];
+  // List of links data
+  const linksData = [
+    { name: "Retire In Progress", url: "https://retireinprogress.com" },
+    { name: "Accidentally Retired", url: "https://accidentallyretired.com" },
+    { name: "Portfolio Charts", url: "https://portfoliocharts.com" },
+    { name: "Reddit Personal Finance", url: "https://reddit.com/r/personalfinance/wiki/index" },
+    { name: "JustETF", url: "https://justetf.com/en" },
+    { name: "Morning Star", url: "https://morningstar.com" },
+    { name: "ETF.com", url: "https://etf.com/etfanalyticsetf-finder" },
+    { name: "JL Collins", url: "https://jlcollinsnh.com" },
+    { name: "Mr Money Mustache", url: "https://mrmoneymustache.com" },
+    { name: "Mustachian Post Discussion Forum", url: "https://forum.mustachianpost.com" },
+    { name: "Early Retirement Extreme", url: "https://earlyretirementextreme.com" },
+    { name: "Investopedia", url: "https://investopedia.com" },
+    { name: "Global Property Guide", url: "https://globalpropertyguide.com" },
+    { name: "Optimized Portfolio", url: "https://optimizedportfolio.com" },
+    { name: "Lazy Portfolio ETF", url: "https://lazyportfolioetf.com" },
+    { name: "BogleHeads", url: "https://bogleheads.org/index.php" },
+    { name: "Portfolio Visualizer (with Backtesting)", url: "https://portfoliovisualizer.com" },
+    { name: "Wise Money (EU Investing)", url: "https://bankeronwheels.com" },
+    { name: "Index Fund Investor (EU Investing)", url: "https://indexfundinvestor.eu" },
+  ];
 
   const [comments, setComments] = useState<Comment[]>(initialComments);
   const [newComment, setNewComment] = useState('');
@@ -132,10 +132,10 @@ const HomePage = () => {
 
   return <ThemeProvider theme={theme}>
     <AppLayout>
-    <CssBaseline />
-    <Container component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
-      <Grid container spacing={2}>
-      <Grid item xs={12} md={8}>
+      <CssBaseline />
+      <Container component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
+        <Grid container spacing={2}>
+          <Grid item xs={12} md={8}>
             <Card variant="outlined" sx={{ mb: 2 }}>
               <CardContent>
                 <Typography variant="h5" gutterBottom>
@@ -146,116 +146,121 @@ const HomePage = () => {
                 </Typography>
 
                 <Box>
-                      <Typography component="span" sx={{ mr: 1 }}>
-                        {isWatching ? 'Unwatch' : 'Watch'} List
-                      </Typography>
-                      <Switch
-                        checked={isWatching}
-                        onChange={handleWatchToggle}
-                        color="primary"
-                      />
-                    </Box>
+                  <Typography component="span" sx={{ mr: 1 }}>
+                    {isWatching ? 'Unwatch' : 'Watch'} List
+                  </Typography>
+                  <Switch
+                    checked={isWatching}
+                    onChange={handleWatchToggle}
+                    color="primary"
+                  />
+                </Box>
 
-                    <Box display="flex" alignItems="center" mb={2}>
-                    <Avatar src="/path/to/profile-image.jpg" alt="Profile image" sx={{ marginRight: 2 }} />
-                    <Typography variant="subtitle1">
-                      <Link href="/user_profile" color="inherit" underline="hover">
-                        Username
-                      </Link>
-                    </Typography>
-                  </Box>
+                <Box
+                  display="flex"
+                  justifyContent="center" // Centers horizontally
+                  alignItems="center" // Centers vertically
+                  mb={2}
+                >
+                  <Avatar src="/path/to/profile-image.jpg" alt="Profile image" sx={{ marginRight: 2 }} />
+                  <Typography variant="subtitle1">
+                    <Link href="/user_profile" color="inherit" underline="hover">
+                      Username
+                    </Link>
+                  </Typography>
+                </Box>
 
                 {/* Dynamic list of links */}
                 <Box sx={{ mb: 2 }}>
-                {linksData.map((link, index) => (
-                  <Typography key={index}>
-                    <a href={link.url} target="_blank" rel="noopener noreferrer">
-                      {link.name}
-                    </a>
-                  </Typography>
-                ))}
-              </Box>
+                  {linksData.map((link, index) => (
+                    <Typography key={index}>
+                      <a href={link.url} target="_blank" rel="noopener noreferrer">
+                        {link.name}
+                      </a>
+                    </Typography>
+                  ))}
+                </Box>
 
                 <CardActions>
-                <IconButton aria-label="upvote" onClick={() => handleVote('up')}>
-                  <ArrowUpwardIcon />
-                </IconButton>
-                <Typography variant="subtitle1">
-                  {votes.upvotes - votes.downvotes} {/* Display total score */}
-                </Typography>
-                <IconButton aria-label="downvote" onClick={() => handleVote('down')}>
-                  <ArrowDownwardIcon />
-                </IconButton>
-                <IconButton aria-label="save list" onClick={handleSaveList}>
-                  <BookmarkBorderIcon />
-                </IconButton>
-                <Button startIcon={<EditIcon />} size="small">
-                  Suggest Edit
-                </Button>
-                <Button startIcon={<ReportIcon />} size="small">
-                  Report
-                </Button>
-              </CardActions>
+                  <IconButton aria-label="upvote" onClick={() => handleVote('up')}>
+                    <ArrowUpwardIcon />
+                  </IconButton>
+                  <Typography variant="subtitle1">
+                    {votes.upvotes - votes.downvotes} {/* Display total score */}
+                  </Typography>
+                  <IconButton aria-label="downvote" onClick={() => handleVote('down')}>
+                    <ArrowDownwardIcon />
+                  </IconButton>
+                  <IconButton aria-label="save list" onClick={handleSaveList}>
+                    <BookmarkBorderIcon />
+                  </IconButton>
+                  <Button startIcon={<EditIcon />} size="small" href="list_pr">
+                    Suggest Edit
+                  </Button>
+                  <Button startIcon={<ReportIcon />} size="small" href="report">
+                    Report
+                  </Button>
+                </CardActions>
               </CardContent>
-          {/* Comment section */}
-          <CardContent>
-              {/* Comments List */}
-              <List>
-                {comments.map((comment) => (
-                  <ListItem key={comment.id} alignItems="flex-start">
-                    <ListItemAvatar>
-                      <Avatar alt={comment.author} src={comment.profileImageUrl} />
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={comment.author}
-                      secondary={comment.text}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-              {/* Comment Input Section */}
-              <Box sx={{ my: 2 }}>
-                <TextField
-                  label="Add a comment"
-                  variant="outlined"
-                  fullWidth
-                  multiline
-                  rows={4}
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  margin="normal"
-                />
-                <Button variant="contained" color="primary" onClick={handleCommentSubmit}>
-                  Post Comment
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-      </Grid>
-      <Grid item xs={12} md={4}>
-        {/* List Topics */}
-        <Typography variant="h6" gutterBottom>
+              {/* Comment section */}
+              <CardContent>
+                {/* Comments List */}
+                <List>
+                  {comments.map((comment) => (
+                    <ListItem key={comment.id} alignItems="flex-start">
+                      <ListItemAvatar>
+                        <Avatar alt={comment.author} src={comment.profileImageUrl} />
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={comment.author}
+                        secondary={comment.text}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+                {/* Comment Input Section */}
+                <Box sx={{ my: 2 }}>
+                  <TextField
+                    label="Add a comment"
+                    variant="outlined"
+                    fullWidth
+                    multiline
+                    rows={4}
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    margin="normal"
+                  />
+                  <Button variant="contained" color="primary" onClick={handleCommentSubmit}>
+                    Post Comment
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            {/* List Topics */}
+            <Typography variant="h6" gutterBottom>
               List Topics
             </Typography>
             <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 2 }}>
               <Chip label="Personal Finance" variant="outlined" sx={{ margin: '4px' }} />
               {/* Add more Chips for each topic */}
             </Box>
-        <Typography variant="h6">Participants</Typography>
-        <List>
-          {participants.map((participant) => (
-            <ListItem key={participant.name}>
-              <Avatar src={participant.imageUrl} />
-              <Typography variant="subtitle1" style={{ marginLeft: '10px' }}>
-                {participant.name}
-              </Typography>
-            </ListItem>
-          ))}
-        </List>
-      </Grid>
-    </Grid>
-  </Container>
-  </AppLayout>
+            <Typography variant="h6">Participants</Typography>
+            <List>
+              {participants.map((participant) => (
+                <ListItem key={participant.name}>
+                  <Avatar src={participant.imageUrl} />
+                  <Typography variant="subtitle1" style={{ marginLeft: '10px' }}>
+                    {participant.name}
+                  </Typography>
+                </ListItem>
+              ))}
+            </List>
+          </Grid>
+        </Grid>
+      </Container>
+    </AppLayout>
   </ThemeProvider >
 };
 
