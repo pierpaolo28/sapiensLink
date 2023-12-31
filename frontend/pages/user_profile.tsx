@@ -15,6 +15,7 @@ import {
     ToggleButton,
     Divider
 } from '@mui/material';
+import { Pagination } from '@mui/material';
 import AppLayout from "@/components/AppLayout";
 
 export default function UserProfilePage() {
@@ -69,6 +70,16 @@ export default function UserProfilePage() {
         console.log("More button clicked");
         // Potentially update state to show more items or navigate to a different view
     };
+
+    // Add state for pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // Adjust the number of items per page as needed
+  const count = Math.ceil(recentContributions.length / itemsPerPage); // Calculate the total number of pages
+
+  const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
+    setCurrentPage(page);
+    // Add logic to fetch data for the new page if necessary
+  };
 
     return (
         <AppLayout>
@@ -136,6 +147,18 @@ export default function UserProfilePage() {
                                         </ListItem>
                                     ))}
                                 </List>
+
+                                {/* Pagination for lists */}
+            <Pagination
+              count={count}
+              page={currentPage}
+              onChange={handlePageChange}
+              color="primary"
+              showFirstButton
+              showLastButton
+              sx={{ my: 2 }} // Adds margin around the pagination
+            />
+
                                 {/* Recent Contributions */}
                                 <Typography variant="h6">Recent Contributions</Typography>
                                 {recentContributions.length > 0 ? (
