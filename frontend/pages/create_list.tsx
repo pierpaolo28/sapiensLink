@@ -10,7 +10,6 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
-  Box
 } from '@mui/material';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import AppLayout from "@/components/AppLayout";
