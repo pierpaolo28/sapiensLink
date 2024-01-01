@@ -12,6 +12,81 @@ export interface HomeResponse {
   all_list_count: number;
 }
 
+export interface RankHomeResponse {
+  pagination: {
+    next_page?: string;
+    previous_page?: string;
+    total_pages: number;
+    current_page: number;
+  };
+  ranks: Rank[];
+  users: User[];
+  rank_count: number;
+  topic_counts: [string, number][];
+  all_rank_count: number;
+}
+
+interface Element {
+  element: string;
+  user_id: number;
+}
+
+interface Rank {
+  id: number;
+  name: string;
+  topic: { id: number; name: string }[];
+  contributors: number[];
+  content: { [key: string]: Element };
+  description: string;
+  score: number;
+  updated: string;
+  created: string;
+  subscribed_users: number[];
+}
+
+interface RankContent {
+  [key: string]: {
+    element: string;
+    user_id: number;
+  };
+}
+
+interface RankContributor {
+  id: number;
+  name: string;
+  email: string;
+  bio: string | null;
+  avatar: string;
+  social: string | null;
+  followers: number[];
+  following: number[];
+}
+
+interface RankContentScores {
+  [key: string]: number;
+}
+
+export interface RankPageResponse {
+  rank: {
+    id: number;
+    topic: { id: number; name: string }[];
+    contributors: number[];
+    content: RankContent;
+    name: string;
+    description: string;
+    score: number;
+    updated: string;
+    created: string;
+    subscribed_users: number[];
+  };
+  contributors: RankContributor[];
+  content_scores: RankContentScores;
+  has_reported: boolean;
+  saved_ranks_ids: number[];
+  is_subscribed: boolean;
+}
+
+
 export interface User {
   id: number;
   name: string;

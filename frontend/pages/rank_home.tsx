@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -13,38 +13,37 @@ import {
   ListItemAvatar,
   ToggleButtonGroup,
   ToggleButton,
-  Chip, CardActionArea,
-  CardContent, Card, Stack, Box
+  Box,
+  Card, Stack
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AppLayout from "@/components/AppLayout";
 import DBSetup from "@/components/DBSetup";
-import { getHome } from "@/utils/routes";
-import { HomeResponse } from "../utils/types";
+import { getRankHome } from "@/utils/routes";
+import { RankHomeResponse } from "../utils/types";
 import Pagination from '@mui/material/Pagination';
 
-
 export default function HomePage() {
-  const [home, setHome] = React.useState<HomeResponse | null>(null);
 
-  React.useEffect(() => {
-    async function fetchData() {
-      try {
-        const homeData = await getHome();
-        setHome(homeData);
-      } catch (error) {
-        console.error("Error fetching home data:", error);
-      }
+  const [home, setHome] = React.useState<RankHomeResponse | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTab, setSelectedTab] = useState('latest');
+
+  const fetchData = async (extraParams = '') => {
+    try {
+      const homeData = await getRankHome(extraParams);
+      setHome(homeData);
+    } catch (error) {
+      console.error("Error fetching home data:", error);
     }
+  };
 
+  useEffect(() => {
     fetchData();
   }, []);
 
   // Example data - replace with actual data
   const topics = ['All', 'Tech', 'Work', 'Education', 'Personal Finance'];
-
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTab, setSelectedTab] = useState('latest');
 
   // Example user data for "Who to Follow"
   const usersToFollow = [
@@ -64,7 +63,9 @@ export default function HomePage() {
 
   const handleTabChange = (event: any, newValue: any) => {
     setSelectedTab(newValue);
+    fetchData(newValue === 'popular' ? 'top_voted=top_voted_true' : '');
   };
+
 
   // Handle change page
   const handleChangePage = (event: any, newPage: any) => {
@@ -75,7 +76,7 @@ export default function HomePage() {
   return (
     <>
       <AppLayout>
-      <Box display="flex" justifyContent="center" mb={2}>
+        <Box display="flex" justifyContent="center" mb={2}>
           <ToggleButtonGroup
             color="primary"
             value={selectedTab}
@@ -98,6 +99,8 @@ export default function HomePage() {
             </a>
           </ToggleButtonGroup>
         </Box>
+
+
         <Container maxWidth="lg" sx={{ mt: 4 }}>
           <Grid container spacing={3}>
             {/* Left side - Topics and More */}
@@ -128,7 +131,6 @@ export default function HomePage() {
                   aria-label="list type"
                 >
                   <ToggleButton value="latest">Latest</ToggleButton>
-                  <ToggleButton value="follow">Follow List</ToggleButton>
                   <ToggleButton value="popular">Popular</ToggleButton>
                 </ToggleButtonGroup>
 
@@ -148,42 +150,47 @@ export default function HomePage() {
                     }}
                   />
                 </form>
-                <Stack spacing={2}>
-                  {home && home.lists ? ( // Check if home and home.lists are available
-                    home.lists.map((list, i) => (
-                      <Card key={list.id}>
-                        <CardActionArea>
-                          <CardContent>
-                            <Typography gutterBottom variant="h5">
-                              {list.name}
+                <Stack spacing={2} sx={{ justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+                  {home && home.ranks ? (
+                    home.ranks.map((rank, i) => (
+                      <Grid item xs={12} md={8} key={rank.id}>
+                        <Card variant="outlined" sx={{ p: 2, mb: 4 }}>
+                          <a href={`/rank?id=${rank.id}`}>
+                            <Typography variant="h5" gutterBottom>
+                              {rank.name}
                             </Typography>
-                            <Typography paragraph color="text.secondary">
-                              {list.description}
+                          </a>
+
+                          {/* Last activity and watch toggle */}
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                            <Typography variant="body2">
+                              Last Activity: {new Date(rank.updated).toLocaleString()}
                             </Typography>
-                            <Grid container spacing={3} alignItems="center">
-                              <Grid item xs>
-                                <Stack direction="row" spacing={1}>
-                                  {list.topic.map((topic) => (
-                                    <Chip key={topic.id} label={topic.name} />
-                                  ))}
-                                </Stack>
-                              </Grid>
-                              <Grid item xs></Grid>
-                              <Grid item xs>
-                                <Stack
-                                  direction="row"
-                                  spacing={1}
-                                  alignItems="center"
-                                  justifyContent="end"
-                                >
-                                  <Avatar sx={{ width: 32, height: 32 }} />
-                                  <div>{list.author}</div>
-                                </Stack>
-                              </Grid>
-                            </Grid>
-                          </CardContent>
-                        </CardActionArea>
-                      </Card>
+                          </Box>
+
+                          <Typography variant="body1" gutterBottom>
+                            {rank.description}
+                          </Typography>
+
+                          {/* Overall score */}
+                          <Typography variant="body2" gutterBottom>
+                            Overall Score: {rank.score}
+                          </Typography>
+
+                          {/* Display each element in content */}
+                          <List>
+                            {Object.values(rank.content).map((element, index) => (
+                              <ListItem key={index}>
+                                <Grid container alignItems="center">
+                                  <Grid item xs>
+                                    <ListItemText primary={element.element} />
+                                  </Grid>
+                                </Grid>
+                              </ListItem>
+                            ))}
+                          </List>
+                        </Card>
+                      </Grid>
                     ))
                   ) : (
                     // Render loading state or an error message

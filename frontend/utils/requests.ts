@@ -28,9 +28,13 @@ async function post<Q, A>(url: string, data: Q): Promise<A> {
 
 const BASE_URL = "http://localhost/api"
 
-export function makeGet<A>(path: string): () => Promise<A> {
-    return async () => get(BASE_URL + path)
-}
+export const makeGet = <T>(path: string) => {
+    return async (extraParams: string = ''): Promise<T> => {
+      const response = await fetch(`${BASE_URL}${path}?${extraParams}`);
+      const data: T = await response.json();
+      return data;
+    };
+  };
 
 export function makePost<Q, A>(path: string): (data: Q) => Promise<A> {
     return async (data: Q) => post(BASE_URL + path, data)
