@@ -1463,13 +1463,20 @@ def update_user_page(request):
         return Response(serializer.data)
 
     elif request.method == 'PUT':
-        serializer = UserSerializer(request.data, instance=user)
+        # Separate the password from the other fields
         password = request.data.get('password')
+        other_fields = {k: v for k, v in request.data.items() if k != 'password'}
 
+        # If password is an empty string, remove it from the data
+        if password == '':
+            other_fields.pop('password', None)
+
+        serializer = UserSerializer(instance=user, data=other_fields, partial=True)
         if serializer.is_valid():
             serializer.save()
 
-            if password:
+            # Update the password if provided and not an empty string
+            if password and password != '':
                 user.set_password(password)
                 user.save()
 
@@ -1647,7 +1654,7 @@ def delete_user_page(request):
 
     Feedback.objects.create(feedback=feedback)
 
-    user = authenticate(request, email=request.user.email, password=password)
+    user = authenticate(request, email=request.user, password=password)
 
     if user is not None and confirm_delete == 'on':
         # Delete the user account

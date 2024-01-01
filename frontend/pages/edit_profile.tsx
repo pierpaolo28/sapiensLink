@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import {
   Box,
   Container,
@@ -12,10 +12,9 @@ import {
   CardContent,
   CardActions,
 } from '@mui/material';
-import AppLayout from "@/components/AppLayout";
+import AppLayout from '@/components/AppLayout';
 
 export default function EditProfilePage() {
-  // State for form fields
   const [profile, setProfile] = useState({
     name: '',
     email: '',
@@ -26,9 +25,58 @@ export default function EditProfilePage() {
     deletionReason: '',
   });
   const [avatar, setAvatar] = useState<File | null>(null);
+  const [isDeletionConfirmed, setIsDeletionConfirmed] = useState(false);
 
-  // Handlers for form inputs
+  useEffect(() => {
+    const accessToken = localStorage.getItem('access_token');
+    // Fetch current user data for prepopulating the form
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch('http://localhost/api/update_user_page/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
+
+        if (response.ok) {
+          const userData = await response.json();
+
+          // Update the state with fetched data
+          setProfile({
+            name: userData.name,
+            email: userData.email,
+            bio: userData.bio,
+            social: userData.social,
+            password: '',
+            confirmPassword: '',
+            deletionReason: '',
+          });
+
+          // You might also handle the avatar separately if your API provides an avatar URL
+          // For example: setAvatar(userData.avatar);
+        } else {
+          // Handle error cases
+          console.error('Failed to fetch user data:', response.statusText);
+        }
+      } catch (error) {
+        console.error('An error occurred during data fetching:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = event.target;
+    setProfile((prevProfile) => ({
+      ...prevProfile,
+      [name]: value,
+    }));
+  };
+  
+  const handleTextAreaChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     const { name, value } = event.target;
     setProfile((prevProfile) => ({
       ...prevProfile,
@@ -37,43 +85,93 @@ export default function EditProfilePage() {
   };
 
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // Check if files are selected and if the first file exists
     if (event.target.files && event.target.files.length > 0) {
-      // Set the avatar state to the first file
       setAvatar(event.target.files[0]);
     } else {
-      // If no files are selected, set the avatar state back to null
       setAvatar(null);
     }
   };
-  
 
   const handleClearAvatar = () => {
     setAvatar(null);
   };
 
-  // Handlers for form submission
-  const handleUpdateProfile = () => {
-    // Implement profile update logic here
-    console.log('Profile updated with:', profile);
-    if (avatar) {
-      console.log('Avatar to be uploaded:', avatar.name);
+  const handleCancel = () => {
+    window.location.href = '/home';
+  };
+
+  const handleUpdateProfile = async () => {
+    try {
+      // Make a PUT request to update the user profile
+      const accessToken = localStorage.getItem('access_token');
+      const response = await fetch('http://localhost/api/update_user_page/', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          name: profile.name,
+          email: profile.email,
+          bio: profile.bio,
+          social: profile.social,
+          password: profile.password,
+        }),
+      });
+
+      if (response.ok) {
+        // Handle successful update
+        console.log('User profile updated successfully');
+      } else {
+        // Handle update failure
+        console.error('Profile update failed:', response.statusText);
+      }
+    } catch (error) {
+      console.error('An error occurred during profile update:', error);
     }
   };
 
-  const [isDeletionConfirmed, setIsDeletionConfirmed] = useState(false);
-
-
-  const handleDeleteAccount = () => {
-    if (isDeletionConfirmed) {
-      // Implement account deletion logic here
-      console.log('Account deletion confirmed. Deleting account...');
-      // Your logic to delete the account
-    } else {
-      console.log('Account deletion not confirmed. Please confirm deletion.');
-      // Optionally show an alert or message asking the user to confirm deletion
+  const handleDeleteAccount = async () => {
+    try {
+      // Check if the required fields are filled
+      if (!profile.confirmPassword || !isDeletionConfirmed) {
+        console.error('Please fill in all required fields.');
+        return;
+      }
+  
+      // Make a DELETE request to delete the user account
+      const accessToken = localStorage.getItem('access_token');
+      const response = await fetch('http://localhost/api/delete_user_page/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // Include the user's access token in the headers for authentication
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          password: profile.confirmPassword,
+          confirm_delete: "on",
+          feedback: profile.deletionReason,
+          access_token: accessToken,
+        }),
+      });
+  
+      if (response.ok) {
+        // Handle successful deletion
+        console.log('User account deleted successfully');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('expiration_time');
+        window.location.href = '/home';
+      } else {
+        // Handle deletion failure
+        console.error('Account deletion failed:', response.statusText);
+      }
+    } catch (error) {
+      console.error('An error occurred during account deletion:', error);
     }
   };
+  
   
 
   return (
@@ -100,7 +198,7 @@ export default function EditProfilePage() {
               fullWidth
               label="Name"
               name="name"
-              value={profile.name}
+              value={profile.name || ''}
               onChange={handleChange}
               margin="normal"
             />
@@ -109,7 +207,7 @@ export default function EditProfilePage() {
               fullWidth
               label="Email address"
               name="email"
-              value={profile.email}
+              value={profile.email || ''}
               onChange={handleChange}
               margin="normal"
             />
@@ -120,8 +218,8 @@ export default function EditProfilePage() {
               name="bio"
               multiline
               rows={4}
-              value={profile.bio}
-              onChange={handleChange}
+              value={profile.bio || ''} 
+              onChange={handleTextAreaChange}
               margin="normal"
             />
 
@@ -129,7 +227,7 @@ export default function EditProfilePage() {
               fullWidth
               label="Social"
               name="social"
-              value={profile.social}
+              value={profile.social || ''}
               onChange={handleChange}
               margin="normal"
             />
@@ -139,7 +237,7 @@ export default function EditProfilePage() {
               label="Update Password"
               name="password"
               type="password"
-              value={profile.password}
+              value={profile.password || ''}
               onChange={handleChange}
               margin="normal"
             />
@@ -147,7 +245,7 @@ export default function EditProfilePage() {
         </CardContent>
         <CardActions>
           <Button color="primary" onClick={handleUpdateProfile}>Update</Button>
-          <Button color="error" onClick={handleDeleteAccount}>Cancel</Button>
+          <Button color="error" onClick={handleCancel}>Cancel</Button>
         </CardActions>
       </Card>
 
