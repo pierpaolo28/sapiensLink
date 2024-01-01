@@ -4,26 +4,46 @@ import {
   TextField, Link, Grid, Box, Typography, Container
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 import AppLayout from "@/components/AppLayout";
 
-// TODO remove, this demo shouldn't need to reset the theme.
-const defaultTheme = createTheme();
-
 export default function SignUp() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      name: data.get('name'),
-      email: data.get('email'),
-      password: data.get('password'),
-      confirmPassword: data.get('confirmPassword'),
-    });
+    try {
+      const response = await fetch('http://localhost/api/register_user/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: data.get('name'),
+          email: data.get('email'),
+          password1: data.get('password'),
+          password2: data.get('confirmPassword'),
+        }),
+      });
+
+      if (response.ok) {
+
+        const responseData = await response.json();
+
+        // Store tokens in local storage
+        localStorage.setItem('access_token', responseData.access_token);
+        localStorage.setItem('refresh_token', responseData.refresh_token);
+        localStorage.setItem('expiration_time', responseData.expiration_time.toString());
+
+        window.location.href = '/home';
+      } else {
+        // Handle registration failure
+        console.error('Registration failed:', response.statusText);
+      }
+    } catch (error) {
+      console.error('An error occurred during registration:', error);
+    }
   };
 
   return (
-    <ThemeProvider theme={defaultTheme}>
       <AppLayout>
         <Container component="main" maxWidth="xs">
           <CssBaseline />
@@ -105,6 +125,5 @@ export default function SignUp() {
           </Box>
         </Container>
       </AppLayout>
-    </ThemeProvider>
   );
 }

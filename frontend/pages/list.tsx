@@ -20,23 +20,12 @@ import {
   Switch,
   Link
 } from '@mui/material';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import EditIcon from '@mui/icons-material/Edit';
 import ReportIcon from '@mui/icons-material/Report';
 import AppLayout from "@/components/AppLayout";
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
-
-// Define the theme
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#556cd6',
-    },
-    // other theme settings
-  },
-});
 
 // Define a type for the participant data
 type Participant = {
@@ -130,8 +119,7 @@ const HomePage = () => {
   };
 
 
-  return <ThemeProvider theme={theme}>
-    <AppLayout>
+  return <AppLayout>
       <CssBaseline />
       <Container component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
         <Grid container spacing={2}>
@@ -261,7 +249,6 @@ const HomePage = () => {
         </Grid>
       </Container>
     </AppLayout>
-  </ThemeProvider >
 };
 
 export default HomePage;

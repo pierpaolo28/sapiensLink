@@ -349,7 +349,7 @@ def register_user(request):
             return Response(data, status=status.HTTP_201_CREATED)
         else:
             # TODO: provide more descriptive explanation of error (e.g., password condition, duplicate email)
-            return Response({"message": "An error occurred during registration"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "An error occurred during registration", 'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(

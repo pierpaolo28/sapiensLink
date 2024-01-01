@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -12,16 +12,20 @@ import {
   List,
   ListItem,
   ListItemText,
-  Avatar,
-  MenuItem,
-  Menu,
 } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import { isUserLoggedIn } from '@/utils/auth';
 
 export default function Header() {
   const [anchorEl, setAnchorEl] = useState(null);
   const [notificationCount, setNotificationCount] = useState(5); // Example count
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
+    // Perform the check on the client side once the component is mounted
+    setIsLoggedIn(isUserLoggedIn());
+  }, []);
 
   const handleClick = (event: any) => {
     setAnchorEl(event.currentTarget);
@@ -52,10 +56,41 @@ export default function Header() {
     setProfileAnchorEl(null);
   };
 
-  const handleLogout = () => {
-    // Perform logout actions
-    console.log('User logged out');
-    // Redirect to login page or update state accordingly
+  const handleLogout = async () => {
+    try {
+      // Get the access token from local storage
+      const accessToken = localStorage.getItem('access_token');
+
+      if (accessToken) {
+        // Make a POST request to the logout API
+        const response = await fetch('http://localhost/api/logout_user/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`, // Include access token in the Authorization header
+          },
+          body: JSON.stringify({
+            access_token: accessToken,
+          }),
+        });
+
+        if (response.ok) {
+          // Clear tokens from local storage
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem('expiration_time');
+
+          // Redirect or perform other actions after successful logout
+          // For example, redirect to the login page
+          window.location.href = '/';
+        } else {
+          // Handle error cases
+          console.error('Logout failed:', response.statusText);
+        }
+      }
+    } catch (error) {
+      console.error('An error occurred during logout:', error);
+    }
   };
 
   const profileOpen = Boolean(profileAnchorEl);
@@ -71,74 +106,83 @@ export default function Header() {
         </Typography>
         <Box sx={{ flexGrow: 1 }} />
 
-        {/* Notification Icon */}
-        <IconButton color="inherit" onClick={handleClick}>
-          <Badge badgeContent={notificationCount} color="secondary">
-            <NotificationsIcon />
-          </Badge>
-        </IconButton>
-        <Popover
-          id={id}
-          open={open}
-          anchorEl={anchorEl}
-          onClose={handleClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'center',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'center',
-          }}
-        >
-          <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-            {notifications.map((notification) => (
-              <ListItem key={notification.id} button>
-                <ListItemText primary={notification.text} />
-              </ListItem>
-            ))}
-          </List>
-        </Popover>
+        {isLoggedIn ? (
+          <>
+            {/* Notification Icon */}
+            <IconButton color="inherit" onClick={handleClick}>
+              <Badge badgeContent={notificationCount} color="secondary">
+                <NotificationsIcon />
+              </Badge>
+            </IconButton>
+            <Popover
+              id={id}
+              open={open}
+              anchorEl={anchorEl}
+              onClose={handleClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'center',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'center',
+              }}
+            >
+              <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                {notifications.map((notification) => (
+                  <ListItem key={notification.id} button>
+                    <ListItemText primary={notification.text} />
+                  </ListItem>
+                ))}
+              </List>
+            </Popover>
 
-                {/* User Profile Icon */}
-                <IconButton color="inherit" onClick={handleProfileClick}>
-          <AccountCircle />
-        </IconButton>
-        <Popover
-          id={profileId}
-          open={profileOpen}
-          anchorEl={profileAnchorEl}
-          onClose={handleProfileClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'center',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'center',
-          }}
-        >
-          <Box sx={{ p: 2 }}>
-            <List component="nav" aria-label="user profile options">
-              <ListItem button component="a" href="/edit_profile">
-                <ListItemText primary="Edit Profile" />
-              </ListItem>
-              <ListItem button onClick={handleLogout}>
-                <ListItemText primary="Log Out" />
-              </ListItem>
-            </List>
-          </Box>
-        </Popover>
-
-        <Button color="inherit" href="signin">Login</Button>
-        <Button
-          color="primary"
-          variant="contained"
-          sx={{ marginLeft: '1rem' }}
-          href="signup"
-        >
-          Sign Up
-        </Button>
+            {/* User Profile Icon */}
+            <IconButton color="inherit" onClick={handleProfileClick}>
+              <AccountCircle />
+            </IconButton>
+            <Popover
+              id={profileId}
+              open={profileOpen}
+              anchorEl={profileAnchorEl}
+              onClose={handleProfileClose}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'center',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'center',
+              }}
+            >
+              <Box sx={{ p: 2 }}>
+                <List component="nav" aria-label="user profile options">
+                  <ListItem button component="a" href="/edit_profile">
+                    <ListItemText primary="Edit Profile" />
+                  </ListItem>
+                  <ListItem button onClick={handleLogout}>
+                    <ListItemText primary="Log Out" />
+                  </ListItem>
+                </List>
+              </Box>
+            </Popover>
+          </>
+        ) : (
+          // If not logged in, show Login and Sign Up buttons
+          <>
+            <Button color="inherit" href="signin">
+              Login
+            </Button>
+            <Button
+              color="primary"
+              variant="contained"
+              sx={{ marginLeft: '1rem' }}
+              href="signup"
+            >
+              Sign Up
+            </Button>
+          </>
+        )}
       </Toolbar>
     </AppBar>
   );

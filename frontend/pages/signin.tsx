@@ -1,46 +1,72 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Avatar, Button, CssBaseline,
   TextField, FormControlLabel, Checkbox, Link, Grid, Box, Typography, Container
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { useRouter } from 'next/router';
 import AppLayout from "@/components/AppLayout";
 
-// TODO remove, this demo shouldn't need to reset the theme.
-const defaultTheme = createTheme();
-
 export default function SignIn() {
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+
+    try {
+      const response = await fetch('http://localhost/api/login_user/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.get('email'),
+          password: data.get('password'),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData.message);
+        return;
+      }
+
+      const responseData = await response.json();
+
+      // Store tokens in local storage
+      localStorage.setItem('access_token', responseData.access_token);
+      localStorage.setItem('refresh_token', responseData.refresh_token);
+      localStorage.setItem('expiration_time', responseData.expiration_time.toString());
+
+      router.push('/home');
+    } catch (error) {
+      console.error('An error occurred while signing in:', error);
+      setError('An unexpected error occurred. Please try again.');
+    }
   };
 
   return (
-    <ThemeProvider theme={defaultTheme}>
-      <AppLayout>
-        <Container component="main" maxWidth="xs">
-          <CssBaseline />
-          <Box
-            sx={{
-              marginTop: 8,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-            }}
-          >
-            <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-              <LockOutlinedIcon />
-            </Avatar>
-            <Typography component="h1" variant="h5">
-              Sign in
-            </Typography>
-            <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-              <TextField
+    <AppLayout>
+      <Container component="main" maxWidth="xs">
+        <CssBaseline />
+        <Box
+          sx={{
+            marginTop: 8,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+            <LockOutlinedIcon />
+          </Avatar>
+          <Typography component="h1" variant="h5">
+            Sign in
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+          <TextField
                 margin="normal"
                 required
                 fullWidth
@@ -84,10 +110,14 @@ export default function SignIn() {
                   </Link>
                 </Grid>
               </Grid>
-            </Box>
+            {error && (
+              <Typography color="error" variant="body2" sx={{ mt: 1 }}>
+                {error}
+              </Typography>
+            )}
           </Box>
-        </Container>
-      </AppLayout>
-    </ThemeProvider>
+        </Box>
+      </Container>
+    </AppLayout>
   );
 }
