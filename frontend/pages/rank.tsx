@@ -28,11 +28,17 @@ import { RankPageResponse } from "@/utils/types";
 export default function RankPage() {
     const [rank, setRank] = useState<RankPageResponse | null>(null);
     const [newItemText, setNewItemText] = useState('');
+    const [id, setId] = useState<string | null>(null);
 
     useEffect(() => {
         // Extract the id parameter from the current URL
         const urlParams = new URLSearchParams(window.location.search);
-        const id = urlParams.get('id');
+        const extractedId = urlParams.get('id');
+
+        // Update the id state if it is different
+        if (extractedId !== id) {
+            setId(extractedId);
+        }
 
         // Fetch rank data based on the extracted id
         const fetchRankData = async () => {
@@ -45,15 +51,16 @@ export default function RankPage() {
             }
         };
 
+        // Fetch data only if id is present
         if (id) {
-            fetchRankData(); // Fetch data if id is present
+            fetchRankData();
         }
 
         // Add any cleanup logic if needed
         return () => {
             // Cleanup logic here
         };
-    }, []); // Only fetch data when the component mounts
+    }, [id]); // Only fetch data when the component mounts
 
     const handleVote = async (contentIndex: number, action: string) => {
         try {
@@ -85,24 +92,86 @@ export default function RankPage() {
         }
     };
 
-
-
-
-    const handleNewItemKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        console.log("TODO")
-    };
-
     const handleEdit = (index: number) => {
         console.log('Edit item with index:', index);
         // Implement edit logic
     };
 
-    const handleDelete = (index: number) => {
-        console.log("TODO")
+    const handleNewItemKeyPress = async (event: React.KeyboardEvent<HTMLInputElement>) => {
+        try {
+            if (event.key === 'Enter' && newItemText.trim()) {
+                const accessToken = localStorage.getItem('access_token');
+                const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`,
+                    },
+                    body: JSON.stringify({ element: newItemText }),
+                });
+
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    console.error('Error adding new item:', response.status, response.statusText);
+                    // Handle the error or provide feedback to the user
+                }
+            }
+        } catch (error) {
+            console.error('Error adding new item:', error);
+            // Handle the error or provide feedback to the user
+        }
     };
 
-    const toggleWatchStatus = () => {
-        console.log("TODO")
+    const handleDelete = async (index: number) => {
+        try {
+            const elementIndex = Object.keys(rank!.rank.content)[index];
+            const accessToken = localStorage.getItem('access_token');
+            const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({ delete_element_index: elementIndex }),
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                console.error('Error deleting item:', response.status, response.statusText);
+                // Handle the error or provide feedback to the user
+            }
+        } catch (error) {
+            console.error('Error deleting item:', error);
+            // Handle the error or provide feedback to the user
+        }
+    };
+
+    const toggleWatchStatus = async () => {
+        try {
+            const accessToken = localStorage.getItem('access_token');
+            // TODO + Save and Unsave
+            const response = await fetch(`http://localhost/api/manage_subscription/${rank!.rank.id}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({ is_subscribed: true }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setRank(data);
+            } else {
+                console.error('Error toggling watch status:', response.status, response.statusText);
+                // Handle the error or provide feedback to the user
+            }
+        } catch (error) {
+            console.error('Error toggling watch status:', error);
+            // Handle the error or provide feedback to the user
+        }
     };
 
 
@@ -131,7 +200,7 @@ export default function RankPage() {
                 <Box sx={{ my: 4 }}>
                     <Grid container spacing={2}>
                         <Grid item xs={12} md={8}>
-                            {rank && (
+                            {rank &&  (
                                 <>
                                     <Typography variant="h4" gutterBottom>
                                         {rank.rank.name}

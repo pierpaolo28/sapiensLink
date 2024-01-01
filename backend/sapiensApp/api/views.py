@@ -807,7 +807,7 @@ def rank_page(request, pk):
     is_subscribed = False
 
     if user.is_authenticated:
-        has_reported = RankReport.objects.filter(user=user, list=rank).exists()
+        has_reported = RankReport.objects.filter(user=user, rank=rank).exists()
         saved_ranks_ids = RankSaved.objects.filter(user=user).values_list('rank_id', flat=True)
         is_subscribed = user in rank.subscribed_users.all()
 
