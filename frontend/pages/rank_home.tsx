@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Container,
-  Typography,
-  Grid,
-  Button,
-  List,
-  ListItem,
-  ListItemText,
-  Paper,
-  Avatar,
-  TextField,
-  ListItemAvatar,
-  ToggleButtonGroup,
-  ToggleButton,
-  Box,
-  Card, Stack
-} from '@mui/material';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
+import Button from '@mui/material/Button';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Paper from '@mui/material/Paper';
+import Avatar from '@mui/material/Avatar';
+import TextField from '@mui/material/TextField';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import Stack from '@mui/material/Stack';
 import SearchIcon from '@mui/icons-material/Search';
+
 import AppLayout from "@/components/AppLayout";
-import DBSetup from "@/components/DBSetup";
+// import DBSetup from "@/components/DBSetup";
 import { getRankHome } from "@/utils/routes";
-import { RankHomeResponse } from "../utils/types";
+import { RankHomeResponse } from "@/utils/types";
 import Pagination from '@mui/material/Pagination';
 
 export default function HomePage() {

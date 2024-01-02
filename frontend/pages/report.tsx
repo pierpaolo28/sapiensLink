@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Container, TextField, Button, Typography, Box } from '@mui/material';
+import Container from '@mui/material/Container';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import Box from '@mui/material/Box';
+
 import AppLayout from "@/components/AppLayout";
 import {getUserIdFromAccessToken} from "@/utils/auth"
 

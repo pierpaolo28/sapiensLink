@@ -1,31 +1,30 @@
 import React, { useState } from 'react';
-import {
-  Typography,
-  Container,
-  Grid,
-  Card,
-  CardContent,
-  Avatar,
-  TextField,
-  Button,
-  IconButton,
-  CssBaseline,
-  Box,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  CardActions,
-  Chip,
-  Switch,
-  Link
-} from '@mui/material';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import Grid from '@mui/material/Grid';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Avatar from '@mui/material/Avatar';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import CssBaseline from '@mui/material/CssBaseline';
+import Box from '@mui/material/Box';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import CardActions from '@mui/material/CardActions';
+import Chip from '@mui/material/Chip';
+import Switch from '@mui/material/Switch';
+import Link from '@mui/material/Link';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import EditIcon from '@mui/icons-material/Edit';
 import ReportIcon from '@mui/icons-material/Report';
-import AppLayout from "@/components/AppLayout";
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+
+import AppLayout from "@/components/AppLayout";
 
 // Define a type for the participant data
 type Participant = {

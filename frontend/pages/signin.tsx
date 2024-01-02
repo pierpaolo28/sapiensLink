@@ -1,15 +1,21 @@
 import React, { useState } from "react";
-import {
-  Avatar, Button, CssBaseline,
-  TextField, FormControlLabel, Checkbox, Link, Grid, Box, Typography, Container
-} from '@mui/material';
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import CssBaseline from '@mui/material/CssBaseline';
+import TextField from '@mui/material/TextField';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+import Link from '@mui/material/Link';
+import Grid from '@mui/material/Grid';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { useRouter } from 'next/router';
+
 import AppLayout from "@/components/AppLayout";
 
 export default function SignIn() {
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -40,7 +46,7 @@ export default function SignIn() {
       localStorage.setItem('refresh_token', responseData.refresh_token);
       localStorage.setItem('expiration_time', responseData.expiration_time.toString());
 
-      router.push('/list_home');
+      window.location.href = '/list_home';
     } catch (error) {
       console.error('An error occurred while signing in:', error);
       setError('An unexpected error occurred. Please try again.');

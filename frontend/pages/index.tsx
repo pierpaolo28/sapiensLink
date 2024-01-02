@@ -1,34 +1,32 @@
 "use client";
 import React from "react";
-import {
-  Typography,
-  Button,
-  Container,
-  Grid,
-  Box,
-  Paper,
-  Stack,
-  Link,
-  ListItem,
-  ListItemText,
-  ListItemAvatar,
-  Avatar,
-} from "@mui/material";
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import Grid from '@mui/material/Grid';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import Link from '@mui/material/Link';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import Avatar from '@mui/material/Avatar';
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+
 import AppLayout from "@/components/AppLayout";
 
 const testimonials = [
   {
     name: 'John Doe',
     text: 'This service is outstanding! I highly recommend it.',
-    image: '/path-to-image1.jpg' // Replace with actual image paths
+    image: '/path-to-image1.jpg'
   },
   {
     name: 'Jane Smith',
     text: 'A truly transformative experience. Excellent support and features.',
     image: '/path-to-image2.jpg'
   },
-  // Add more testimonials as needed
 ];
 
 interface Testimonial {

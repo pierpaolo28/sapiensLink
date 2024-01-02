@@ -1,27 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import {
-    Box,
-    Container,
-    List,
-    ListItem,
-    ListItemText,
-    IconButton,
-    TextField,
-    Typography,
-    Card,
-    CardContent,
-    Grid,
-    Button,
-    Switch,
-    FormControlLabel,
-    Chip,
-    Avatar,
-    CardActions
-} from '@mui/material';
+import Box from '@mui/material/Box';
+import Container from '@mui/material/Container';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import IconButton from '@mui/material/IconButton';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Grid from '@mui/material/Grid';
+import Button from '@mui/material/Button';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Chip from '@mui/material/Chip';
+import Avatar from '@mui/material/Avatar';
+import CardActions from '@mui/material/CardActions';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+
 import AppLayout from "@/components/AppLayout";
 import { RankPageResponse } from "@/utils/types";
 

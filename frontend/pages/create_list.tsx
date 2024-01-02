@@ -1,17 +1,16 @@
 import React, { useState, ChangeEvent } from 'react';
-import {
-  Container,
-  Typography,
-  Grid,
-  TextField,
-  Button,
-  Checkbox,
-  FormControlLabel,
-  MenuItem,
-  InputLabel,
-  FormControl,
-} from '@mui/material';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
+import TextField from '@mui/material/TextField';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
+
 import AppLayout from "@/components/AppLayout";
 
 type ListDetails = {

@@ -1,27 +1,30 @@
 import React, { useState } from 'react';
-import {
-  Container,
-  Typography,
-  Grid,
-  Button,
-  List,
-  ListItem,
-  ListItemText,
-  Paper,
-  Avatar,
-  TextField,
-  ListItemAvatar,
-  ToggleButtonGroup,
-  ToggleButton,
-  Chip, CardActionArea,
-  CardContent, Card, Stack, Box
-} from '@mui/material';
+import Container from '@mui/material/Container';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
+import Button from '@mui/material/Button';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Paper from '@mui/material/Paper';
+import Avatar from '@mui/material/Avatar';
+import TextField from '@mui/material/TextField';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
+import Chip from '@mui/material/Chip';
+import CardActionArea from '@mui/material/CardActionArea';
+import CardContent from '@mui/material/CardContent';
+import Card from '@mui/material/Card';
+import Stack from '@mui/material/Stack';
+import Box from '@mui/material/Box';
 import SearchIcon from '@mui/icons-material/Search';
-import AppLayout from "@/components/AppLayout";
-import DBSetup from "@/components/DBSetup";
-import { getHome } from "@/utils/routes";
-import { HomeResponse } from "../utils/types";
 import Pagination from '@mui/material/Pagination';
+
+import AppLayout from "@/components/AppLayout";
+// import DBSetup from "@/components/DBSetup";
+import { getHome } from "@/utils/routes";
+import { HomeResponse } from "@/utils/types";
 
 
 export default function HomePage() {
