@@ -97,7 +97,7 @@ export default function EditProfilePage() {
   };
 
   const handleCancel = () => {
-    window.location.href = '/home';
+    window.location.href = '/list_home';
   };
 
   const handleUpdateProfile = async () => {
@@ -162,7 +162,7 @@ export default function EditProfilePage() {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('expiration_time');
-        window.location.href = '/home';
+        window.location.href = '/list_home';
       } else {
         // Handle deletion failure
         console.error('Account deletion failed:', response.statusText);

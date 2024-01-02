@@ -33,7 +33,7 @@ export default function SignUp() {
         localStorage.setItem('refresh_token', responseData.refresh_token);
         localStorage.setItem('expiration_time', responseData.expiration_time.toString());
 
-        window.location.href = '/home';
+        window.location.href = '/list_home';
       } else {
         // Handle registration failure
         console.error('Registration failed:', response.statusText);
@@ -116,7 +116,7 @@ export default function SignUp() {
               </Button>
               <Grid container justifyContent="flex-end">
                 <Grid item>
-                  <Link href="#" variant="body2">
+                  <Link href="signin" variant="body2">
                     Already have an account? Sign in
                   </Link>
                 </Grid>

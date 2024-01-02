@@ -69,7 +69,7 @@ export default function Home() {
               the 1500s, when an unknown printer took a galley of type and
               scrambled it to make a type specimen book.
             </Typography>
-            <Button variant="contained" color="primary" size="large" href="home">
+            <Button variant="contained" color="primary" size="large" href="list_home">
               Get Started
             </Button>
           </Box>
@@ -378,7 +378,7 @@ export default function Home() {
               <Button variant="outlined" size="large">
                 Contact Us
               </Button>
-              <Button variant="contained" size="large" href="home">
+              <Button variant="contained" size="large" href="list_home">
                 Get Started
               </Button>
             </Stack>

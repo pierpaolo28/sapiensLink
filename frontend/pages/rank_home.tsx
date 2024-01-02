@@ -42,24 +42,15 @@ export default function HomePage() {
     fetchData();
   }, []);
 
-  // Example data - replace with actual data
-  const topics = ['All', 'Tech', 'Work', 'Education', 'Personal Finance'];
-
-  // Example user data for "Who to Follow"
-  const usersToFollow = [
-    { name: 'User One', img: '/user1.jpg' },
-    { name: 'User Two', img: '/user2.jpg' },
-    // ... other users
-  ];
-
   const handleSearchChange = (event: any) => {
     setSearchTerm(event.target.value);
   };
 
-  const handleSearchSubmit = (event: any) => {
+  const handleSearchSubmit = async (event: any) => {
     event.preventDefault();
-    // Call API with searchTerm
+    fetchData(`q=${searchTerm}`)
   };
+
 
   const handleTabChange = (event: any, newValue: any) => {
     setSelectedTab(newValue);
@@ -82,23 +73,17 @@ export default function HomePage() {
             value={selectedTab}
             exclusive
             aria-label="list type"
+            sx={{ width: '100%' }}
           >
-            <a href="/home">
-              <ToggleButton
-                value="lists"
-              >
-                Lists
-              </ToggleButton>
-            </a>
-            <a href="/rank_home">
-              <ToggleButton
-                value="ranks"
-              >
-                Ranks
-              </ToggleButton>
-            </a>
+            <ToggleButton value="lists" onClick={() => window.location.href = "/list_home"} sx={{ width: '50%' }}>
+              Lists
+            </ToggleButton>
+            <ToggleButton value="ranks" onClick={() => window.location.href = "/rank_home"} sx={{ width: '50%' }}>
+              Ranks
+            </ToggleButton>
           </ToggleButtonGroup>
         </Box>
+
 
 
         <Container maxWidth="lg" sx={{ mt: 4 }}>
@@ -109,14 +94,16 @@ export default function HomePage() {
                 <Typography variant="h6" gutterBottom>
                   Browse Topics
                 </Typography>
-                <List>
-                  {topics.map((topic, index) => (
-                    <ListItem button key={index}>
-                      <ListItemText primary={topic} />
-                    </ListItem>
-                  ))}
-                  <Button>More</Button>
-                </List>
+                {home && (
+                  <List>
+                    {home.topic_counts.map((topic, index) => (
+                      <ListItem button key={index}>
+                        <ListItemText primary={topic[0] + " " + topic[1]} />
+                      </ListItem>
+                    ))}
+                    <Button>More</Button>
+                  </List>
+                )}
               </Paper>
             </Grid>
 
@@ -151,9 +138,10 @@ export default function HomePage() {
                   />
                 </form>
                 <Stack spacing={2} sx={{ justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+                  <Button href='create_rank'>Create Rank</Button>
                   {home && home.ranks ? (
                     home.ranks.map((rank, i) => (
-                      <Grid item xs={12} md={8} key={rank.id}>
+                      <Grid item key={rank.id} sx={{ width: '100%' }}>
                         <Card variant="outlined" sx={{ p: 2, mb: 4 }}>
                           <a href={`/rank?id=${rank.id}`}>
                             <Typography variant="h5" gutterBottom>
@@ -216,24 +204,26 @@ export default function HomePage() {
                 <Typography variant="h6" gutterBottom>
                   Who to Follow
                 </Typography>
-                <List>
-                  {usersToFollow.map((user, index) => (
-                    <ListItem key={index}>
-                      <ListItemAvatar>
-                        <Avatar src={user.img} alt={user.name} />
-                      </ListItemAvatar>
-                      <ListItemText primary={user.name} />
-                    </ListItem>
-                  ))}
-                </List>
+                {home && (
+                  <List>
+                    {home.users.map((user, index) => (
+                      <ListItem key={user.id}>
+                        <ListItemAvatar>
+                          <Avatar src={user.avatar} alt={user.name} />
+                        </ListItemAvatar>
+                        <ListItemText primary={user.name} />
+                      </ListItem>
+                    ))}
+                  </List>
+                )}
                 <Button>More</Button>
               </Paper>
             </Grid>
           </Grid>
         </Container>
-        <div>
+        {/* <div>
           <DBSetup></DBSetup>
-        </div>
+        </div> */}
       </AppLayout>
     </>
   );

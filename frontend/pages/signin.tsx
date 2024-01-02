@@ -40,7 +40,7 @@ export default function SignIn() {
       localStorage.setItem('refresh_token', responseData.refresh_token);
       localStorage.setItem('expiration_time', responseData.expiration_time.toString());
 
-      router.push('/home');
+      router.push('/list_home');
     } catch (error) {
       console.error('An error occurred while signing in:', error);
       setError('An unexpected error occurred. Please try again.');
@@ -105,7 +105,7 @@ export default function SignIn() {
                   </Link>
                 </Grid>
                 <Grid item>
-                  <Link href="#" variant="body2">
+                  <Link href="signup" variant="body2">
                     {"Don't have an account? Sign Up"}
                   </Link>
                 </Grid>

@@ -75,27 +75,20 @@ export default function HomePage() {
   return (
     <>
       <AppLayout>
-      <Box display="flex" justifyContent="center" mb={2}>
+        <Box display="flex" justifyContent="center" mb={2}>
           <ToggleButtonGroup
             color="primary"
             value={selectedTab}
             exclusive
             aria-label="list type"
+            sx={{ width: '100%' }}
           >
-            <a href="/home">
-              <ToggleButton
-                value="lists"
-              >
-                Lists
-              </ToggleButton>
-            </a>
-            <a href="/rank_home">
-              <ToggleButton
-                value="ranks"
-              >
-                Ranks
-              </ToggleButton>
-            </a>
+            <ToggleButton value="lists" onClick={() => window.location.href = "/list_home"} sx={{ width: '50%' }}>
+              Lists
+            </ToggleButton>
+            <ToggleButton value="ranks" onClick={() => window.location.href = "/rank_home"} sx={{ width: '50%' }}>
+              Ranks
+            </ToggleButton>
           </ToggleButtonGroup>
         </Box>
         <Container maxWidth="lg" sx={{ mt: 4 }}>
@@ -149,6 +142,7 @@ export default function HomePage() {
                   />
                 </form>
                 <Stack spacing={2}>
+                  <Button href='create_list'>Create List</Button>
                   {home && home.lists ? ( // Check if home and home.lists are available
                     home.lists.map((list, i) => (
                       <Card key={list.id}>
@@ -224,9 +218,9 @@ export default function HomePage() {
             </Grid>
           </Grid>
         </Container>
-        <div>
+        {/* <div>
           <DBSetup></DBSetup>
-        </div>
+        </div> */}
       </AppLayout>
     </>
   );

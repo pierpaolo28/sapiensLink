@@ -29,6 +29,25 @@ export default function RankPage() {
     const [rank, setRank] = useState<RankPageResponse | null>(null);
     const [newItemText, setNewItemText] = useState('');
     const [id, setId] = useState<string | null>(null);
+    const [editingIndex, setEditingIndex] = useState<number | null>(null);
+
+    // Fetch rank data based on the extracted id
+    const fetchRankData = async () => {
+        try {
+            const accessToken = localStorage.getItem('access_token');
+            const response = await fetch(`http://localhost/api/rank_page/${id}/`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                },
+            });
+            const data = await response.json();
+            setRank(data);
+        } catch (error) {
+            console.error('Error fetching rank data:', error);
+        }
+    };
 
     useEffect(() => {
         // Extract the id parameter from the current URL
@@ -40,17 +59,6 @@ export default function RankPage() {
             setId(extractedId);
         }
 
-        // Fetch rank data based on the extracted id
-        const fetchRankData = async () => {
-            try {
-                const response = await fetch(`http://localhost/api/rank_page/${id}/`);
-                const data = await response.json();
-                setRank(data);
-            } catch (error) {
-                console.error('Error fetching rank data:', error);
-            }
-        };
-
         // Fetch data only if id is present
         if (id) {
             fetchRankData();
@@ -60,13 +68,12 @@ export default function RankPage() {
         return () => {
             // Cleanup logic here
         };
-    }, [id]); // Only fetch data when the component mounts
+    }, [id]);
 
     const handleVote = async (contentIndex: number, action: string) => {
         try {
             // Extracting the rank IDs from the content object
             const rankIds = Object.keys(rank!.rank.content);
-            console.log(rankIds[contentIndex])
 
             // Using the extracted rank ID for the API call
             const accessToken = localStorage.getItem('access_token');
@@ -93,9 +100,43 @@ export default function RankPage() {
     };
 
     const handleEdit = (index: number) => {
-        console.log('Edit item with index:', index);
-        // Implement edit logic
+        setEditingIndex(index);
     };
+
+
+    const updateElement = async (index: number, editedElement: string) => {
+        try {
+            // Extracting the rank IDs from the content object
+            const rankIds = Object.keys(rank!.rank.content);
+
+            // Using the extracted rank ID for the API call
+            const accessToken = localStorage.getItem('access_token');
+            const elementIndex = rankIds[index];
+            const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({ edit_element_index: elementIndex, edit_element: editedElement }),
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                console.error('Error editing element:', response.status, response.statusText);
+                // Handle the error or provide feedback to the user
+            }
+        } catch (error) {
+            console.error('Error editing element:', error);
+            // Handle the error or provide feedback to the user
+        }
+        // Reset the editing index after updating
+        setEditingIndex(null);
+    };
+
+    const [editedElement, setEditedElement] = useState<string>('');
+
 
     const handleNewItemKeyPress = async (event: React.KeyboardEvent<HTMLInputElement>) => {
         try {
@@ -151,19 +192,20 @@ export default function RankPage() {
     const toggleWatchStatus = async () => {
         try {
             const accessToken = localStorage.getItem('access_token');
-            // TODO + Save and Unsave
-            const response = await fetch(`http://localhost/api/manage_subscription/${rank!.rank.id}/`, {
+            const isSubscribed = rank?.is_subscribed || false;
+            const action = isSubscribed ? 'unsubscribe' : 'subscribe';
+    
+            const response = await fetch(`http://localhost/api/manage_subscription/rank/${rank!.rank.id}/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${accessToken}`,
                 },
-                body: JSON.stringify({ is_subscribed: true }),
+                body: JSON.stringify({ action }),
             });
-
+    
             if (response.ok) {
-                const data = await response.json();
-                setRank(data);
+                window.location.reload();
             } else {
                 console.error('Error toggling watch status:', response.status, response.statusText);
                 // Handle the error or provide feedback to the user
@@ -173,26 +215,34 @@ export default function RankPage() {
             // Handle the error or provide feedback to the user
         }
     };
+    
 
 
-    // Handler functions for save and report
-    const handleSaveRank = () => {
-        console.log('Save rank functionality to be implemented.');
-        // Implement save functionality here
+    const handleSaveUnsaveRank = async () => {
+        const isSaved = rank && rank.saved_ranks_ids.includes(rank!.rank.id);
+        try {
+            const accessToken = localStorage.getItem('access_token');
+    
+            const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({ [isSaved ? 'unsave' : 'save']: true }),
+            });
+    
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                console.error(`Error ${isSaved ? 'unsaving' : 'saving'} rank:`, response.status, response.statusText);
+                // Handle the error or provide feedback to the user
+            }
+        } catch (error) {
+            console.error(`Error ${isSaved ? 'unsaving' : 'saving'} rank:`, error);
+            // Handle the error or provide feedback to the user
+        }
     };
-
-    const handleReportRank = () => {
-        console.log('Report rank functionality to be implemented.');
-        // Implement report functionality here
-    };
-
-    const contributors = [
-        { name: 'Contributor 1', imageUrl: '/path/to/contributor-1.jpg' },
-        { name: 'Contributor 2', imageUrl: '/path/to/contributor-2.jpg' },
-        // ...more Contributors
-    ];
-
-    const topics = ['Personal Finance', 'Technology', 'Health & Wellness']; // Example topics
 
     return (
         <AppLayout>
@@ -200,7 +250,7 @@ export default function RankPage() {
                 <Box sx={{ my: 4 }}>
                     <Grid container spacing={2}>
                         <Grid item xs={12} md={8}>
-                            {rank &&  (
+                            {rank && rank.rank && (
                                 <>
                                     <Typography variant="h4" gutterBottom>
                                         {rank.rank.name}
@@ -239,24 +289,32 @@ export default function RankPage() {
                                                     .sort((a, b) => b.score - a.score)
                                                     .map((sortedElement, index) => (
                                                         <ListItem key={index}>
-                                                            <Grid container alignItems="center">
-                                                                <Grid item xs>
-                                                                    <ListItemText primary={sortedElement.element.element} />
-                                                                </Grid>
-                                                                <Grid item>
-                                                                    <IconButton onClick={() => handleVote(sortedElement.originalIndex, 'upvote')}><ArrowUpwardIcon /></IconButton>
-                                                                    <IconButton onClick={() => handleVote(sortedElement.originalIndex, 'downvote')}><ArrowDownwardIcon /></IconButton>
-                                                                    <IconButton onClick={() => handleEdit(sortedElement.originalIndex)}><EditIcon /></IconButton>
-                                                                    <IconButton onClick={() => handleDelete(sortedElement.originalIndex)}><DeleteIcon /></IconButton>
+                                                            {editingIndex === sortedElement.originalIndex ? (
+                                                                <TextField
+                                                                    fullWidth
+                                                                    value={editedElement}
+                                                                    onChange={(e) => setEditedElement(e.target.value)}
+                                                                    onKeyDown={(e) => e.key === 'Enter' && updateElement(sortedElement.originalIndex, editedElement)}
+                                                                    autoFocus
+                                                                />
+                                                            ) : (
+                                                                <Grid container alignItems="center">
+                                                                    <Grid item xs>
+                                                                        <ListItemText primary={sortedElement.element.element} />
+                                                                    </Grid>
+                                                                    <Grid item>
+                                                                        <IconButton onClick={() => handleVote(sortedElement.originalIndex, 'upvote')}><ArrowUpwardIcon /></IconButton>
+                                                                        <IconButton onClick={() => handleVote(sortedElement.originalIndex, 'downvote')}><ArrowDownwardIcon /></IconButton>
+                                                                        <IconButton onClick={() => handleEdit(sortedElement.originalIndex)}><EditIcon /></IconButton>
+                                                                        <IconButton onClick={() => handleDelete(sortedElement.originalIndex)}><DeleteIcon /></IconButton>
                                                                     <Box component="span" sx={{ ml: 2, mr: 2 }}>
                                                                         {sortedElement.score}
                                                                     </Box>
                                                                 </Grid>
                                                             </Grid>
+                                                            )}
                                                         </ListItem>
                                                     ))}
-
-
                                                 <ListItem>
                                                     <TextField
                                                         fullWidth
@@ -269,10 +327,10 @@ export default function RankPage() {
                                             </List>
                                         </CardContent>
                                         <CardActions>
-                                            <Button variant="contained" onClick={handleSaveRank} sx={{ mr: 1 }}>
-                                                Save
-                                            </Button>
-                                            <Button variant="outlined" color="error" onClick={handleReportRank} href="report">
+                                        <Button variant="contained" onClick={handleSaveUnsaveRank} sx={{ mr: 1 }}>
+        {rank && rank.saved_ranks_ids.includes(rank!.rank.id) ? 'Unsave' : 'Save'}
+    </Button>
+                                            <Button variant="outlined" color="error" href="report">
                                                 Report
                                             </Button>
                                         </CardActions>
@@ -285,25 +343,29 @@ export default function RankPage() {
                             <Typography variant="h6" gutterBottom>
                                 List Topics
                             </Typography>
+                            {rank && rank.rank && (
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 2 }}>
-                                {topics.map((topic, index) => (
-                                    <Chip key={index} label={topic} variant="outlined" sx={{ margin: '4px' }} />
+                                {rank.rank.topic.map((topic) => (
+                                    <Chip key={topic.id} label={topic.name} variant="outlined" sx={{ margin: '4px' }} />
                                 ))}
                             </Box>
+                            )}
 
                             <Typography variant="h6" gutterBottom>
                                 Contributors
                             </Typography>
+                            {rank && rank.contributors && (
                             <List>
-                                {contributors.map((contributor, index) => (
+                                {rank.contributors.map((contributor, index) => (
                                     <ListItem key={index}>
-                                        <Avatar src={contributor.imageUrl} alt={contributor.name} />
+                                        <Avatar src="/static/${contributor.avatar}" alt={contributor.name} />
                                         <Typography variant="subtitle1" sx={{ ml: 1 }}>
                                             {contributor.name}
                                         </Typography>
                                     </ListItem>
                                 ))}
                             </List>
+                            )}
                         </Grid>
                     </Grid>
                 </Box>

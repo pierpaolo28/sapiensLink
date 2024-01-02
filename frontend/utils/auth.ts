@@ -14,3 +14,19 @@ export const isUserLoggedIn = () => {
   
     return false;
   };
+
+ export const getUserIdFromAccessToken = () => {
+    try {
+      const accessToken = localStorage.getItem('access_token');
+      // Assuming the token is a JWT
+    const tokenPayload = JSON.parse(atob(accessToken!.split('.')[1]));
+
+    // Now you can access user ID
+    const userId = tokenPayload.user_id;
+
+    return userId;
+  } catch (error) {
+    console.error('Error decoding access token:', error);
+    return null;
+  }
+  };
