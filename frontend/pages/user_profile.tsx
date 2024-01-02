@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Container,
@@ -17,44 +17,46 @@ import {
 } from '@mui/material';
 import { Pagination } from '@mui/material';
 import AppLayout from "@/components/AppLayout";
+import {UserProfilePage} from "@/utils/types";
+
 
 export default function UserProfilePage() {
-    // Example user data
-    const userProfile = {
-        name: 'Jane Doe',
-        imageUrl: '/path/to/user-avatar.jpg', // Replace with actual image path
-        bio: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-        followersCount: 120, // Sample data
-        followingCount: 75, // Sample data
-        listsPublishedCount: 5, // Sample data
-        socialMedia: {
-            twitter: 'https://twitter.com/janedoe', // Replace with actual Twitter profile link
-        },
-        // ... other profile data
-    };
-    // Example data
-    const userLists = [
-        'List One',
-        'List Two',
-        // ... more lists
-    ];
-    const savedLists = [
-        'Saved List One',
-        'Saved List Two',
-        // ... more saved lists
-    ];
+    const [userProfile, setUserProfile] = useState<UserProfilePage | null>(null);
 
-    const savedRanks = [
-        'Rank One',
-        'Rank Two',
-        // ... more saved ranks
-    ];
+    useEffect(() => {
+        // Function to fetch user profile data based on the user ID from the previous page's URL
+        const fetchUserProfile = async () => {
+            try {
+                // Get the previous page's URL
+                const currentUrl = window.location.href;
+                const accessToken = localStorage.getItem('access_token');
 
-    const recentContributions = [
-        'Contribution One',
-        'Contribution Two',
-        // ... more contributions
-    ];
+                // Extract the user ID from the previous page's URL
+                const url = new URL(currentUrl);
+                const userId = url.searchParams.get('id');
+
+                // Make the API call
+                const response = await fetch(`http://localhost/api/user_profile_page/${userId}/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`,
+                    }
+                });
+                const apiResponse = await response.json();
+
+                // Extract user data from the API response
+                setUserProfile(apiResponse);
+
+                // Handle other data fetching if needed...
+            } catch (error) {
+                console.error('Error fetching user profile:', error);
+            }
+        };
+
+        // Call the fetchUserProfile function
+        fetchUserProfile();
+    }, []);
 
     const [listVisibility, setListVisibility] = useState('public');
 
@@ -71,15 +73,16 @@ export default function UserProfilePage() {
         // Potentially update state to show more items or navigate to a different view
     };
 
+    const recentContributions = userProfile?.lists_contributions.length! + userProfile?.ranks_contributions.length!
     // Add state for pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5; // Adjust the number of items per page as needed
-  const count = Math.ceil(recentContributions.length / itemsPerPage); // Calculate the total number of pages
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5; // Adjust the number of items per page as needed
+    const count = Math.ceil(recentContributions / itemsPerPage); // Calculate the total number of pages
 
-  const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
-    setCurrentPage(page);
-    // Add logic to fetch data for the new page if necessary
-  };
+    const handlePageChange = (event: React.ChangeEvent<unknown>, page: number) => {
+        setCurrentPage(page);
+        // Add logic to fetch data for the new page if necessary
+    };
 
     return (
         <AppLayout>
@@ -90,29 +93,29 @@ export default function UserProfilePage() {
                         <Grid item xs={12} sm={4} md={3}>
                             <Paper sx={{ p: 2, textAlign: 'center', mb: 2 }}>
                                 <Avatar
-                                    alt={userProfile.name}
-                                    src={userProfile.imageUrl}
+                                    alt={userProfile?.user.name}
+                                    src={userProfile?.user.avatar}
                                     sx={{ width: 80, height: 80, mx: 'auto' }}
                                 />
                                 <Typography variant="h6" sx={{ mt: 2 }}>
-                                    {userProfile.name}
+                                    {userProfile?.user.name}
                                 </Typography>
                                 <Typography variant="body2" sx={{ my: 1 }}>
-                                    {userProfile.bio}
+                                    {userProfile?.user.bio}
                                 </Typography>
                                 <Divider sx={{ my: 1 }} />
                                 <Typography variant="body2" sx={{ my: 1 }}>
-                                    {userProfile.followersCount} Followers
+                                    {userProfile?.user.followers.length} Followers
                                 </Typography>
                                 <Typography variant="body2" sx={{ my: 1 }}>
-                                    {userProfile.followingCount} Following
+                                    {userProfile?.user.following.length} Following
                                 </Typography>
                                 <Typography variant="body2" sx={{ my: 1 }}>
-                                    {userProfile.listsPublishedCount} Lists Published
+                                    {userProfile?.lists_count} Lists Published
                                 </Typography>
                                 <Typography variant="body2" sx={{ my: 1 }}>
-                                    <Link href={userProfile.socialMedia.twitter} target="_blank" rel="noopener noreferrer">
-                                        Twitter
+                                    <Link href={userProfile?.user.social} target="_blank" rel="noopener noreferrer">
+                                        Social
                                     </Link>
                                 </Typography>
                                 <Button variant="contained" color="primary" fullWidth sx={{ mb: 1 }}>
@@ -141,31 +144,36 @@ export default function UserProfilePage() {
                                     </ToggleButtonGroup>
                                 </Box>
                                 <List>
-                                    {userLists.map((list, index) => (
+                                    {userProfile?.lists.map((list, index) => (
                                         <ListItem key={index}>
-                                            <ListItemText primary={list} />
+                                            <ListItemText primary={list.name} />
                                         </ListItem>
                                     ))}
                                 </List>
 
                                 {/* Pagination for lists */}
-            <Pagination
-              count={count}
-              page={currentPage}
-              onChange={handlePageChange}
-              color="primary"
-              showFirstButton
-              showLastButton
-              sx={{ my: 2 }} // Adds margin around the pagination
-            />
+                                <Pagination
+                                    count={count}
+                                    page={currentPage}
+                                    onChange={handlePageChange}
+                                    color="primary"
+                                    showFirstButton
+                                    showLastButton
+                                    sx={{ my: 2 }} // Adds margin around the pagination
+                                />
 
                                 {/* Recent Contributions */}
                                 <Typography variant="h6">Recent Contributions</Typography>
-                                {recentContributions.length > 0 ? (
+                                {recentContributions > 0 ? (
                                     <List>
-                                        {recentContributions.map((contribution, index) => (
+                                        {userProfile?.lists_contributions.map((contribution, index) => (
                                             <ListItem key={index}>
-                                                <ListItemText primary={contribution} />
+                                                <ListItemText primary={contribution.name} />
+                                            </ListItem>
+                                        ))}
+                                        {userProfile?.ranks_contributions.map((contribution, index) => (
+                                            <ListItem key={index}>
+                                                <ListItemText primary={contribution.name} />
                                             </ListItem>
                                         ))}
                                     </List>
@@ -180,9 +188,9 @@ export default function UserProfilePage() {
                             <Paper sx={{ p: 2, mb: 2 }}>
                                 <Typography variant="h6">Saved Lists</Typography>
                                 <List>
-                                    {savedLists.map((list, index) => (
+                                    {userProfile?.saved_lists.map((list, index) => (
                                         <ListItem key={index}>
-                                            <ListItemText primary={list} />
+                                            <ListItemText primary={list.name} />
                                         </ListItem>
                                     ))}
                                 </List>
@@ -192,9 +200,9 @@ export default function UserProfilePage() {
                             <Paper sx={{ p: 2, mb: 2 }}>
                                 <Typography variant="h6">Saved Ranks</Typography>
                                 <List>
-                                    {savedRanks.map((rank, index) => (
+                                    {userProfile?.saved_ranks.map((rank, index) => (
                                         <ListItem key={index}>
-                                            <ListItemText primary={rank} />
+                                            <ListItemText primary={rank.rank} />
                                         </ListItem>
                                     ))}
                                 </List>

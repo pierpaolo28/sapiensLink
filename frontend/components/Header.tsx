@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import { isUserLoggedIn } from '@/utils/auth';
+import { isUserLoggedIn, getUserIdFromAccessToken } from '@/utils/auth';
 
 export default function Header() {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -157,6 +157,10 @@ export default function Header() {
             >
               <Box sx={{ p: 2 }}>
                 <List component="nav" aria-label="user profile options">
+                <ListItem button component="a" href={`/user_profile?id=${getUserIdFromAccessToken()}`}>
+  <ListItemText primary="Profile Page" />
+</ListItem>
+
                   <ListItem button component="a" href="/edit_profile">
                     <ListItemText primary="Edit Profile" />
                   </ListItem>

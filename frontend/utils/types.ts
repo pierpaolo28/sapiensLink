@@ -118,3 +118,56 @@ export interface Topic {
   id: number;
   name: string;
 }
+
+interface ListItem {
+  id: number;
+  topic: Topic[];
+  participants: number[];
+  name: string;
+  description: string;
+  content: string;
+  updated: string;
+  created: string;
+  score: number;
+  source: string;
+  public: boolean;
+  author: number;
+  subscribed_users: number[];
+}
+
+interface SavedRank {
+  id: number;
+  saved_at: string;
+  user: number;
+  rank: number;
+}
+
+interface RankContribution {
+  id: number;
+  topic: Topic[];
+  contributors: number[];
+  content: Record<string, { element: string; user_id: number }>;
+  name: string;
+  description: string;
+  score: number;
+  updated: string;
+  created: string;
+  subscribed_users: number[];
+}
+
+export interface UserProfilePage {
+  pagination: {
+      next_page: null | string;
+      previous_page: null | string;
+      total_pages: number;
+      current_page: number;
+  };
+  lists: ListItem[];
+  user: User;
+  lists_count: number;
+  is_following: boolean;
+  saved_lists: ListItem[];
+  saved_ranks: SavedRank[];
+  lists_contributions: ListItem[];
+  ranks_contributions: RankContribution[];
+}
