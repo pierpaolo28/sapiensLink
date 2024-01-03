@@ -706,7 +706,7 @@ def list_page(request, pk):
                                 'notification': f'A new comment was added on the list "{list_instance.name}".',
                                 'creator_id': user.id,
                                 'receiver_id': receiver.id,
-                                'url': request.path.split('/')[0] + '/list/' + str(list_instance.id)
+                                'url': request.path.split('/')[0] + '/list?id=' + str(list_instance.id),
                             }
                         )
 
@@ -836,7 +836,7 @@ def rank_page(request, pk):
                                 'notification': f'A new element was added on the rank "{rank.name}".',
                                 'creator_id': user.id,
                                 'receiver_id': receiver.id,
-                                'url': request.build_absolute_uri()
+                                'url': request.path.split('/')[0] + '/rank?id=' + str(rank.id)
                             }
                         )
 
@@ -1600,7 +1600,7 @@ def report_list_page(request, pk):
                 'notification': f'Your list "{list.name}" has been reported by an user.',
                 'creator_id': request.user.id,
                 'receiver_id': list.author.id,
-                'url': request.build_absolute_uri('/') + 'list/' + str(list.id) + '/',
+                'url': request.build_absolute_uri('/') + 'list?id=' + str(list.id),
             }
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1740,7 +1740,7 @@ def list_pr_page(request, pk):
                             'notification': f'A new suggestion to edit your list "{list_instance.name}" has been created.',
                             'creator_id': request.user.id,
                             'receiver_id': list_instance.author.id,
-                            'url': request.build_absolute_uri('/') + 'list_pr/' + str(list_instance.id) + '/',
+                            'url': request.build_absolute_uri('/') + 'list_pr?id=' + str(list_instance.id),
                         }
                     )
                 return Response({'message': 'Edit suggestion created successfully'}, status=status.HTTP_201_CREATED)
@@ -1761,7 +1761,7 @@ def list_pr_page(request, pk):
                         'notification': f'A new comment has been added to a suggestion to edit your list "{list_instance.name}".',
                         'creator_id': request.user.id,
                         'receiver_id': list_instance.author.id,
-                        'url': request.build_absolute_uri('/') + 'list_pr/' + str(list_instance.id) + '/',
+                        'url': request.build_absolute_uri('/') + 'list_pr?id=' + str(list_instance.id),
                     }
                 )
                 return Response({'message': 'Comment added successfully'}, status=status.HTTP_201_CREATED)
@@ -1804,7 +1804,7 @@ def approve_suggestion_action(request, suggestion_id):
                 'notification': f'Your suggestion to edit the list "{list_instance.name}" has been approved!',
                 'creator_id': request.user.id,
                 'receiver_id': suggestion.suggested_by.id,
-                'url': request.build_absolute_uri('/') + 'list/' + str(list_instance.id) + '/',
+                'url': request.build_absolute_uri('/') + 'list?id=' + str(list_instance.id),
             }
         )
 
@@ -1842,7 +1842,7 @@ def decline_suggestion_action(request, suggestion_id):
                 'notification': f'Your suggestion to edit the list "{suggestion.list.name}" has been declined.',
                 'creator_id': request.user.id,
                 'receiver_id': suggestion.suggested_by.id,
-                'url': request.build_absolute_uri('/') + 'list/' + str(list_id) + '/',
+                'url': request.build_absolute_uri('/') + 'list?id=' + str(list_id),
             }
         )
 

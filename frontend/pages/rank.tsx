@@ -87,7 +87,7 @@ export default function RankPage() {
             if (response.ok) {
                 console.log(`Vote successful for rank ${rankIds[contentIndex]}, action: ${action}`);
                 // Reload the page after a successful vote
-                window.location.reload();
+                fetchRankData();
             } else {
                 console.error('Vote failed:', response.status, response.statusText);
                 // Handle the error or provide feedback to the user
@@ -121,7 +121,7 @@ export default function RankPage() {
             });
 
             if (response.ok) {
-                window.location.reload();
+                fetchRankData();
             } else {
                 console.error('Error editing element:', response.status, response.statusText);
                 // Handle the error or provide feedback to the user
@@ -151,7 +151,7 @@ export default function RankPage() {
                 });
 
                 if (response.ok) {
-                    window.location.reload();
+                    fetchRankData();
                 } else {
                     console.error('Error adding new item:', response.status, response.statusText);
                     // Handle the error or provide feedback to the user
@@ -177,7 +177,7 @@ export default function RankPage() {
             });
 
             if (response.ok) {
-                window.location.reload();
+                fetchRankData();
             } else {
                 console.error('Error deleting item:', response.status, response.statusText);
                 // Handle the error or provide feedback to the user
@@ -204,7 +204,7 @@ export default function RankPage() {
             });
     
             if (response.ok) {
-                window.location.reload();
+                fetchRankData();
             } else {
                 console.error('Error toggling watch status:', response.status, response.statusText);
                 // Handle the error or provide feedback to the user
@@ -232,7 +232,7 @@ export default function RankPage() {
             });
     
             if (response.ok) {
-                window.location.reload();
+                fetchRankData();
             } else {
                 console.error(`Error ${isSaved ? 'unsaving' : 'saving'} rank:`, response.status, response.statusText);
                 // Handle the error or provide feedback to the user
@@ -340,7 +340,7 @@ export default function RankPage() {
 
                         <Grid item xs={12} md={4}>
                             <Typography variant="h6" gutterBottom>
-                                List Topics
+                                Rank Topics
                             </Typography>
                             {rank && rank.rank && (
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 2 }}>

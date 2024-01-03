@@ -171,3 +171,30 @@ export interface UserProfilePage {
   lists_contributions: ListItem[];
   ranks_contributions: RankContribution[];
 }
+
+export interface ContentItem {
+  element: string;
+  user_id: number; 
+}
+
+export interface CreateRankFormData {
+  name: string;
+  description: string;
+  topic: string[];
+  contributors: number[];
+  content: { [key: string]: ContentItem };
+}
+
+export interface RankTopicsPage {
+  topic_counts: [string, number][];
+  all_rank_count: number;
+}
+
+export interface WhoToFollowPage {
+  users: User[];
+}
+
+export interface ListTopicsPage {
+  topic_counts: [string, number][];
+  all_list_count: number;
+}

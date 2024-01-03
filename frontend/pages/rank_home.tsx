@@ -28,18 +28,33 @@ export default function HomePage() {
   const [home, setHome] = React.useState<RankHomeResponse | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('latest');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const fetchData = async (extraParams = '') => {
     try {
-      const homeData = await getRankHome(extraParams);
+      // Use the updated currentPage state to fetch the corresponding page
+      const updatedParams = `page=${currentPage}&${extraParams}`;
+  
+      const homeData = await getRankHome(updatedParams);
       setHome(homeData);
     } catch (error) {
       console.error("Error fetching home data:", error);
     }
   };
+  
 
   useEffect(() => {
-    fetchData();
+    // Parse the query parameter from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const queryParam = urlParams.get('q');
+
+    // Set the search term if it exists
+    if (queryParam) {
+      setSearchTerm(queryParam);
+      fetchData(`q=${queryParam}`);
+    } else {
+      fetchData();
+    }
   }, []);
 
   const handleSearchChange = (event: any) => {
@@ -58,11 +73,11 @@ export default function HomePage() {
   };
 
 
-  // Handle change page
-  const handleChangePage = (event: any, newPage: any) => {
-    // Fetch new lists based on newPage, or update the lists displayed from the state
-    console.log(home!.pagination.next_page)
+  const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
+    setCurrentPage(newPage);
+    fetchData(`q=${searchTerm}&page=${newPage}`);
   };
+  
 
   return (
     <>
@@ -70,7 +85,6 @@ export default function HomePage() {
         <Box display="flex" justifyContent="center" mb={2}>
           <ToggleButtonGroup
             color="primary"
-            value={selectedTab}
             exclusive
             aria-label="list type"
             sx={{ width: '100%' }}
@@ -94,14 +108,16 @@ export default function HomePage() {
                 <Typography variant="h6" gutterBottom>
                   Browse Topics
                 </Typography>
-                {home && (
+                {home && home.topic_counts && (
                   <List>
                     {home.topic_counts.map((topic, index) => (
-                      <ListItem button key={index}>
+                       <a href={`/rank_home?q=${topic[0]}`}>
+                      <ListItem key={index}>
                         <ListItemText primary={topic[0] + " " + topic[1]} />
                       </ListItem>
+                      </a>
                     ))}
-                    <Button>More</Button>
+                    <Button href="/rank_topics">More</Button>
                   </List>
                 )}
               </Paper>
@@ -204,19 +220,21 @@ export default function HomePage() {
                 <Typography variant="h6" gutterBottom>
                   Who to Follow
                 </Typography>
-                {home && (
+                {home && home.users && (
                   <List>
                     {home.users.map((user, index) => (
                       <ListItem key={user.id}>
                         <ListItemAvatar>
                           <Avatar src={user.avatar} alt={user.name} />
                         </ListItemAvatar>
+                        <a href={`/user_profile?id=${user.id}`}>
                         <ListItemText primary={user.name} />
+                        </a>
                       </ListItem>
                     ))}
                   </List>
                 )}
-                <Button>More</Button>
+                <Button href="/who_to_follow">More</Button>
               </Paper>
             </Grid>
           </Grid>

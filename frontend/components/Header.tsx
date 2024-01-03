@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -17,17 +17,87 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import { isUserLoggedIn, getUserIdFromAccessToken } from '@/utils/auth';
 
+interface Notification {
+  id: number;
+  message: string;
+  read: boolean;
+  url: string;
+}
+
+
 export default function Header() {
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [notificationCount, setNotificationCount] = useState(5); // Example count
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [notificationCount, setNotificationCount] = useState<number>(0);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const socketRef = useRef<WebSocket | null>(null);
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const fetchNotifications = async () => {
+    try {
+      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+        const accessToken = localStorage.getItem('access_token');
+        const response = await fetch('http://localhost/api/notifications/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch notifications');
+        }
+
+        const data = await response.json();
+        setNotifications((prevNotifications) => [...prevNotifications, ...data.notifications]);
+        setNotificationCount((prevCount) => prevCount + data.notifications.length);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    }
+  };
+
+  const initWebSocket = () => {
+    if (!socketRef.current) {
+      const newSocket = new WebSocket('ws://localhost/ws/notifications/');
+
+      newSocket.onopen = (event) => {
+        console.log('WebSocket is connected.');
+        fetchNotifications();
+      };
+
+      newSocket.onmessage = (event) => {
+        const message = event.data;
+        console.log('Received message:', message);
+        fetchNotifications();
+      };
+
+      newSocket.onclose = (event) => {
+        console.log('WebSocket is closed.');
+      };
+
+      newSocket.onerror = (event) => {
+        console.error('WebSocket error:', event);
+      };
+
+      socketRef.current = newSocket;
+    }
+  };
+
   useEffect(() => {
-    // Perform the check on the client side once the component is mounted
-    setIsLoggedIn(isUserLoggedIn());
-  }, []);
+    initWebSocket();
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.close();
+        socketRef.current = null;
+      }
+    };
+  }, []); // Run on mount and clean up on unmount
 
-  const handleClick = (event: any) => {
+  useEffect(() => {
+    fetchNotifications();
+  }, [socketRef.current]); // Run when socket changes
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -36,15 +106,41 @@ export default function Header() {
   };
 
   const open = Boolean(anchorEl);
-  const id = open ? 'simple-popover' : undefined;
+  const id = open ? 'notification-popover' : undefined;
 
-  // Example notifications data
-  const notifications = [
-    { id: 1, text: 'New comment on your post.' },
-    { id: 2, text: 'New follower.' },
-    { id: 3, text: 'Your article has been published.' },
-    // ...more notifications
-  ];
+  const markNotificationAsRead = async (notificationId: number) => {
+    try {
+      const accessToken = localStorage.getItem('access_token');
+      // Send a request to mark the notification as read
+      await fetch(`http://localhost/api/notifications/${notificationId}/mark_as_read/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`, // Include access token in the Authorization header
+        }
+      });
+
+      // Update the state to reflect the change in notifications
+      setNotifications((prevNotifications) =>
+        prevNotifications.map((notification) =>
+          notification.id === notificationId
+            ? { ...notification, read: true }
+            : notification
+        )
+      );
+
+      // Update the notification count
+      setNotificationCount((prevCount) => Math.max(0, prevCount - 1));
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
+    // Perform the check on the client side once the component is mounted
+    setIsLoggedIn(isUserLoggedIn());
+  }, []);
 
   const [profileAnchorEl, setProfileAnchorEl] = useState(null);
 
@@ -114,6 +210,8 @@ export default function Header() {
                 <NotificationsIcon />
               </Badge>
             </IconButton>
+
+            {/* Popover with Notifications List */}
             <Popover
               id={id}
               open={open}
@@ -129,13 +227,29 @@ export default function Header() {
               }}
             >
               <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                {/* Map through the updated notifications state */}
                 {notifications.map((notification) => (
-                  <ListItem key={notification.id} button>
-                    <ListItemText primary={notification.text} />
+                  <ListItem
+                    key={notification.id}
+                    button
+                    onClick={() => {
+                      markNotificationAsRead(notification.id);
+                      window.location.href = notification.url; // Navigate to the URL
+                    }}
+                  >
+                    {/* Render notification text with styling based on read status */}
+                    <ListItemText
+                      primary={notification.message}
+                      primaryTypographyProps={{
+                        style: { fontWeight: notification.read ? 'normal' : 'bold' },
+                      }}
+                    />
                   </ListItem>
                 ))}
               </List>
             </Popover>
+
+
 
             {/* User Profile Icon */}
             <IconButton color="inherit" onClick={handleProfileClick}>
@@ -157,9 +271,9 @@ export default function Header() {
             >
               <Box sx={{ p: 2 }}>
                 <List component="nav" aria-label="user profile options">
-                <ListItem button component="a" href={`/user_profile?id=${getUserIdFromAccessToken()}`}>
-  <ListItemText primary="Profile Page" />
-</ListItem>
+                  <ListItem button component="a" href={`/user_profile?id=${getUserIdFromAccessToken()}`}>
+                    <ListItemText primary="Profile Page" />
+                  </ListItem>
 
                   <ListItem button component="a" href="/edit_profile">
                     <ListItemText primary="Edit Profile" />

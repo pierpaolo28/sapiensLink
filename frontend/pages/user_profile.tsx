@@ -28,7 +28,6 @@ export default function UserProfilePage() {
             try {
                 // Get the previous page's URL
                 const currentUrl = window.location.href;
-                const accessToken = localStorage.getItem('access_token');
 
                 // Extract the user ID from the previous page's URL
                 const url = new URL(currentUrl);
@@ -39,7 +38,6 @@ export default function UserProfilePage() {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`,
                     }
                 });
                 const apiResponse = await response.json();
@@ -72,7 +70,8 @@ export default function UserProfilePage() {
         // Potentially update state to show more items or navigate to a different view
     };
 
-    const recentContributions = userProfile?.lists_contributions.length! + userProfile?.ranks_contributions.length!
+    const recentContributions =
+  (userProfile?.lists_contributions?.length ?? 0) + (userProfile?.ranks_contributions?.length ?? 0);
     // Add state for pagination
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5; // Adjust the number of items per page as needed
@@ -90,30 +89,31 @@ export default function UserProfilePage() {
                     <Grid container spacing={2}>
                         {/* User profile info and buttons */}
                         <Grid item xs={12} sm={4} md={3}>
+                        {userProfile && userProfile.user ? (
                             <Paper sx={{ p: 2, textAlign: 'center', mb: 2 }}>
                                 <Avatar
-                                    alt={userProfile?.user.name}
-                                    src={userProfile?.user.avatar}
+                                    alt={userProfile.user.name}
+                                    src={userProfile.user.avatar}
                                     sx={{ width: 80, height: 80, mx: 'auto' }}
                                 />
                                 <Typography variant="h6" sx={{ mt: 2 }}>
-                                    {userProfile?.user.name}
+                                    {userProfile.user.name}
                                 </Typography>
                                 <Typography variant="body2" sx={{ my: 1 }}>
-                                    {userProfile?.user.bio}
+                                    {userProfile.user.bio}
                                 </Typography>
                                 <Divider sx={{ my: 1 }} />
                                 <Typography variant="body2" sx={{ my: 1 }}>
-                                    {userProfile?.user.followers.length} Followers
+                                    {userProfile.user.followers.length} Followers
                                 </Typography>
                                 <Typography variant="body2" sx={{ my: 1 }}>
-                                    {userProfile?.user.following.length} Following
+                                    {userProfile.user.following.length} Following
                                 </Typography>
                                 <Typography variant="body2" sx={{ my: 1 }}>
-                                    {userProfile?.lists_count} Lists Published
+                                    {userProfile.lists_count} Lists Published
                                 </Typography>
                                 <Typography variant="body2" sx={{ my: 1 }}>
-                                    <Link href={userProfile?.user.social} target="_blank" rel="noopener noreferrer">
+                                    <Link href={userProfile.user.social} target="_blank" rel="noopener noreferrer">
                                         Social
                                     </Link>
                                 </Typography>
@@ -124,6 +124,10 @@ export default function UserProfilePage() {
                                     Edit Account
                                 </Button>
                             </Paper>
+                        ) : (
+                            // Render loading state or an error message
+                            <Typography>Loading...</Typography>
+                          )}
                         </Grid>
 
                         {/* Lists Published by the user + Recent Contributions */}
@@ -142,13 +146,15 @@ export default function UserProfilePage() {
                                         <ToggleButton value="private">Private</ToggleButton>
                                     </ToggleButtonGroup>
                                 </Box>
+                                {userProfile && userProfile.lists && (
                                 <List>
-                                    {userProfile?.lists.map((list, index) => (
+                                    {userProfile.lists.map((list, index) => (
                                         <ListItem key={index}>
                                             <ListItemText primary={list.name} />
                                         </ListItem>
                                     ))}
                                 </List>
+                                )}
 
                                 {/* Pagination for lists */}
                                 <Pagination
@@ -186,25 +192,29 @@ export default function UserProfilePage() {
                         <Grid item xs={12} sm={12} md={3}>
                             <Paper sx={{ p: 2, mb: 2 }}>
                                 <Typography variant="h6">Saved Lists</Typography>
+                                {userProfile &&  userProfile.saved_lists && (
                                 <List>
-                                    {userProfile?.saved_lists.map((list, index) => (
+                                    {userProfile.saved_lists.map((list, index) => (
                                         <ListItem key={index}>
                                             <ListItemText primary={list.name} />
                                         </ListItem>
                                     ))}
                                 </List>
+                                )}
                             </Paper>
 
                             {/* Saved Ranks */}
                             <Paper sx={{ p: 2, mb: 2 }}>
                                 <Typography variant="h6">Saved Ranks</Typography>
+                                {userProfile && userProfile.saved_ranks && (
                                 <List>
-                                    {userProfile?.saved_ranks.map((rank, index) => (
+                                    {userProfile.saved_ranks.map((rank, index) => (
                                         <ListItem key={index}>
                                             <ListItemText primary={rank.rank} />
                                         </ListItem>
                                     ))}
                                 </List>
+                                )}
                             </Paper>
 
                             {/* More button */}
