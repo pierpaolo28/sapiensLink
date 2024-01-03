@@ -12,6 +12,7 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 
 import AppLayout from "@/components/AppLayout";
+import {getUserIdFromAccessToken} from "@/utils/auth";
 
 type ListDetails = {
   name: string;
@@ -50,16 +51,41 @@ export default function CreateListPage() {
   };
   
 
-  const handleSubmit = (event: any) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
+  
     // Check if the mandatory fields are filled
     if (listDetails.name && listDetails.topic) {
       // TODO: Validate the "content" field
       const contentRegex = /^(\d+\.\s|-\s|\*\s)?(?:[A-Za-z0-9\s]+|http[s]?:\/\/[^\s]+)/gm;
       if (contentRegex.test(listDetails.content)) {
-        console.log(listDetails);
-        // Submit logic goes here
+        try {
+          const accessToken = localStorage.getItem('access_token');
+  
+          // Include the participants field with the user ID of the current user
+          const updatedListDetails = {
+            ...listDetails,
+            participants: [getUserIdFromAccessToken()], 
+            topic: listDetails.topic.map(topicName => ({ name: topicName })),
+          };
+  
+          const response = await fetch('http://localhost/api/create_list_page', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify(updatedListDetails),
+          });
+  
+          if (response.ok) {
+            window.location.href = '/list_home';
+          } else {
+            console.error('Error creating list:', response.status, response.statusText);
+          }
+        } catch (error) {
+          console.error('Error creating list:', error);
+        }
       } else {
         alert('Content field should contain ordered/bulleted lists with each item being text or a valid webpage URL.');
       }
@@ -67,6 +93,7 @@ export default function CreateListPage() {
       alert('Please fill in all mandatory fields (Name and Topic).');
     }
   };
+  
 
   const topics = [
     { label: 'Finance', value: 'finance' },
@@ -167,7 +194,7 @@ export default function CreateListPage() {
 
             </Grid>
             <Grid item xs={12}>
-              <Button variant="outlined" onClick={() => { /* logic to cancel */ }}>
+              <Button variant="outlined" href='/list_home'>
                 Cancel
               </Button>
               <Button variant="contained" color="primary" type="submit" style={{ marginLeft: 8 }}>

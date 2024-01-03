@@ -185,16 +185,36 @@ export interface CreateRankFormData {
   content: { [key: string]: ContentItem };
 }
 
-export interface RankTopicsPage {
+export interface RankTopicsResponse {
   topic_counts: [string, number][];
   all_rank_count: number;
 }
 
-export interface WhoToFollowPage {
+export interface WhoToFollowResponse {
   users: User[];
 }
 
-export interface ListTopicsPage {
+export interface ListTopicsResponse {
   topic_counts: [string, number][];
   all_list_count: number;
+}
+
+interface Participant {
+  id: number;
+  name: string;
+  email: string;
+  bio: string;
+  avatar: string;
+  social: string;
+  followers: { id: number; name: string }[];
+  following: { id: number; name: string }[];
+}
+
+export interface ListPageResponse {
+  list: List;
+  list_comments: any[]; // You might want to replace 'any' with the actual type for list_comments
+  participants: Participant[];
+  has_reported: boolean;
+  saved_list_ids: number[];
+  is_subscribed: boolean;
 }

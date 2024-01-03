@@ -151,6 +151,7 @@ export default function RankPage() {
                 });
 
                 if (response.ok) {
+                    setNewItemText("")
                     fetchRankData();
                 } else {
                     console.error('Error adding new item:', response.status, response.statusText);
@@ -345,7 +346,9 @@ export default function RankPage() {
                             {rank && rank.rank && (
                             <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 2 }}>
                                 {rank.rank.topic.map((topic) => (
+                                    <a key={topic.id} href={`/rank_home?q=${topic.name}`}>
                                     <Chip key={topic.id} label={topic.name} variant="outlined" sx={{ margin: '4px' }} />
+                                    </a>
                                 ))}
                             </Box>
                             )}
@@ -358,9 +361,11 @@ export default function RankPage() {
                                 {rank.contributors.map((contributor, index) => (
                                     <ListItem key={index}>
                                         <Avatar src="/static/${contributor.avatar}" alt={contributor.name} />
+                                        <a key={contributor.id} href={`/user_profile?id=${contributor.id}`}>
                                         <Typography variant="subtitle1" sx={{ ml: 1 }}>
                                             {contributor.name}
                                         </Typography>
+                                        </a>
                                     </ListItem>
                                 ))}
                             </List>

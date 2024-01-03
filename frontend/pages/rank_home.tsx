@@ -23,7 +23,7 @@ import { getRankHome } from "@/utils/routes";
 import { RankHomeResponse } from "@/utils/types";
 import Pagination from '@mui/material/Pagination';
 
-export default function HomePage() {
+export default function RankHome() {
 
   const [home, setHome] = React.useState<RankHomeResponse | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -111,7 +111,7 @@ export default function HomePage() {
                 {home && home.topic_counts && (
                   <List>
                     {home.topic_counts.map((topic, index) => (
-                       <a href={`/rank_home?q=${topic[0]}`}>
+                       <a key={index} href={`/rank_home?q=${topic[0]}`}>
                       <ListItem key={index}>
                         <ListItemText primary={topic[0] + " " + topic[1]} />
                       </ListItem>

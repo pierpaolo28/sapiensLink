@@ -16,11 +16,11 @@ import SearchIcon from '@mui/icons-material/Search';
 
 import AppLayout from "@/components/AppLayout";
 import { getListTopics } from "@/utils/routes";
-import { ListTopicsPage } from "@/utils/types";
+import { ListTopicsResponse } from "@/utils/types";
 
-export default function HomePage() {
+export default function ListTopics() {
 
-  const [topics, setHome] = React.useState<ListTopicsPage | null>(null);
+  const [topics, setHome] = React.useState<ListTopicsResponse | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   const fetchData = async (extraParams = '') => {

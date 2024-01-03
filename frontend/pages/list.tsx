@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
@@ -23,68 +23,71 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import EditIcon from '@mui/icons-material/Edit';
 import ReportIcon from '@mui/icons-material/Report';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
 
 import AppLayout from "@/components/AppLayout";
-
-// Define a type for the participant data
-type Participant = {
-  name: string;
-  imageUrl: string;
-};
+import { ListPageResponse } from "@/utils/types";
 
 // Define a type for the comment data
 type Comment = {
   id: number;
   author: string;
   text: string;
-  profileImageUrl: string;
+  avatar: string;
 };
-
-const participants: Participant[] = [
-  // Replace with your actual participants data
-  { name: 'test2', imageUrl: '/path/to/avatar2.jpg' },
-  { name: 'test', imageUrl: '/path/to/avatar.jpg' },
-];
 
 const initialComments: Comment[] = [
   // Replace with your actual comments data
-  { id: 1, author: 'JaneDoe', text: 'Great article on personal finance!', profileImageUrl: '/path/to/avatar1.jpg' },
-  { id: 2, author: 'JohnDoe', text: 'I would like to learn more about FIRE.', profileImageUrl: '/path/to/avatar2.jpg' },
+  { id: 1, author: 'JaneDoe', text: 'Great article on personal finance!', avatar: '/path/to/avatar1.jpg' },
+  { id: 2, author: 'JohnDoe', text: 'I would like to learn more about FIRE.', avatar: '/path/to/avatar2.jpg' },
   // ... more comments
 ];
 
-const handleSaveList = () => {
-  // Logic to save the list would go here
-  // This could involve setting state or making an API call to your backend
-  console.log('List saved!');
-};
-
-const HomePage = () => {
-  // List of links data
-  const linksData = [
-    { name: "Retire In Progress", url: "https://retireinprogress.com" },
-    { name: "Accidentally Retired", url: "https://accidentallyretired.com" },
-    { name: "Portfolio Charts", url: "https://portfoliocharts.com" },
-    { name: "Reddit Personal Finance", url: "https://reddit.com/r/personalfinance/wiki/index" },
-    { name: "JustETF", url: "https://justetf.com/en" },
-    { name: "Morning Star", url: "https://morningstar.com" },
-    { name: "ETF.com", url: "https://etf.com/etfanalyticsetf-finder" },
-    { name: "JL Collins", url: "https://jlcollinsnh.com" },
-    { name: "Mr Money Mustache", url: "https://mrmoneymustache.com" },
-    { name: "Mustachian Post Discussion Forum", url: "https://forum.mustachianpost.com" },
-    { name: "Early Retirement Extreme", url: "https://earlyretirementextreme.com" },
-    { name: "Investopedia", url: "https://investopedia.com" },
-    { name: "Global Property Guide", url: "https://globalpropertyguide.com" },
-    { name: "Optimized Portfolio", url: "https://optimizedportfolio.com" },
-    { name: "Lazy Portfolio ETF", url: "https://lazyportfolioetf.com" },
-    { name: "BogleHeads", url: "https://bogleheads.org/index.php" },
-    { name: "Portfolio Visualizer (with Backtesting)", url: "https://portfoliovisualizer.com" },
-    { name: "Wise Money (EU Investing)", url: "https://bankeronwheels.com" },
-    { name: "Index Fund Investor (EU Investing)", url: "https://indexfundinvestor.eu" },
-  ];
+const ListPage = () => {
 
   const [comments, setComments] = useState<Comment[]>(initialComments);
   const [newComment, setNewComment] = useState('');
+  const [list, setRank] = useState<ListPageResponse | null>(null);
+  const [id, setId] = useState<string | null>(null);
+
+  // Fetch list data based on the extracted id
+  const fetchListData = async () => {
+    try {
+      const accessToken = localStorage.getItem('access_token');
+      const response = await fetch(`http://localhost/api/list_page/${id}/`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+      const data = await response.json();
+      setRank(data);
+    } catch (error) {
+      console.error('Error fetching list data:', error);
+    }
+  };
+
+  useEffect(() => {
+    // Extract the id parameter from the current URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const extractedId = urlParams.get('id');
+
+    // Update the id state if it is different
+    if (extractedId !== id) {
+      setId(extractedId);
+    }
+
+    // Fetch data only if id is present
+    if (id) {
+      fetchListData();
+    }
+
+    // Add any cleanup logic if needed
+    return () => {
+      // Cleanup logic here
+    };
+  }, [id]);
 
   // Handler for adding new comment
   const handleCommentSubmit = () => {
@@ -94,7 +97,7 @@ const HomePage = () => {
         id: Date.now(),
         author: 'NewUser',
         text: newComment,
-        profileImageUrl: '/path/to/newuser-avatar.jpg',
+        avatar: '/path/to/newuser-avatar.jpg',
       };
       setComments([...comments, newCommentData]);
       setNewComment('');
@@ -111,6 +114,32 @@ const HomePage = () => {
     }
   };
 
+  const handleSaveList = async () => {
+    const isSaved = list && list.saved_list_ids.includes(list!.list.id);
+    try {
+      const accessToken = localStorage.getItem('access_token');
+
+      const response = await fetch(`http://localhost/api/list_page/${list!.list.id}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ [isSaved ? 'unsave' : 'save']: true }),
+      });
+
+      if (response.ok) {
+        fetchListData();
+      } else {
+        console.error(`Error ${isSaved ? 'unsaving' : 'saving'} rank:`, response.status, response.statusText);
+        // Handle the error or provide feedback to the user
+      }
+    } catch (error) {
+      console.error(`Error ${isSaved ? 'unsaving' : 'saving'} rank:`, error);
+      // Handle the error or provide feedback to the user
+    }
+  };
+
   const [isWatching, setIsWatching] = useState(false);
 
   const handleWatchToggle = (event: any) => {
@@ -119,17 +148,18 @@ const HomePage = () => {
 
 
   return <AppLayout>
-      <CssBaseline />
-      <Container component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={8}>
+    <CssBaseline />
+    <Container component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={8}>
+          {list && list.list && (
             <Card variant="outlined" sx={{ mb: 2 }}>
               <CardContent>
                 <Typography variant="h5" gutterBottom>
-                  Personal Finance & FIRE
+                  {list.list.name}
                 </Typography>
                 <Typography color="textSecondary" sx={{ mb: 2 }}>
-                  Last activity: 6 minutes ago
+                  Last activity: {new Date(list.list.updated).toLocaleString()}
                 </Typography>
 
                 <Box>
@@ -152,20 +182,16 @@ const HomePage = () => {
                   <Avatar src="/path/to/profile-image.jpg" alt="Profile image" sx={{ marginRight: 2 }} />
                   <Typography variant="subtitle1">
                     <Link href="/user_profile" color="inherit" underline="hover">
-                      Username
+                      {list.list.author}
                     </Link>
                   </Typography>
                 </Box>
 
                 {/* Dynamic list of links */}
                 <Box sx={{ mb: 2 }}>
-                  {linksData.map((link, index) => (
-                    <Typography key={index}>
-                      <a href={link.url} target="_blank" rel="noopener noreferrer">
-                        {link.name}
-                      </a>
-                    </Typography>
-                  ))}
+                  <Typography>
+                    {list.list.content}
+                  </Typography>
                 </Box>
 
                 <CardActions>
@@ -179,8 +205,13 @@ const HomePage = () => {
                     <ArrowDownwardIcon />
                   </IconButton>
                   <IconButton aria-label="save list" onClick={handleSaveList}>
-                    <BookmarkBorderIcon />
+                    {list && list.saved_list_ids.includes(list!.list.id) ? (
+                      <BookmarkIcon /> // Use the icon for saved state, e.g., BookmarkIcon
+                    ) : (
+                      <BookmarkBorderIcon /> // Use the icon for unsaved state
+                    )}
                   </IconButton>
+
                   <Button startIcon={<EditIcon />} size="small" href="list_pr">
                     Suggest Edit
                   </Button>
@@ -196,7 +227,7 @@ const HomePage = () => {
                   {comments.map((comment) => (
                     <ListItem key={comment.id} alignItems="flex-start">
                       <ListItemAvatar>
-                        <Avatar alt={comment.author} src={comment.profileImageUrl} />
+                        <Avatar alt={comment.author} src={comment.avatar} />
                       </ListItemAvatar>
                       <ListItemText
                         primary={comment.author}
@@ -223,31 +254,41 @@ const HomePage = () => {
                 </Box>
               </CardContent>
             </Card>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            {/* List Topics */}
-            <Typography variant="h6" gutterBottom>
-              List Topics
-            </Typography>
+          )}
+        </Grid>
+        <Grid item xs={12} md={4}>
+          {/* List Topics */}
+          <Typography variant="h6" gutterBottom>
+            List Topics
+          </Typography>
+          {list && list.list && (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 2 }}>
-              <Chip label="Personal Finance" variant="outlined" sx={{ margin: '4px' }} />
-              {/* Add more Chips for each topic */}
+              {list.list.topic.map((topic) => (
+                <a key={topic.id} href={`/list_home?q=${topic.name}`}>
+                  <Chip key={topic.id} label={topic.name} variant="outlined" sx={{ margin: '4px' }} />
+                </a>
+              ))}
             </Box>
-            <Typography variant="h6">Participants</Typography>
+          )}
+          <Typography variant="h6">Participants</Typography>
+          {list && list.participants && (
             <List>
-              {participants.map((participant) => (
+              {list.participants.map((participant) => (
                 <ListItem key={participant.name}>
-                  <Avatar src={participant.imageUrl} />
-                  <Typography variant="subtitle1" style={{ marginLeft: '10px' }}>
-                    {participant.name}
-                  </Typography>
+                  <Avatar src={participant.avatar} />
+                  <a href={`/user_profile?id=${participant.id}`}>
+                    <Typography variant="subtitle1" style={{ marginLeft: '10px' }}>
+                      {participant.name}
+                    </Typography>
+                  </a>
                 </ListItem>
               ))}
             </List>
-          </Grid>
+          )}
         </Grid>
-      </Container>
-    </AppLayout>
+      </Grid>
+    </Container>
+  </AppLayout>
 };
 
-export default HomePage;
+export default ListPage;

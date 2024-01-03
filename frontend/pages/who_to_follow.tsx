@@ -18,11 +18,11 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 
 import AppLayout from "@/components/AppLayout";
 import { getWhoToFollow } from "@/utils/routes";
-import { WhoToFollowPage } from "@/utils/types";
+import { WhoToFollowResponse } from "@/utils/types";
 
-export default function HomePage() {
+export default function WhoToFollowPage() {
 
-  const [whoToFollow, setHome] = React.useState<WhoToFollowPage | null>(null);
+  const [whoToFollow, setHome] = React.useState<WhoToFollowResponse | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   const fetchData = async (extraParams = '') => {

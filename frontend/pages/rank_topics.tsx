@@ -16,11 +16,11 @@ import SearchIcon from '@mui/icons-material/Search';
 
 import AppLayout from "@/components/AppLayout";
 import { getRankTopics } from "@/utils/routes";
-import { RankTopicsPage } from "@/utils/types";
+import { RankTopicsResponse } from "@/utils/types";
 
-export default function HomePage() {
+export default function RankTopicsPage() {
 
-  const [topics, setHome] = React.useState<RankTopicsPage | null>(null);
+  const [topics, setHome] = React.useState<RankTopicsResponse | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   const fetchData = async (extraParams = '') => {

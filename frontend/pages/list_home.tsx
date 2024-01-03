@@ -27,7 +27,7 @@ import { getHome } from "@/utils/routes";
 import { HomeResponse } from "@/utils/types";
 
 
-export default function HomePage() {
+export default function ListHome() {
   const [home, setHome] = useState<HomeResponse | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -35,14 +35,14 @@ export default function HomePage() {
     try {
       // Use the updated currentPage state to fetch the corresponding page
       const updatedParams = `page=${currentPage}&${extraParams}`;
-  
+
       const homeData = await getHome(updatedParams);
       setHome(homeData);
     } catch (error) {
       console.error("Error fetching home data:", error);
     }
   };
-  
+
 
   useEffect(() => {
     // Parse the query parameter from the URL
@@ -72,22 +72,22 @@ export default function HomePage() {
 
   const handleTabChange = (event: React.MouseEvent<HTMLElement>, newValue: string) => {
     setSelectedTab(newValue);
-  
+
     let extraParams = '';
-    
+
     if (newValue === 'latest') {
       extraParams = '';
     } else if (newValue === 'popular') {
       extraParams = 'top_voted=top_voted_true';
-    // TODO: In order to make this call the user should be logged in and we need to pass the access token
-    // If an user is not logged in the this should be hidden
+      // TODO: In order to make this call the user should be logged in and we need to pass the access token
+      // If an user is not logged in the this should be hidden
     } else if (newValue === 'follow') {
       extraParams = 'follow=follow_true';
     }
-  
+
     fetchData(extraParams);
   };
-  
+
 
   const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
     setCurrentPage(newPage);
@@ -123,15 +123,16 @@ export default function HomePage() {
                 {home && home.topic_counts && (
                   <List>
                     {home.topic_counts.map((topic, index) => (
-                       <a href={`/list_home?q=${topic[0]}`}>
-                      <ListItem key={index}>
-                        <ListItemText primary={topic[0] + " " + topic[1]} />
-                      </ListItem>
+                      <a key={index} href={`/list_home?q=${topic[0]}`}>
+                        <ListItem>
+                          <ListItemText primary={topic[0] + " " + topic[1]} />
+                        </ListItem>
                       </a>
                     ))}
                     <Button href="/list_topics">More</Button>
                   </List>
                 )}
+
               </Paper>
             </Grid>
 
@@ -173,9 +174,11 @@ export default function HomePage() {
                       <Card key={list.id}>
                         <CardActionArea>
                           <CardContent>
-                            <Typography gutterBottom variant="h5">
-                              {list.name}
-                            </Typography>
+                            <a href={`/list?id=${list.id}`}>
+                              <Typography gutterBottom variant="h5">
+                                {list.name}
+                              </Typography>
+                            </a>
                             <Typography paragraph color="text.secondary">
                               {list.description}
                             </Typography>
@@ -230,13 +233,13 @@ export default function HomePage() {
                 </Typography>
                 {home && home.users && (
                   <List>
-                    {home.users.map((user, index) => (
+                    {home.users.map((user) => (
                       <ListItem key={user.id}>
                         <ListItemAvatar>
                           <Avatar src={user.avatar} alt={user.name} />
                         </ListItemAvatar>
                         <a href={`/user_profile?id=${user.id}`}>
-                        <ListItemText primary={user.name} />
+                          <ListItemText primary={user.name} />
                         </a>
                       </ListItem>
                     ))}

@@ -91,7 +91,7 @@ const initialSuggestions: Suggestion[] = [
     // More suggestions
 ];
 
-export default function Home() {
+export default function ListPr() {
     const [suggestions, setSuggestions] = useState<Suggestion[]>(initialSuggestions);
     const [selectedSuggestionId, setSelectedSuggestionId] = useState<string>('');
     const [comments, setComments] = useState<Comment[]>([]);

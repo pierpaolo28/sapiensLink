@@ -53,7 +53,7 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial }) => {
   );
 };
 
-export default function Home() {
+export default function Index() {
   return (
       <AppLayout>
         <Container maxWidth="lg" sx={{ my: 4 }}>
