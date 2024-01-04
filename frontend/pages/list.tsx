@@ -24,6 +24,7 @@ import ReportIcon from '@mui/icons-material/Report';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import AppLayout from "@/components/AppLayout";
 import { ListPageResponse, User } from "@/utils/types";
@@ -146,6 +147,33 @@ const fetchListData = async () => {
         }
       }
     };
+
+    // Function to delete a comment
+  const handleDeleteComment = async (commentId: number) => {
+    if (list && id) {
+      try {
+        const accessToken = localStorage.getItem('access_token');
+        const response = await fetch(`http://localhost/api/delete_comment_action/${commentId}/`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
+
+        if (response.ok) {
+          // Fetch updated list data after deleting the comment
+          fetchListData();
+        } else {
+          console.error('Error deleting comment:', response.status, response.statusText);
+          // Handle the error or provide feedback to the user
+        }
+      } catch (error) {
+        console.error('Error deleting comment:', error);
+        // Handle the error or provide feedback to the user
+      }
+    }
+  };
 
   const [votes, setVotes] = useState({ upvotes: 36, downvotes: 2 }); // Sample initial votes
 
@@ -357,6 +385,9 @@ const fetchListData = async () => {
                         </Typography>
                       </Grid>
                     </Grid>
+                    <IconButton aria-label="delete" onClick={() => handleDeleteComment(comment.id)}>
+              <DeleteIcon />
+            </IconButton>
                   </ListItem>
                   ))}
                 </List>

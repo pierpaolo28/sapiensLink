@@ -59,7 +59,6 @@ export default function Header() {
         }
 
         const data = await response.json();
-        console.log(data)
         setNotifications(data.notifications);
         setNotificationCount(data.notifications.length);
       }
