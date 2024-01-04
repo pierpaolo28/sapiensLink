@@ -18,10 +18,8 @@ export const isUserLoggedIn = () => {
  export const getUserIdFromAccessToken = () => {
     try {
       const accessToken = localStorage.getItem('access_token');
-      // Assuming the token is a JWT
     const tokenPayload = JSON.parse(atob(accessToken!.split('.')[1]));
 
-    // Now you can access user ID
     const userId = tokenPayload.user_id;
 
     return userId;
@@ -43,7 +41,7 @@ export const isUserLoggedIn = () => {
   // It seems that after the token is refreshed, the first notification doesn't work and thereafter works
   async function refreshAccessToken(refreshToken: string): Promise<void> {
     try {
-      const response = await fetch('/api/token/refresh/', {
+      const response = await fetch('http://localhost/api/token/refresh/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,9 +51,9 @@ export const isUserLoggedIn = () => {
   
       if (!response.ok) {
         console.error('Failed to refresh access token');
-        if (!window.location.href.includes('login')) {
+        if (!window.location.href.includes('signin')) {
           console.error('Redirecting to login page');
-          window.location.href = "/signin"; // Replace with actual login URL
+          window.location.href = "/signin";
         }
         return;
       }
@@ -68,18 +66,13 @@ export const isUserLoggedIn = () => {
         localStorage.setItem('expiration_time', expirationTime.toString()); // Update the expiration time in localStorage
       }
       
-      // Update the token variable (Assuming 'token' is declared somewhere)
       return data.access;
     } catch (error) {
       console.error('Error refreshing access token:', error);
-      // Handle the error as needed
-      // For example, redirect the user to the login page or display an error message
     }
   }
   
   function isAccessTokenExpired(): boolean {
-    // Implement the logic to check if the access token is expired
-    // Compare the expiration time with the current time
     const expirationTime = Number(localStorage.getItem('expiration_time')); // Get the token expiration time from localStorage
     const currentTime = new Date().getTime(); // Get the current time
     return currentTime > expirationTime; // Compare the current time with the expiration time

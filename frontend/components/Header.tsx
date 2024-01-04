@@ -16,6 +16,7 @@ import {
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import { isUserLoggedIn, getUserIdFromAccessToken, isAccessTokenExpired, refreshAccessToken } from '@/utils/auth';
+import { useRouter } from 'next/router';
 
 interface Notification {
   id: number;
@@ -26,20 +27,28 @@ interface Notification {
 
 
 export default function Header() {
+  const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [notificationCount, setNotificationCount] = useState<number>(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const socketRef = useRef<WebSocket | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
+    setIsLoggedIn(isUserLoggedIn());
+  }, []);
+
+  const [profileAnchorEl, setProfileAnchorEl] = useState(null);
 
   const fetchNotifications = async () => {
     try {
       if (isAccessTokenExpired()) {
         const refreshToken = localStorage.getItem('refresh_token');
         if (refreshToken) {
-            await refreshAccessToken(refreshToken);
+          await refreshAccessToken(refreshToken);
         } else {
-            console.error('Refresh token not available.');
-            window.location.href = "/signin";
+          console.error('Refresh token not available.');
+          // Would get infinite refresh using window.location
+          router.push('/signin');
         }
       }
       if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
@@ -57,8 +66,9 @@ export default function Header() {
         }
 
         const data = await response.json();
-        setNotifications((prevNotifications) => [...prevNotifications, ...data.notifications]);
-        setNotificationCount((prevCount) => prevCount + data.notifications.length);
+        console.log(data)
+        setNotifications(data.notifications);
+        setNotificationCount(data.notifications.length);
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
@@ -66,7 +76,7 @@ export default function Header() {
   };
 
   const initWebSocket = () => {
-    if (!socketRef.current) {
+    if (isLoggedIn && !socketRef.current) {
       const newSocket = new WebSocket('ws://localhost/ws/notifications/');
 
       newSocket.onopen = (event) => {
@@ -75,9 +85,12 @@ export default function Header() {
       };
 
       newSocket.onmessage = (event) => {
-        const message = event.data;
-        console.log('Received message:', message);
-        fetchNotifications();
+        const message = JSON.parse(event.data);
+        if (message.receiver_id === getUserIdFromAccessToken()){
+          // setNotifications((prevNotifications) => [...prevNotifications, message]);
+          // setNotificationCount((prevCount) => prevCount + 1);
+          fetchNotifications();
+        }
       };
 
       newSocket.onclose = (event) => {
@@ -92,32 +105,51 @@ export default function Header() {
     }
   };
 
+
   function closeWebSocket() {
-    if (socketRef !== null) {
-      socketRef.current!.close();
+    if (socketRef.current !== null && socketRef.current !== undefined) {
+      socketRef.current.close();
       socketRef.current = null;
     }
-}
+  }
 
-if (typeof window !== 'undefined') {
-window.onbeforeunload = function () {
-  closeWebSocket(); // Close the WebSocket connection before the page is unloaded
-};
-}
 
-  useEffect(() => {
-    initWebSocket();
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.close();
-        socketRef.current = null;
-      }
+  if (typeof window !== 'undefined') {
+    window.onbeforeunload = function () {
+      closeWebSocket(); // Close the WebSocket connection before the page is unloaded
     };
-  }, []); // Run on mount and clean up on unmount
+  }
+
 
   useEffect(() => {
-    fetchNotifications();
-  }, [socketRef.current]); // Run when socket changes
+    if (typeof window !== 'undefined' && isLoggedIn) {
+      initWebSocket();
+      return () => {
+        if (socketRef.current) {
+          socketRef.current.close();
+          socketRef.current = null;
+        }
+      };
+    }
+  }, []);
+
+    useEffect(() => {
+    if (typeof window !== 'undefined' && isLoggedIn) {
+      if (!window.location.href.includes('signin')) {
+        if (!isAccessTokenExpired()) {
+          initWebSocket();
+          fetchNotifications();
+        } else {
+          const refreshToken = localStorage.getItem('refresh_token');
+          if (refreshToken) {
+            refreshAccessToken(refreshToken);
+          } else {
+            window.location.href = "/signin";
+          }
+        }
+      }
+    }
+  }, [isLoggedIn]);
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -158,14 +190,6 @@ window.onbeforeunload = function () {
     }
   };
 
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  useEffect(() => {
-    // Perform the check on the client side once the component is mounted
-    setIsLoggedIn(isUserLoggedIn());
-  }, []);
-
-  const [profileAnchorEl, setProfileAnchorEl] = useState(null);
-
   const handleProfileClick = (event: any) => {
     setProfileAnchorEl(event.currentTarget);
   };
@@ -198,8 +222,6 @@ window.onbeforeunload = function () {
           localStorage.removeItem('refresh_token');
           localStorage.removeItem('expiration_time');
 
-          // Redirect or perform other actions after successful logout
-          // For example, redirect to the login page
           window.location.href = '/';
         } else {
           // Handle error cases
@@ -214,23 +236,6 @@ window.onbeforeunload = function () {
   const profileOpen = Boolean(profileAnchorEl);
   const profileId = profileOpen ? 'profile-popover' : undefined;
 
-  if (typeof window !== 'undefined') {
-  if (!window.location.href.includes('signin')) {
-    window.onload = function () {
-        if (!isAccessTokenExpired()) {
-            initWebSocket(); // Initialize the WebSocket connection on page load if the token is not expired
-        } else {
-            const refreshToken = localStorage.getItem('refresh_token');
-            if (refreshToken) {
-                refreshAccessToken(refreshToken);
-            }
-            else{
-                window.location.href = "/signin";
-            }
-        }
-    };
-  }
-}
 
   return (
     <AppBar position="static" color="default" elevation={0}>
