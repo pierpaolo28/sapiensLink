@@ -23,49 +23,82 @@ import EditIcon from '@mui/icons-material/Edit';
 import ReportIcon from '@mui/icons-material/Report';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 import AppLayout from "@/components/AppLayout";
-import { ListPageResponse } from "@/utils/types";
+import { ListPageResponse, User } from "@/utils/types";
 
 // Define a type for the comment data
-type Comment = {
+type UserComment = {
   id: number;
   author: string;
   text: string;
   avatar: string;
+  updated: EpochTimeStamp;
 };
-
-const initialComments: Comment[] = [
-  // Replace with your actual comments data
-  { id: 1, author: 'JaneDoe', text: 'Great article on personal finance!', avatar: '/path/to/avatar1.jpg' },
-  { id: 2, author: 'JohnDoe', text: 'I would like to learn more about FIRE.', avatar: '/path/to/avatar2.jpg' },
-  // ... more comments
-];
 
 const ListPage = () => {
 
-  const [comments, setComments] = useState<Comment[]>(initialComments);
   const [newComment, setNewComment] = useState('');
-  const [list, setRank] = useState<ListPageResponse | null>(null);
+  const [list, setList] = useState<ListPageResponse | null>(null);
+  const [commenters, setCommenters] = useState<UserComment[] | null>(null);
+  const [listAuthor, setlistAuthor] = useState<User | null>(null);
   const [id, setId] = useState<string | null>(null);
 
+  // Function to fetch user data
+const getUserData = async (userId: number, accessToken: string) => {
+  try {
+    const userResponse = await fetch(`http://localhost/api/get_user/${userId}/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+    const userData = await userResponse.json();
+    return userData;
+  } catch (error) {
+    console.error(`Error fetching user data for user ${userId}:`, error);
+    return null;
+  }
+};
+
   // Fetch list data based on the extracted id
-  const fetchListData = async () => {
-    try {
-      const accessToken = localStorage.getItem('access_token');
-      const response = await fetch(`http://localhost/api/list_page/${id}/`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
-      });
-      const data = await response.json();
-      setRank(data);
-    } catch (error) {
-      console.error('Error fetching list data:', error);
-    }
-  };
+const fetchListData = async () => {
+  try {
+    const accessToken = localStorage.getItem('access_token');
+    const response = await fetch(`http://localhost/api/list_page/${id}/`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+    const data = await response.json();
+    const userData = await getUserData(data.list.author, accessToken!);
+
+    // Fetch user data for each comment
+    const commentsWithUserData: UserComment[] = await Promise.all(
+      data.list_comments.map(async (comment: any) => {
+        const userData = await getUserData(comment.user, accessToken!);
+        return {
+          id: comment.id,
+          author: userData?.name || 'Unknown User',
+          text: comment.body,
+          avatar: userData?.avatar,
+          updated: comment.updated,
+        };
+      })
+    );
+
+    setList(data);
+    setlistAuthor(userData);
+    setCommenters(commentsWithUserData);
+  } catch (error) {
+    console.error('Error fetching list data:', error);
+  }
+};
+
 
   useEffect(() => {
     // Extract the id parameter from the current URL
@@ -88,20 +121,31 @@ const ListPage = () => {
     };
   }, [id]);
 
-  // Handler for adding new comment
-  const handleCommentSubmit = () => {
-    if (newComment.trim()) {
-      // For demonstration, we're using Date.now() as a fake unique id and a placeholder image
-      const newCommentData = {
-        id: Date.now(),
-        author: 'NewUser',
-        text: newComment,
-        avatar: '/path/to/newuser-avatar.jpg',
-      };
-      setComments([...comments, newCommentData]);
-      setNewComment('');
-    }
-  };
+    // Handler for adding new comment
+    const handleCommentSubmit = async () => {
+      if (newComment.trim()) {
+        try {
+          const accessToken = localStorage.getItem('access_token');
+          const response = await fetch(`http://localhost/api/list_page/${id}/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({ comment: { user: 1, body: newComment } }),
+          });
+  
+          if (response.ok) {
+            // Fetch updated list data and comments after submitting the comment
+            fetchListData();
+          } else {
+            console.error('Error submitting comment:', response.status, response.statusText);
+          }
+        } catch (error) {
+          console.error('Error submitting comment:', error);
+        }
+      }
+    };
 
   const [votes, setVotes] = useState({ upvotes: 36, downvotes: 2 }); // Sample initial votes
 
@@ -139,10 +183,83 @@ const ListPage = () => {
     }
   };
 
-  const [isWatching, setIsWatching] = useState(false);
+  const toggleWatchStatus = async () => {
+    try {
+        const accessToken = localStorage.getItem('access_token');
+        const isSubscribed = list?.is_subscribed || false;
+        const action = isSubscribed ? 'unsubscribe' : 'subscribe';
 
-  const handleWatchToggle = (event: any) => {
-    setIsWatching(event.target.checked);
+        const response = await fetch(`http://localhost/api/manage_subscription/list/${list!.list.id}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({ action }),
+        });
+
+        if (response.ok) {
+          fetchListData();
+        } else {
+            console.error('Error toggling watch status:', response.status, response.statusText);
+        }
+    } catch (error) {
+        console.error('Error toggling watch status:', error);
+    }
+};
+
+  // Function to handle upvoting
+  const handleUpvote = async () => {
+    if (list && id) {
+      try {
+        const accessToken = localStorage.getItem('access_token');
+        const response = await fetch(`http://localhost/api/vote_action/${id}/upvote/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
+
+        if (response.ok) {
+          // Fetch updated list data after upvoting
+          fetchListData();
+        } else {
+          console.error('Error upvoting:', response.status, response.statusText);
+          // Handle the error or provide feedback to the user
+        }
+      } catch (error) {
+        console.error('Error upvoting:', error);
+        // Handle the error or provide feedback to the user
+      }
+    }
+  };
+
+  // Function to handle downvoting
+  const handleDownvote = async () => {
+    if (list && id) {
+      try {
+        const accessToken = localStorage.getItem('access_token');
+        const response = await fetch(`http://localhost/api/vote_action/${id}/downvote/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
+
+        if (response.ok) {
+          // Fetch updated list data after downvoting
+          fetchListData();
+        } else {
+          console.error('Error downvoting:', response.status, response.statusText);
+          // Handle the error or provide feedback to the user
+        }
+      } catch (error) {
+        console.error('Error downvoting:', error);
+        // Handle the error or provide feedback to the user
+      }
+    }
   };
 
 
@@ -160,30 +277,26 @@ const ListPage = () => {
                   Last activity: {new Date(list.list.updated).toLocaleString()}
                 </Typography>
 
-                <Box>
-                  <Typography component="span" sx={{ mr: 1 }}>
-                    {isWatching ? 'Unwatch' : 'Watch'} List
-                  </Typography>
-                  <Switch
-                    checked={isWatching}
-                    onChange={handleWatchToggle}
-                    color="primary"
-                  />
-                </Box>
+                <FormControlLabel
+                    control={<Switch checked={list.is_subscribed} onChange={toggleWatchStatus} />}
+                    label={list.is_subscribed ? 'Unwatch List' : 'Watch List'}
+                />
 
+                {listAuthor && (
                 <Box
                   display="flex"
                   justifyContent="center" // Centers horizontally
                   alignItems="center" // Centers vertically
                   mb={2}
                 >
-                  <Avatar src="/path/to/profile-image.jpg" alt="Profile image" sx={{ marginRight: 2 }} />
+                  <Avatar src={listAuthor.avatar} alt="Profile image" sx={{ marginRight: 2 }} />
                   <Typography variant="subtitle1">
-                    <Link href="/user_profile" color="inherit" underline="hover">
-                      {list.list.author}
+                    <Link href={`/user_profile?id=${listAuthor.id}`} color="inherit" underline="hover">
+                      {listAuthor.name}
                     </Link>
                   </Typography>
                 </Box>
+                )}
 
                 {/* Dynamic list of links */}
                 <Box sx={{ mb: 2 }}>
@@ -193,15 +306,18 @@ const ListPage = () => {
                 </Box>
 
                 <CardActions>
-                  <IconButton aria-label="upvote" onClick={() => handleVote('up')}>
+                <CardActions>
+                  <IconButton aria-label="upvote" onClick={handleUpvote}>
                     <ArrowUpwardIcon />
                   </IconButton>
                   <Typography variant="subtitle1">
-                    {votes.upvotes - votes.downvotes} {/* Display total score */}
+                    {list && list.list ? list.list.score : 0} {/* Display total score */}
                   </Typography>
-                  <IconButton aria-label="downvote" onClick={() => handleVote('down')}>
+                  <IconButton aria-label="downvote" onClick={handleDownvote}>
                     <ArrowDownwardIcon />
                   </IconButton>
+                  {/* ... (existing code) */}
+                </CardActions>
                   <IconButton aria-label="save list" onClick={handleSaveList}>
                     {list && list.saved_list_ids.includes(list!.list.id) ? (
                       <BookmarkIcon /> // Use the icon for saved state, e.g., BookmarkIcon
@@ -219,19 +335,29 @@ const ListPage = () => {
                 </CardActions>
               </CardContent>
               {/* Comment section */}
+              {commenters && (
               <CardContent>
                 {/* Comments List */}
                 <List>
-                  {comments.map((comment) => (
+                  {commenters.map((comment) => (
                     <ListItem key={comment.id} alignItems="flex-start">
-                      <ListItemAvatar>
-                        <Avatar alt={comment.author} src={comment.avatar} />
-                      </ListItemAvatar>
-                      <ListItemText
-                        primary={comment.author}
-                        secondary={comment.text}
-                      />
-                    </ListItem>
+                    <ListItemAvatar>
+                      <Avatar alt={comment.author} src={comment.avatar} />
+                    </ListItemAvatar>
+                    <Grid container spacing={1} alignItems="center">
+                      <Grid item xs={12} sm={8}>
+                        <ListItemText
+                          primary={comment.author}
+                          secondary={comment.text}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={4}>
+                        <Typography variant="caption" color="textSecondary" align="right">
+                          {new Date(comment.updated).toLocaleString()}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  </ListItem>
                   ))}
                 </List>
                 {/* Comment Input Section */}
@@ -251,6 +377,7 @@ const ListPage = () => {
                   </Button>
                 </Box>
               </CardContent>
+              )}
             </Card>
           )}
         </Grid>
