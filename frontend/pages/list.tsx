@@ -8,7 +8,6 @@ import Avatar from '@mui/material/Avatar';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -148,7 +147,6 @@ const ListPage = () => {
 
 
   return <AppLayout>
-    <CssBaseline />
     <Container component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
       <Grid container spacing={2}>
         <Grid item xs={12} md={8}>

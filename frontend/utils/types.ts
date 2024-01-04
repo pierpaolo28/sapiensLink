@@ -218,3 +218,10 @@ export interface ListPageResponse {
   saved_list_ids: number[];
   is_subscribed: boolean;
 }
+
+export interface Notification {
+  id: number;
+  message: string;
+  read: boolean;
+  url: string;
+}

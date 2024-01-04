@@ -1,29 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  AppBar,
-  Toolbar,
-  Link,
-  Typography,
-  Button,
-  Box,
-  IconButton,
-  Badge,
-  Popover,
-  List,
-  ListItem,
-  ListItemText,
-} from '@mui/material';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Link from '@mui/material/Link';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import Badge from '@mui/material/Badge';
+import Popover from '@mui/material/Popover';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import AccountCircle from '@mui/icons-material/AccountCircle';
-import { isUserLoggedIn, getUserIdFromAccessToken, isAccessTokenExpired, refreshAccessToken } from '@/utils/auth';
 import { useRouter } from 'next/router';
 
-interface Notification {
-  id: number;
-  message: string;
-  read: boolean;
-  url: string;
-}
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import { isUserLoggedIn, getUserIdFromAccessToken, isAccessTokenExpired, refreshAccessToken } from '@/utils/auth';
+import { Notification } from "@/utils/types";
 
 
 export default function Header() {

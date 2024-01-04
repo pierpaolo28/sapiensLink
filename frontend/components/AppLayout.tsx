@@ -1,6 +1,8 @@
-import { Container,   CssBaseline,
-  ThemeProvider,
-  createTheme } from "@mui/material";
+import Container from "@mui/material/Container";
+import CssBaseline from "@mui/material/CssBaseline";
+import ThemeProvider from "@mui/material/styles/ThemeProvider";
+import createTheme from "@mui/material/styles/createTheme";
+
 import Header from "./Header";
 import Footer from "./Footer";
 

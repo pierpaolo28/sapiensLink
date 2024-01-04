@@ -1,4 +1,10 @@
-import { Box, Container, Divider, Grid, Typography, Link } from "@mui/material";
+import Box from "@mui/material/Box";
+import Container from "@mui/material/Container";
+import Divider from "@mui/material/Divider";
+import Grid from "@mui/material/Grid";
+import Typography from "@mui/material/Typography";
+import Link from "@mui/material/Link";
+
 import Copyright from "./Copyright";
 
 export default function Footer(props: any) {
