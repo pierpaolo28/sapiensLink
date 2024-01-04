@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import { isUserLoggedIn, getUserIdFromAccessToken } from '@/utils/auth';
+import { isUserLoggedIn, getUserIdFromAccessToken, isAccessTokenExpired, refreshAccessToken } from '@/utils/auth';
 
 interface Notification {
   id: number;
@@ -33,6 +33,15 @@ export default function Header() {
 
   const fetchNotifications = async () => {
     try {
+      if (isAccessTokenExpired()) {
+        const refreshToken = localStorage.getItem('refresh_token');
+        if (refreshToken) {
+            await refreshAccessToken(refreshToken);
+        } else {
+            console.error('Refresh token not available.');
+            window.location.href = "/signin";
+        }
+      }
       if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
         const accessToken = localStorage.getItem('access_token');
         const response = await fetch('http://localhost/api/notifications/', {
@@ -82,6 +91,19 @@ export default function Header() {
       socketRef.current = newSocket;
     }
   };
+
+  function closeWebSocket() {
+    if (socketRef !== null) {
+      socketRef.current!.close();
+      socketRef.current = null;
+    }
+}
+
+if (typeof window !== 'undefined') {
+window.onbeforeunload = function () {
+  closeWebSocket(); // Close the WebSocket connection before the page is unloaded
+};
+}
 
   useEffect(() => {
     initWebSocket();
@@ -191,6 +213,24 @@ export default function Header() {
 
   const profileOpen = Boolean(profileAnchorEl);
   const profileId = profileOpen ? 'profile-popover' : undefined;
+
+  if (typeof window !== 'undefined') {
+  if (!window.location.href.includes('signin')) {
+    window.onload = function () {
+        if (!isAccessTokenExpired()) {
+            initWebSocket(); // Initialize the WebSocket connection on page load if the token is not expired
+        } else {
+            const refreshToken = localStorage.getItem('refresh_token');
+            if (refreshToken) {
+                refreshAccessToken(refreshToken);
+            }
+            else{
+                window.location.href = "/signin";
+            }
+        }
+    };
+  }
+}
 
   return (
     <AppBar position="static" color="default" elevation={0}>
