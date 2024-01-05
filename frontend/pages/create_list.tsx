@@ -60,7 +60,7 @@ export default function CreateListPage() {
           content: data.content,
           source: data.source,
           public: data.public,
-          topic: data.topic.map((topic: any) => topic.name), // Fix this line
+          topic: data.topic.map((topic: any) => topic.name),
         });
         setIsUpdateMode(true);
       } else {
@@ -111,7 +111,6 @@ export default function CreateListPage() {
           }
 
           // Include the participants field with the user ID of the current user
-          console.log(listDetails)
           const updatedListDetails = {
             ...listDetails,
             participants: [getUserIdFromAccessToken()],

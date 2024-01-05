@@ -19,12 +19,18 @@ import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import SearchIcon from '@mui/icons-material/Search';
 import Pagination from '@mui/material/Pagination';
+import dynamic from 'next/dynamic';
+const DynamicToggleButton = dynamic(
+  () => import('@mui/material/ToggleButton'),
+  { ssr: false } // Disable server-side rendering
+);
 
 import AppLayout from "@/components/AppLayout";
 // import DBSetup from "@/components/DBSetup";
 import { getHome } from "@/utils/routes";
 import { HomeResponse } from "@/utils/types";
 import ListRankSwitcher from '@/components/ListRankSwitcher';
+import { isUserLoggedIn } from '@/utils/auth';
 
 
 export default function ListHome() {
@@ -33,15 +39,28 @@ export default function ListHome() {
 
   const fetchData = async (extraParams = '') => {
     try {
-      // Use the updated currentPage state to fetch the corresponding page
-      const updatedParams = `page=${currentPage}&${extraParams}`;
-
-      const homeData = await getHome(updatedParams);
-      setHome(homeData);
+      if (isUserLoggedIn()) {
+        const accessToken = localStorage.getItem('access_token');
+        const response = await fetch(`http://localhost/api/home_page/?page=${currentPage}&${extraParams}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
+        const homeData = await response.json();
+        setHome(homeData);
+      } else {
+        // Use the updated currentPage state to fetch the corresponding page
+        const updatedParams = `page=${currentPage}&${extraParams}`;
+        const homeData = await getHome(updatedParams);
+        setHome(homeData);
+      }
     } catch (error) {
       console.error("Error fetching home data:", error);
     }
   };
+  
 
 
   useEffect(() => {
@@ -133,7 +152,9 @@ export default function ListHome() {
                   aria-label="list type"
                 >
                   <ToggleButton value="latest">Latest</ToggleButton>
-                  <ToggleButton value="follow">Follow List</ToggleButton>
+                  {isUserLoggedIn() && (
+                    <DynamicToggleButton value="follow">Follow List</DynamicToggleButton>
+                  )}
                   <ToggleButton value="popular">Popular</ToggleButton>
                 </ToggleButtonGroup>
 

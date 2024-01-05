@@ -23,6 +23,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 import AppLayout from "@/components/AppLayout";
 import { RankPageResponse } from "@/utils/types";
+import { getUserIdFromAccessToken } from "@/utils/auth";
 
 export default function RankPage() {
     const [rank, setRank] = useState<RankPageResponse | null>(null);
@@ -305,8 +306,12 @@ export default function RankPage() {
                                                                     <Grid item>
                                                                         <IconButton onClick={() => handleVote(sortedElement.originalIndex, 'upvote')}><ArrowUpwardIcon /></IconButton>
                                                                         <IconButton onClick={() => handleVote(sortedElement.originalIndex, 'downvote')}><ArrowDownwardIcon /></IconButton>
+                                                                        {(sortedElement.element.user_id == getUserIdFromAccessToken()) && (
+                                                                        <>
                                                                         <IconButton onClick={() => handleEdit(sortedElement.originalIndex)}><EditIcon /></IconButton>
                                                                         <IconButton onClick={() => handleDelete(sortedElement.originalIndex)}><DeleteIcon /></IconButton>
+                                                                        </>
+                                                                        )}
                                                                         <Box component="span" sx={{ ml: 2, mr: 2 }}>
                                                                             {sortedElement.score}
                                                                         </Box>
