@@ -10,27 +10,37 @@ import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
 import SearchIcon from '@mui/icons-material/Search';
-import Avatar from '@mui/material/Avatar';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
 
 import AppLayout from "@/components/AppLayout";
-import { getWhoToFollow } from "@/utils/routes";
-import { WhoToFollowResponse } from "@/utils/types";
+import { SavedPageResponse } from "@/utils/types";
 import ListRankSwitcher from '@/components/ListRankSwitcher';
 
-export default function WhoToFollowPage() {
 
-  const [whoToFollow, setHome] = React.useState<WhoToFollowResponse | null>(null);
+export default function SavedPage() {
+
+  const [savedItems, setHome] = React.useState<SavedPageResponse | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   const fetchData = async (extraParams = '') => {
     try {
-      const homeData = await getWhoToFollow(extraParams);
-      setHome(homeData);
+      const accessToken = localStorage.getItem('access_token');
+      const currentUrl = window.location.href;
+      const url = new URL(currentUrl);
+      const userId = url.searchParams.get('id');
+      const response = await fetch(`http://localhost/api/saved_content_page/${userId}/?${extraParams}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+      const data = await response.json();
+      setHome(data);
     } catch (error) {
-      console.error("Error fetching whoToFollow data:", error);
+      console.error("Error fetching saved data:", error);
     }
   };
+  
 
   useEffect(() => {
     fetchData();
@@ -40,10 +50,12 @@ export default function WhoToFollowPage() {
     setSearchTerm(event.target.value);
   };
 
-  const handleSearchSubmit = async (event: any) => {
+  const handleSearchSubmit = (event: any) => {
     event.preventDefault();
-    fetchData(`q=${searchTerm}`)
+    const queryParams = `q=${searchTerm}`;
+    fetchData(queryParams);
   };
+  
 
   return (
     <>
@@ -59,13 +71,13 @@ export default function WhoToFollowPage() {
             <Grid item xs={12} md={6}>
               <Paper sx={{ mb: 2, p: 2 }}>
               <Typography variant="h3" gutterBottom>
-                  Browse Users
+                  Browse Saved Items
                 </Typography>
                 <form onSubmit={handleSearchSubmit} style={{ marginTop: '16px', marginBottom: '16px' }}>
                   <TextField
                     fullWidth
                     variant="outlined"
-                    placeholder="Search for users"
+                    placeholder="Search for saved items"
                     value={searchTerm}
                     onChange={handleSearchChange}
                     InputProps={{
@@ -78,20 +90,35 @@ export default function WhoToFollowPage() {
                   />
                 </form>
                 <Stack spacing={2} sx={{ justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
-                {whoToFollow && (
+                <Typography>Saved Lists</Typography>
+                {savedItems && savedItems.saved_lists && savedItems.saved_lists.length > 0 ? (
                   <List>
-                  {whoToFollow.users.map((user, index) => (
-                    <ListItem key={user.id}>
-                      <ListItemAvatar>
-                        <Avatar src={user.avatar} alt={user.name} />
-                      </ListItemAvatar>
-                      <a href={`/user_profile?id=${user.id}`}>
-                      <ListItemText primary={user.name} />
+                  {savedItems.saved_lists.map((list, index) => (
+                    <ListItem button key={index}>
+                      <a href={`/list?id=${list.list}`}>
+                        <ListItemText primary={list.list_name.name}/>
                       </a>
                     </ListItem>
                   ))}
                 </List>
                 
+                ) : (
+                    <Typography>No saved lists</Typography>
+                )}
+                <Typography>Saved Ranks</Typography>
+                {savedItems && savedItems.saved_ranks && savedItems.saved_ranks.length > 0 ? (
+                  <List>
+                  {savedItems.saved_ranks.map((rank, index) => (
+                    <ListItem button key={index}>
+                      <a href={`/rank?id=${rank.rank}`}>
+                        <ListItemText primary={rank.rank_name.name}/>
+                      </a>
+                    </ListItem>
+                  ))}
+                </List>
+                
+                ) : (
+                    <Typography>No saved ranks</Typography>
                 )}
                 </Stack>
               </Paper>

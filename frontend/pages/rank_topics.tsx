@@ -8,15 +8,13 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import ToggleButton from '@mui/material/ToggleButton';
-import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import SearchIcon from '@mui/icons-material/Search';
 
 import AppLayout from "@/components/AppLayout";
 import { getRankTopics } from "@/utils/routes";
 import { RankTopicsResponse } from "@/utils/types";
+import ListRankSwitcher from '@/components/ListRankSwitcher';
 
 export default function RankTopicsPage() {
 
@@ -48,21 +46,7 @@ export default function RankTopicsPage() {
   return (
     <>
       <AppLayout>
-        <Box display="flex" justifyContent="center" mb={2}>
-          <ToggleButtonGroup
-            color="primary"
-            exclusive
-            aria-label="list type"
-            sx={{ width: '100%' }}
-          >
-            <ToggleButton value="lists" onClick={() => window.location.href = "/list_home"} sx={{ width: '50%' }}>
-              Lists
-            </ToggleButton>
-            <ToggleButton value="ranks" onClick={() => window.location.href = "/rank_home"} sx={{ width: '50%' }}>
-              Ranks
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
+        <ListRankSwitcher />
 
 
 

@@ -17,6 +17,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import AppLayout from "@/components/AppLayout";
 import { getListTopics } from "@/utils/routes";
 import { ListTopicsResponse } from "@/utils/types";
+import ListRankSwitcher from '@/components/ListRankSwitcher';
 
 export default function ListTopics() {
 
@@ -48,23 +49,7 @@ export default function ListTopics() {
   return (
     <>
       <AppLayout>
-        <Box display="flex" justifyContent="center" mb={2}>
-          <ToggleButtonGroup
-            color="primary"
-            exclusive
-            aria-label="list type"
-            sx={{ width: '100%' }}
-          >
-            <ToggleButton value="lists" onClick={() => window.location.href = "/list_home"} sx={{ width: '50%' }}>
-              Lists
-            </ToggleButton>
-            <ToggleButton value="ranks" onClick={() => window.location.href = "/rank_home"} sx={{ width: '50%' }}>
-              Ranks
-            </ToggleButton>
-          </ToggleButtonGroup>
-        </Box>
-
-
+      <ListRankSwitcher />
 
         <Container maxWidth="lg" sx={{ mt: 4 }}>
         <Grid container spacing={3} justifyContent="center" alignItems="center">

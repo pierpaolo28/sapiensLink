@@ -194,7 +194,7 @@ export default function RankPage() {
             const accessToken = localStorage.getItem('access_token');
             const isSubscribed = rank?.is_subscribed || false;
             const action = isSubscribed ? 'unsubscribe' : 'subscribe';
-    
+
             const response = await fetch(`http://localhost/api/manage_subscription/rank/${rank!.rank.id}/`, {
                 method: 'POST',
                 headers: {
@@ -203,7 +203,7 @@ export default function RankPage() {
                 },
                 body: JSON.stringify({ action }),
             });
-    
+
             if (response.ok) {
                 fetchRankData();
             } else {
@@ -215,14 +215,14 @@ export default function RankPage() {
             // Handle the error or provide feedback to the user
         }
     };
-    
+
 
 
     const handleSaveUnsaveRank = async () => {
         const isSaved = rank && rank.saved_ranks_ids.includes(rank!.rank.id);
         try {
             const accessToken = localStorage.getItem('access_token');
-    
+
             const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
                 method: 'POST',
                 headers: {
@@ -231,7 +231,7 @@ export default function RankPage() {
                 },
                 body: JSON.stringify({ [isSaved ? 'unsave' : 'save']: true }),
             });
-    
+
             if (response.ok) {
                 fetchRankData();
             } else {
@@ -307,11 +307,11 @@ export default function RankPage() {
                                                                         <IconButton onClick={() => handleVote(sortedElement.originalIndex, 'downvote')}><ArrowDownwardIcon /></IconButton>
                                                                         <IconButton onClick={() => handleEdit(sortedElement.originalIndex)}><EditIcon /></IconButton>
                                                                         <IconButton onClick={() => handleDelete(sortedElement.originalIndex)}><DeleteIcon /></IconButton>
-                                                                    <Box component="span" sx={{ ml: 2, mr: 2 }}>
-                                                                        {sortedElement.score}
-                                                                    </Box>
+                                                                        <Box component="span" sx={{ ml: 2, mr: 2 }}>
+                                                                            {sortedElement.score}
+                                                                        </Box>
+                                                                    </Grid>
                                                                 </Grid>
-                                                            </Grid>
                                                             )}
                                                         </ListItem>
                                                     ))}
@@ -327,9 +327,9 @@ export default function RankPage() {
                                             </List>
                                         </CardContent>
                                         <CardActions>
-                                        <Button variant="contained" onClick={handleSaveUnsaveRank} sx={{ mr: 1 }}>
-        {rank && rank.saved_ranks_ids.includes(rank!.rank.id) ? 'Unsave' : 'Save'}
-    </Button>
+                                            <Button variant="contained" onClick={handleSaveUnsaveRank} sx={{ mr: 1 }}>
+                                                {rank && rank.saved_ranks_ids.includes(rank!.rank.id) ? 'Unsave' : 'Save'}
+                                            </Button>
                                             <Button variant="outlined" color="error" href="report">
                                                 Report
                                             </Button>
@@ -344,31 +344,31 @@ export default function RankPage() {
                                 Rank Topics
                             </Typography>
                             {rank && rank.rank && (
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 2 }}>
-                                {rank.rank.topic.map((topic) => (
-                                    <a key={topic.id} href={`/rank_home?q=${topic.name}`}>
-                                    <Chip key={topic.id} label={topic.name} variant="outlined" sx={{ margin: '4px' }} />
-                                    </a>
-                                ))}
-                            </Box>
+                                <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 2 }}>
+                                    {rank.rank.topic.map((topic) => (
+                                        <a key={topic.id} href={`/rank_home?q=${topic.name}`}>
+                                            <Chip key={topic.id} label={topic.name} variant="outlined" sx={{ margin: '4px' }} />
+                                        </a>
+                                    ))}
+                                </Box>
                             )}
 
                             <Typography variant="h6" gutterBottom>
                                 Contributors
                             </Typography>
                             {rank && rank.contributors && (
-                            <List>
-                                {rank.contributors.map((contributor, index) => (
-                                    <ListItem key={index}>
-                                        <Avatar src="/static/${contributor.avatar}" alt={contributor.name} />
-                                        <a key={contributor.id} href={`/user_profile?id=${contributor.id}`}>
-                                        <Typography variant="subtitle1" sx={{ ml: 1 }}>
-                                            {contributor.name}
-                                        </Typography>
-                                        </a>
-                                    </ListItem>
-                                ))}
-                            </List>
+                                <List>
+                                    {rank.contributors.map((contributor, index) => (
+                                        <ListItem key={index}>
+                                            <Avatar src="/static/${contributor.avatar}" alt={contributor.name} />
+                                            <a key={contributor.id} href={`/user_profile?id=${contributor.id}`}>
+                                                <Typography variant="subtitle1" sx={{ ml: 1 }}>
+                                                    {contributor.name}
+                                                </Typography>
+                                            </a>
+                                        </ListItem>
+                                    ))}
+                                </List>
                             )}
                         </Grid>
                     </Grid>

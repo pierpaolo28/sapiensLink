@@ -1381,8 +1381,7 @@ def update_list_page(request, pk):
         list = List.objects.get(id=pk)
     except List.DoesNotExist:
         return Response({"message": "List Not Found"}, status=status.HTTP_404_NOT_FOUND)
-
-    if request.user != list.author or request.user.is_superuser == False:
+    if request.user != list.author and not request.user.is_superuser:
         return Response({"message": "Not authorized to proceed"}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'GET':

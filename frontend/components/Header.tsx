@@ -78,7 +78,7 @@ export default function Header() {
 
       newSocket.onmessage = (event) => {
         const message = JSON.parse(event.data);
-        if (message.receiver_id === getUserIdFromAccessToken()){
+        if (message.receiver_id === getUserIdFromAccessToken()) {
           // setNotifications((prevNotifications) => [...prevNotifications, message]);
           // setNotificationCount((prevCount) => prevCount + 1);
           fetchNotifications();
@@ -125,7 +125,7 @@ export default function Header() {
     }
   }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     if (typeof window !== 'undefined' && isLoggedIn) {
       if (!window.location.href.includes('signin')) {
         if (!isAccessTokenExpired()) {

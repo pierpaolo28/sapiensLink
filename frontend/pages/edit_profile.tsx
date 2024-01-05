@@ -53,8 +53,6 @@ export default function EditProfilePage() {
             deletionReason: '',
           });
 
-          // You might also handle the avatar separately if your API provides an avatar URL
-          // For example: setAvatar(userData.avatar);
         } else {
           // Handle error cases
           console.error('Failed to fetch user data:', response.statusText);

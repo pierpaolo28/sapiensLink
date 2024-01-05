@@ -114,45 +114,43 @@ export interface List {
   subscribed_users: string[];
 }
 
+export type ListForm = {
+  name: string;
+  description: string;
+  content: string;
+  source: string;
+  public: boolean;
+  topic: string[];
+};
+
 export interface Topic {
   id: number;
   name: string;
 }
 
-interface ListItem {
+interface SavedList {
   id: number;
-  topic: Topic[];
-  participants: number[];
-  name: string;
-  description: string;
-  content: string;
-  updated: string;
-  created: string;
-  score: number;
-  source: string;
-  public: boolean;
-  author: number;
-  subscribed_users: number[];
+  list_name: {
+    name: string;
+  };
+  saved_at: string;
+  user: number;
+  list: number;
 }
 
 interface SavedRank {
   id: number;
+  rank_name: {
+    name: string;
+  };
   saved_at: string;
   user: number;
   rank: number;
 }
 
-interface RankContribution {
-  id: number;
-  topic: Topic[];
-  contributors: number[];
-  content: Record<string, { element: string; user_id: number }>;
-  name: string;
-  description: string;
-  score: number;
-  updated: string;
-  created: string;
-  subscribed_users: number[];
+export interface SavedPageResponse {
+  saved_lists: SavedList[];
+  saved_ranks: SavedRank[];
 }
 
 export interface UserProfilePage {
@@ -162,14 +160,14 @@ export interface UserProfilePage {
       total_pages: number;
       current_page: number;
   };
-  lists: ListItem[];
+  lists: List[];
   user: User;
   lists_count: number;
   is_following: boolean;
-  saved_lists: ListItem[];
+  saved_lists: SavedList[];
   saved_ranks: SavedRank[];
-  lists_contributions: ListItem[];
-  ranks_contributions: RankContribution[];
+  lists_contributions: List[];
+  ranks_contributions: Rank[];
 }
 
 export interface ContentItem {
@@ -212,7 +210,7 @@ interface Participant {
 
 export interface ListPageResponse {
   list: List;
-  list_comments: any[]; // You might want to replace 'any' with the actual type for list_comments
+  list_comments: any[]; //TODO replace
   participants: Participant[];
   has_reported: boolean;
   saved_list_ids: number[];
@@ -225,3 +223,11 @@ export interface Notification {
   read: boolean;
   url: string;
 }
+
+export type UserComment = {
+  id: number;
+  author: string;
+  text: string;
+  avatar: string;
+  updated: EpochTimeStamp;
+};

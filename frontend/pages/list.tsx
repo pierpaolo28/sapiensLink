@@ -27,16 +27,9 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 import AppLayout from "@/components/AppLayout";
-import { ListPageResponse, User } from "@/utils/types";
+import { ListPageResponse, User, UserComment } from "@/utils/types";
+import { getUserIdFromAccessToken } from "@/utils/auth";
 
-// Define a type for the comment data
-type UserComment = {
-  id: number;
-  author: string;
-  text: string;
-  avatar: string;
-  updated: EpochTimeStamp;
-};
 
 const ListPage = () => {
 
@@ -175,16 +168,6 @@ const fetchListData = async () => {
     }
   };
 
-  const [votes, setVotes] = useState({ upvotes: 36, downvotes: 2 }); // Sample initial votes
-
-  const handleVote = (voteType: 'up' | 'down') => {
-    if (voteType === 'up') {
-      setVotes((prevVotes) => ({ ...prevVotes, upvotes: prevVotes.upvotes + 1 }));
-    } else {
-      setVotes((prevVotes) => ({ ...prevVotes, downvotes: prevVotes.downvotes + 1 }));
-    }
-  };
-
   const handleSaveList = async () => {
     const isSaved = list && list.saved_list_ids.includes(list!.list.id);
     try {
@@ -290,6 +273,32 @@ const fetchListData = async () => {
     }
   };
 
+    // Function to handle deleting the list
+    const handleDeleteList = async () => {
+      try {
+        const accessToken = localStorage.getItem('access_token');
+  
+        const response = await fetch(`http://localhost/api/update_list_page/${id}/`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+        });
+  
+        if (response.ok) {
+          // Redirect to a suitable page after successful deletion
+          window.location.href = '/list_home';
+        } else {
+          console.error('Error deleting list:', response.status, response.statusText);
+          // Handle the error or provide feedback to the user
+        }
+      } catch (error) {
+        console.error('Error deleting list:', error);
+        // Handle the error or provide feedback to the user
+      }
+    };
+
 
   return <AppLayout>
     <Container component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
@@ -353,7 +362,18 @@ const fetchListData = async () => {
                       <BookmarkBorderIcon /> // Use the icon for unsaved state
                     )}
                   </IconButton>
-
+                </CardActions>
+                {listAuthor && (listAuthor.id == getUserIdFromAccessToken()) && (
+                <CardActions>
+                <Button startIcon={<EditIcon />} size="small" href={`/create_list?id=${list.list.id}`}>
+                    Edit List
+                  </Button>
+                  <Button startIcon={<DeleteIcon />} size="small" onClick={handleDeleteList}>
+                    Delete List
+                  </Button>
+                </CardActions>
+                )}
+                <CardActions>
                   <Button startIcon={<EditIcon />} size="small" href="list_pr">
                     Suggest Edit
                   </Button>
