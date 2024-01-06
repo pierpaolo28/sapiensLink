@@ -3,13 +3,17 @@ import { createContext } from 'react';
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { useMemo } from 'react';
+import { useCallback } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
 import Container from '@mui/material/Container';
 import CssBaseline from '@mui/material/CssBaseline';
+import { CircularProgress } from '@mui/material';
 
 import Header from './Header';
 import Footer from './Footer';
+import ErrorBoundary from './ErrorBoundary';
+import FallbackErrorComponent from './FallbackErrorComponent';
 
 interface AppLayoutProps {
   children?: React.ReactNode;
@@ -29,11 +33,15 @@ function getDesignTokens(mode: 'light' | 'dark') {
     palette: {
       mode,
       primary: {
+        light: '#7986cb',
         main: mode === 'dark' ? '#90caf9' : '#556cd6',
+        dark: '#303f9f',
         contrastText: '#fff',
       },
       secondary: {
+        light: '#ff4081',
         main: mode === 'dark' ? '#f48fb1' : '#19857b',
+        dark: '#c51162',
         contrastText: '#000',
       },
       background: {
@@ -44,7 +52,19 @@ function getDesignTokens(mode: 'light' | 'dark') {
         primary: mode === 'dark' ? '#fff' : '#2c2c2c',
         secondary: mode === 'dark' ? '#a7a7a7' : '#6c6c6c',
       },
-      // ... other colors like error, warning, etc.
+      // Additional colors like error, warning, info, success
+      error: {
+        main: '#f44336',
+      },
+      warning: {
+        main: '#ff9800',
+      },
+      info: {
+        main: '#2196f3',
+      },
+      success: {
+        main: '#4caf50',
+      },
     },
     typography: {
       fontFamily: "'Roboto', 'Arial', sans-serif",
@@ -53,7 +73,24 @@ function getDesignTokens(mode: 'light' | 'dark') {
         fontWeight: 600,
         lineHeight: 1.2,
       },
-      // ... other typography styles
+      h2: {
+        fontSize: '2.0rem',
+        fontWeight: 500,
+        lineHeight: 1.3,
+      },
+      h3: {
+        fontSize: '1.75rem',
+        fontWeight: 500,
+        lineHeight: 1.4,
+      },
+      // Additional typography settings
+      body1: {
+        fontSize: '1rem',
+        lineHeight: 1.5,
+      },
+      button: {
+        fontWeight: 500,
+      },
     },
     components: {
       MuiButton: {
@@ -62,9 +99,6 @@ function getDesignTokens(mode: 'light' | 'dark') {
             borderRadius: 8,
             padding: '8px 20px',
             textTransform: 'none',
-          },
-          contained: {
-            boxShadow: 'none',
             '&:hover': {
               boxShadow: '0px 3px 1px -2px rgba(0,0,0,0.2), 0px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12)',
             },
@@ -89,17 +123,19 @@ function getDesignTokens(mode: 'light' | 'dark') {
           },
         },
       },
+      // Further component customizations
     },
     transitions: {
       easing: {
         easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
-        // ... other easing curves
+        easeOut: 'cubic-bezier(0.0, 0, 0.2, 1)',
+        easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
+        sharp: 'cubic-bezier(0.4, 0, 0.6, 1)',
       },
       duration: {
         shortest: 150,
         shorter: 200,
         short: 250,
-        // ... other durations
         standard: 300,
         complex: 375,
         enteringScreen: 225,
@@ -109,24 +145,30 @@ function getDesignTokens(mode: 'light' | 'dark') {
     shape: {
       borderRadius: 8,
     },
-    // ... other theme configurations
+    // Additional global styles or overrides
   });
 }
 
-const AppLayout = ({ children }: AppLayoutProps) => {
-  // Initialize state with 'light' mode as default
-  const [mode, setMode] = useState<'light' | 'dark'>('light');
 
-  useEffect(() => {
-    // Check for the saved theme mode in localStorage and update the state
-    const savedMode = typeof window !== 'undefined' ? localStorage.getItem('themeMode') as 'light' | 'dark' : 'light';
-    if (savedMode) {
-      setMode(savedMode);
+const AppLayout = ({ children }: AppLayoutProps) => {
+  const [mode, setMode] = useState<'light' | 'dark'>('light');
+  const [loading, setLoading] = useState<boolean>(true);
+
+  // Function to read theme mode from localStorage
+  const readThemeFromLocalStorage = useCallback((): 'light' | 'dark' => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('themeMode') as 'light' | 'dark') || 'light';
     }
+    return 'light';
   }, []);
 
   useEffect(() => {
-    // Save the theme mode to localStorage when it changes
+    const savedMode = readThemeFromLocalStorage();
+    setMode(savedMode);
+    setLoading(false);
+  }, [readThemeFromLocalStorage]);
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('themeMode', mode);
     }
@@ -138,13 +180,19 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 
   const theme = useMemo(() => getDesignTokens(mode), [mode]);
 
+  if (loading) {
+    return <CircularProgress />; // Or any other loading indicator
+  }
+
   return (
     <ThemeModeContext.Provider value={{ mode, toggleMode }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Header />
-        <Container maxWidth="lg">{children}</Container>
-        <Footer />
+        <ErrorBoundary fallback={<FallbackErrorComponent />}>
+          <Header />
+          <Container maxWidth="lg">{children}</Container>
+          <Footer />
+        </ErrorBoundary>
       </ThemeProvider>
     </ThemeModeContext.Provider>
   );
