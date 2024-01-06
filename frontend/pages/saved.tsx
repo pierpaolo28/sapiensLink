@@ -10,6 +10,7 @@ import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
 import SearchIcon from '@mui/icons-material/Search';
+import Link from 'next/link';
 
 import AppLayout from "@/components/AppLayout";
 import { SavedPageResponse } from "@/utils/types";
@@ -93,9 +94,9 @@ export default function SavedPage() {
                   <List>
                   {savedItems.saved_lists.map((list, index) => (
                     <ListItem button key={index}>
-                      <a href={`/list?id=${list.list}`}>
+                      <Link href={`/list?id=${list.list}`} passHref>
                         <ListItemText primary={list.list_name.name}/>
-                      </a>
+                      </Link>
                     </ListItem>
                   ))}
                 </List>
@@ -108,9 +109,9 @@ export default function SavedPage() {
                   <List>
                   {savedItems.saved_ranks.map((rank, index) => (
                     <ListItem button key={index}>
-                      <a href={`/rank?id=${rank.rank}`}>
+                      <Link href={`/rank?id=${rank.rank}`} passHref>
                         <ListItemText primary={rank.rank_name.name}/>
-                      </a>
+                        </Link>
                     </ListItem>
                   ))}
                 </List>

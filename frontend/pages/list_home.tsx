@@ -20,6 +20,7 @@ import Stack from '@mui/material/Stack';
 import SearchIcon from '@mui/icons-material/Search';
 import Pagination from '@mui/material/Pagination';
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 const DynamicToggleButton = dynamic(
   () => import('@mui/material/ToggleButton'),
   { ssr: false } // Disable server-side rendering
@@ -128,11 +129,11 @@ export default function ListHome() {
                 {home && home.topic_counts && (
                   <List>
                     {home.topic_counts.map((topic, index) => (
-                      <a key={index} href={`/list_home?q=${topic[0]}`}>
+                      <Link key={index} href={`/list_home?q=${topic[0]}`} passHref>
                         <ListItem>
                           <ListItemText primary={topic[0] + " " + topic[1]} />
                         </ListItem>
-                      </a>
+                        </Link>
                     ))}
                     <Button href="/list_topics">More</Button>
                   </List>
@@ -181,11 +182,11 @@ export default function ListHome() {
                       <Card key={list.id}>
                         <CardActionArea>
                           <CardContent>
-                            <a href={`/list?id=${list.id}`}>
+                            <Link href={`/list?id=${list.id}`} passHref>
                               <Typography gutterBottom variant="h5">
                                 {list.name}
                               </Typography>
-                            </a>
+                            </Link>
                             <Typography paragraph color="text.secondary">
                               {list.description}
                             </Typography>
@@ -243,11 +244,11 @@ export default function ListHome() {
                     {home.users.map((user) => (
                       <ListItem key={user.id}>
                         <ListItemAvatar>
-                          <Avatar src={user.avatar} alt={user.name} />
+                          <Avatar src={"/static" + user.avatar} alt={user.name} />
                         </ListItemAvatar>
-                        <a href={`/user_profile?id=${user.id}`}>
+                        <Link href={`/user_profile?id=${user.id}`} passHref>
                           <ListItemText primary={user.name} />
-                        </a>
+                        </Link>
                       </ListItem>
                     ))}
                   </List>

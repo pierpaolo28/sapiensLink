@@ -15,6 +15,7 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
 import Divider from '@mui/material/Divider';
 import { Pagination } from '@mui/material';
+import NextLink from 'next/link';
 
 import AppLayout from "@/components/AppLayout";
 import { UserProfilePage } from "@/utils/types";
@@ -164,7 +165,7 @@ export default function UserProfilePage() {
                                 <Paper sx={{ p: 2, textAlign: 'center', mb: 2 }}>
                                     <Avatar
                                         alt={userProfile.user.name}
-                                        src={userProfile.user.avatar}
+                                        src={"/static" + userProfile.user.avatar}
                                         sx={{ width: 80, height: 80, mx: 'auto' }}
                                     />
                                     <Typography variant="h6" sx={{ mt: 2 }}>
@@ -236,11 +237,11 @@ export default function UserProfilePage() {
                                     <>
                                         <List>
                                             {userProfile.lists.map((list, index) => (
-                                                <a key={index} href={`/list?id=${list.id}`}>
+                                                <NextLink key={index} href={`/list?id=${list.id}`} passHref>
                                                     <ListItem key={index}>
                                                         <ListItemText primary={list.name} />
                                                     </ListItem>
-                                                </a>
+                                                </NextLink>
                                             ))}
                                         </List>
                                         {/* Pagination for lists */}
@@ -263,18 +264,18 @@ export default function UserProfilePage() {
                                         {recentContributions > 0 ? (
                                             <List>
                                                 {userProfile?.lists_contributions.map((contribution, index) => (
-                                                    <a key={index} href={`/list?id=${contribution.id}`}>
+                                                    <NextLink key={index} href={`/list?id=${contribution.id}`} passHref>
                                                         <ListItem key={index}>
                                                             <ListItemText primary={contribution.name} />
                                                         </ListItem>
-                                                    </a>
+                                                    </NextLink>
                                                 ))}
                                                 {userProfile?.ranks_contributions.map((contribution, index) => (
-                                                    <a key={index} href={`/rank?id=${contribution.id}`}>
+                                                    <NextLink key={index} href={`/rank?id=${contribution.id}`} passHref>
                                                         <ListItem key={index}>
                                                             <ListItemText primary={contribution.name} />
                                                         </ListItem>
-                                                    </a>
+                                                    </NextLink>
                                                 ))}
                                             </List>
                                         ) : (
@@ -292,11 +293,11 @@ export default function UserProfilePage() {
                                 {userProfile && userProfile.saved_lists && (
                                     <List>
                                         {userProfile.saved_lists.map((list, index) => (
-                                            <a key={index} href={`/list?id=${list.list}`}>
+                                            <NextLink key={index} href={`/list?id=${list.list}`} passHref>
                                                 <ListItem key={index}>
                                                     <ListItemText primary={list.list_name.name} />
                                                 </ListItem>
-                                            </a>
+                                            </NextLink>
                                         ))}
                                     </List>
                                 )}
@@ -308,11 +309,11 @@ export default function UserProfilePage() {
                                 {userProfile && userProfile.saved_ranks && (
                                     <List>
                                         {userProfile.saved_ranks.map((rank, index) => (
-                                            <a key={index} href={`/rank?id=${rank.rank}`}>
+                                            <NextLink key={index} href={`/rank?id=${rank.rank}`} passHref>
                                                 <ListItem key={index}>
                                                     <ListItemText primary={rank.rank_name.name} />
                                                 </ListItem>
-                                            </a>
+                                            </NextLink>
                                         ))}
                                     </List>
                                 )}

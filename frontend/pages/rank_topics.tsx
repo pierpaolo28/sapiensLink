@@ -10,6 +10,7 @@ import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import Stack from '@mui/material/Stack';
 import SearchIcon from '@mui/icons-material/Search';
+import Link from 'next/link';
 
 import AppLayout from "@/components/AppLayout";
 import { getRankTopics } from "@/utils/routes";
@@ -79,15 +80,15 @@ export default function RankTopicsPage() {
                 {topics && (
                   <List>
                   <ListItem button>
-                    <a href="/rank_home">
+                    <Link href={`/rank_home`} passHref>
                       <ListItemText primary={"All " + topics.all_rank_count} />
-                    </a>
+                    </Link>
                   </ListItem>
                   {topics.topic_counts.map((topic, index) => (
                     <ListItem button key={index}>
-                      <a href={`/rank_home?q=${topic[0]}`}>
+                      <Link href={`/rank_home?q=${topic[0]}`} passHref>
                         <ListItemText primary={topic[0] + " " + topic[1]} />
-                      </a>
+                        </Link>
                     </ListItem>
                   ))}
                 </List>

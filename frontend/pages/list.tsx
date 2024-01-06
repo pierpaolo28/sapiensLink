@@ -25,6 +25,8 @@ import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import DeleteIcon from '@mui/icons-material/Delete';
+import NextLink from 'next/link';
+
 
 import AppLayout from "@/components/AppLayout";
 import { ListPageResponse, User, UserComment } from "@/utils/types";
@@ -381,7 +383,7 @@ const ListPage = () => {
                     alignItems="center" // Centers vertically
                     mb={2}
                   >
-                    <Avatar src={listAuthor.avatar} alt="Profile image" sx={{ marginRight: 2 }} />
+                    <Avatar src={"/static" + listAuthor.avatar} alt="Profile image" sx={{ marginRight: 2 }} />
                     <Typography variant="subtitle1">
                       <Link href={`/user_profile?id=${listAuthor.id}`} color="inherit" underline="hover">
                         {listAuthor.name}
@@ -445,7 +447,7 @@ const ListPage = () => {
                     {commenters.map((comment) => (
                       <ListItem key={comment.id} alignItems="flex-start">
                         <ListItemAvatar>
-                          <Avatar alt={comment.author} src={comment.avatar} />
+                          <Avatar alt={comment.author} src={"/static" + comment.avatar} />
                         </ListItemAvatar>
                         <Grid container spacing={1} alignItems="center">
                           <Grid item xs={12} sm={8}>
@@ -497,9 +499,9 @@ const ListPage = () => {
           {list && list.list && (
             <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 2 }}>
               {list.list.topic.map((topic) => (
-                <a key={topic.id} href={`/list_home?q=${topic.name}`}>
+                <NextLink key={topic.id} href={`/list_home?q=${topic.name}`} passHref>
                   <Chip key={topic.id} label={topic.name} variant="outlined" sx={{ margin: '4px' }} />
-                </a>
+                </NextLink>
               ))}
             </Box>
           )}
@@ -508,12 +510,12 @@ const ListPage = () => {
             <List>
               {list.participants.map((participant) => (
                 <ListItem key={participant.name}>
-                  <Avatar src={participant.avatar} />
-                  <a href={`/user_profile?id=${participant.id}`}>
+                  <Avatar src={"/static" + participant.avatar} />
+                  <NextLink href={`/user_profile?id=${participant.id}`} passHref>
                     <Typography variant="subtitle1" style={{ marginLeft: '10px' }}>
                       {participant.name}
                     </Typography>
-                  </a>
+                  </NextLink>
                 </ListItem>
               ))}
             </List>

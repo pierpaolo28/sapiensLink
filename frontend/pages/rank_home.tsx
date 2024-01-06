@@ -16,6 +16,7 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import SearchIcon from '@mui/icons-material/Search';
+import Link from 'next/link';
 
 import AppLayout from "@/components/AppLayout";
 // import DBSetup from "@/components/DBSetup";
@@ -95,11 +96,11 @@ export default function RankHome() {
                 {home && home.topic_counts && (
                   <List>
                     {home.topic_counts.map((topic, index) => (
-                       <a key={index} href={`/rank_home?q=${topic[0]}`}>
+                       <Link key={index} href={`/rank_home?q=${topic[0]}`} passHref>
                       <ListItem key={index}>
                         <ListItemText primary={topic[0] + " " + topic[1]} />
                       </ListItem>
-                      </a>
+                      </Link>
                     ))}
                     <Button href="/rank_topics">More</Button>
                   </List>
@@ -143,11 +144,11 @@ export default function RankHome() {
                     home.ranks.map((rank, i) => (
                       <Grid item key={rank.id} sx={{ width: '100%' }}>
                         <Card variant="outlined" sx={{ p: 2, mb: 4 }}>
-                          <a href={`/rank?id=${rank.id}`}>
+                          <Link href={`/rank?id=${rank.id}`} passHref>
                             <Typography variant="h5" gutterBottom>
                               {rank.name}
                             </Typography>
-                          </a>
+                          </Link>
 
                           {/* Last activity and watch toggle */}
                           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
@@ -209,11 +210,11 @@ export default function RankHome() {
                     {home.users.map((user, index) => (
                       <ListItem key={user.id}>
                         <ListItemAvatar>
-                          <Avatar src={user.avatar} alt={user.name} />
+                          <Avatar src={"/static" + user.avatar} alt={user.name} />
                         </ListItemAvatar>
-                        <a href={`/user_profile?id=${user.id}`}>
+                        <Link href={`/user_profile?id=${user.id}`} passHref>
                         <ListItemText primary={user.name} />
-                        </a>
+                        </Link>
                       </ListItem>
                     ))}
                   </List>

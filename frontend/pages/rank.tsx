@@ -21,6 +21,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ReportIcon from '@mui/icons-material/Report';
+import Link from 'next/link';
 
 import AppLayout from "@/components/AppLayout";
 import { RankPageResponse } from "@/utils/types";
@@ -378,9 +379,9 @@ export default function RankPage() {
                             {rank && rank.rank && (
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', mb: 2 }}>
                                     {rank.rank.topic.map((topic) => (
-                                        <a key={topic.id} href={`/rank_home?q=${topic.name}`}>
+                                        <Link key={topic.id} href={`/rank_home?q=${topic.name}`} passHref>
                                             <Chip key={topic.id} label={topic.name} variant="outlined" sx={{ margin: '4px' }} />
-                                        </a>
+                                        </Link>
                                     ))}
                                 </Box>
                             )}
@@ -392,12 +393,12 @@ export default function RankPage() {
                                 <List>
                                     {rank.contributors.map((contributor, index) => (
                                         <ListItem key={index}>
-                                            <Avatar src="/static/${contributor.avatar}" alt={contributor.name} />
-                                            <a key={contributor.id} href={`/user_profile?id=${contributor.id}`}>
+                                            <Avatar src={`/static${contributor.avatar}`} alt={contributor.name} />
+                                            <Link key={contributor.id} href={`/user_profile?id=${contributor.id}`} passHref>
                                                 <Typography variant="subtitle1" sx={{ ml: 1 }}>
                                                     {contributor.name}
                                                 </Typography>
-                                            </a>
+                                            </Link>
                                         </ListItem>
                                     ))}
                                 </List>

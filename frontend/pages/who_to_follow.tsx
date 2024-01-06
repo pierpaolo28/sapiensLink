@@ -12,6 +12,7 @@ import Stack from '@mui/material/Stack';
 import SearchIcon from '@mui/icons-material/Search';
 import Avatar from '@mui/material/Avatar';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
+import Link from 'next/link';
 
 import AppLayout from "@/components/AppLayout";
 import { getWhoToFollow } from "@/utils/routes";
@@ -83,11 +84,11 @@ export default function WhoToFollowPage() {
                   {whoToFollow.users.map((user, index) => (
                     <ListItem key={user.id}>
                       <ListItemAvatar>
-                        <Avatar src={user.avatar} alt={user.name} />
+                        <Avatar src={"/static" + user.avatar} alt={user.name} />
                       </ListItemAvatar>
-                      <a href={`/user_profile?id=${user.id}`}>
+                      <Link href={`/user_profile?id=${user.id}`} passHref>
                       <ListItemText primary={user.name} />
-                      </a>
+                      </Link>
                     </ListItem>
                   ))}
                 </List>
