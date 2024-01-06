@@ -33,6 +33,7 @@ export default function RankPage() {
     const [newItemText, setNewItemText] = useState('');
     const [id, setId] = useState<string | null>(null);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     // Fetch rank data based on the extracted id
     const fetchRankData = async () => {
@@ -43,25 +44,26 @@ export default function RankPage() {
             } = {
                 'Content-Type': 'application/json',
             };
-    
+
             // Check if the user is logged in
             if (isUserLoggedIn()) {
                 const accessToken = localStorage.getItem('access_token');
                 headers['Authorization'] = `Bearer ${accessToken}`;
             }
-    
+
             const response = await fetch(`http://localhost/api/rank_page/${id}/`, {
                 method: 'GET',
                 headers: headers,
             });
-    
+
             const data = await response.json();
             setRank(data);
         } catch (error) {
             console.error('Error fetching rank data:', error);
+            setError('An unexpected error occurred while fetching rank data.');
         }
     };
-    
+
 
     useEffect(() => {
         // Extract the id parameter from the current URL
@@ -83,8 +85,8 @@ export default function RankPage() {
     const handleVote = async (contentIndex: number, action: string) => {
         if (!isUserLoggedIn()) {
             window.location.href = '/signin';
-          }
-        
+        }
+
         try {
             // Extracting the rank IDs from the content object
             const accessToken = localStorage.getItem('access_token');
@@ -105,11 +107,11 @@ export default function RankPage() {
                 fetchRankData();
             } else {
                 console.error('Vote failed:', response.status, response.statusText);
-                // Handle the error or provide feedback to the user
+                setError('Failed to vote. Please try again.');
             }
         } catch (error) {
             console.error('Error voting:', error);
-            // Handle the error or provide feedback to the user
+            setError('An unexpected error occurred while processing your vote.');
         }
     };
 
@@ -121,7 +123,7 @@ export default function RankPage() {
     const updateElement = async (index: number, editedElement: string) => {
         if (!isUserLoggedIn()) {
             window.location.href = '/signin';
-          }
+        }
 
         try {
             // Extracting the rank IDs from the content object
@@ -159,7 +161,7 @@ export default function RankPage() {
     const addItem = async (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (!isUserLoggedIn()) {
             window.location.href = '/signin';
-          }
+        }
 
         try {
             if (event.key === 'Enter' && newItemText.trim()) {
@@ -178,19 +180,19 @@ export default function RankPage() {
                     fetchRankData();
                 } else {
                     console.error('Error adding new item:', response.status, response.statusText);
-                    // Handle the error or provide feedback to the user
+                    setError('Failed to add a new item. Please try again.');
                 }
             }
         } catch (error) {
             console.error('Error adding new item:', error);
-            // Handle the error or provide feedback to the user
+            setError('An unexpected error occurred while adding a new item.');
         }
     };
 
     const handleDelete = async (index: number) => {
         if (!isUserLoggedIn()) {
             window.location.href = '/signin';
-          }
+        }
 
         try {
             const elementIndex = Object.keys(rank!.rank.content)[index];
@@ -208,18 +210,18 @@ export default function RankPage() {
                 fetchRankData();
             } else {
                 console.error('Error deleting item:', response.status, response.statusText);
-                // Handle the error or provide feedback to the user
+                setError('Failed to delete the item. Please try again.');
             }
         } catch (error) {
             console.error('Error deleting item:', error);
-            // Handle the error or provide feedback to the user
+            setError('An unexpected error occurred while deleting the item.');
         }
     };
 
     const toggleWatchStatus = async () => {
         if (!isUserLoggedIn()) {
             window.location.href = '/signin';
-          }
+        }
 
         try {
             const accessToken = localStorage.getItem('access_token');
@@ -252,7 +254,7 @@ export default function RankPage() {
     const handleSaveUnsaveRank = async () => {
         if (!isUserLoggedIn()) {
             window.location.href = '/signin';
-          }
+        }
 
         const isSaved = rank && rank.saved_ranks_ids.includes(rank!.rank.id);
         try {
@@ -280,11 +282,11 @@ export default function RankPage() {
 
     const handleReport = () => {
         if (!isUserLoggedIn()) {
-          window.location.href = '/signin';
+            window.location.href = '/signin';
         } else {
-          window.location.href = '/report';
+            window.location.href = '/report';
         }
-      };
+    };
 
     return (
         <AppLayout>
@@ -292,6 +294,11 @@ export default function RankPage() {
                 <Box sx={{ my: 4 }}>
                     <Grid container spacing={2}>
                         <Grid item xs={12} md={8}>
+                            {error && (
+                                <Typography variant="body1" color="error" gutterBottom>
+                                    {error}
+                                </Typography>
+                            )}
                             {rank && rank.rank && (
                                 <>
                                     <Typography variant="h4" gutterBottom>
@@ -348,10 +355,10 @@ export default function RankPage() {
                                                                         <IconButton onClick={() => handleVote(sortedElement.originalIndex, 'upvote')}><ArrowUpwardIcon /></IconButton>
                                                                         <IconButton onClick={() => handleVote(sortedElement.originalIndex, 'downvote')}><ArrowDownwardIcon /></IconButton>
                                                                         {(sortedElement.element.user_id == getUserIdFromAccessToken()) && (
-                                                                        <>
-                                                                        <IconButton onClick={() => handleEdit(sortedElement.originalIndex)}><EditIcon /></IconButton>
-                                                                        <IconButton onClick={() => handleDelete(sortedElement.originalIndex)}><DeleteIcon /></IconButton>
-                                                                        </>
+                                                                            <>
+                                                                                <IconButton onClick={() => handleEdit(sortedElement.originalIndex)}><EditIcon /></IconButton>
+                                                                                <IconButton onClick={() => handleDelete(sortedElement.originalIndex)}><DeleteIcon /></IconButton>
+                                                                            </>
                                                                         )}
                                                                         <Box component="span" sx={{ ml: 2, mr: 2 }}>
                                                                             {sortedElement.score}
@@ -377,8 +384,8 @@ export default function RankPage() {
                                                 {rank && rank.saved_ranks_ids.includes(rank!.rank.id) ? 'Unsave' : 'Save'}
                                             </Button>
                                             <Button startIcon={<ReportIcon />} size="small" onClick={handleReport}>
-                    Report
-                  </Button>
+                                                Report
+                                            </Button>
                                         </CardActions>
                                     </Card>
                                 </>
