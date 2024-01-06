@@ -35,7 +35,7 @@ export default function RankPage() {
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
     // Fetch rank data based on the extracted id
-    const fetchRankData = async (accessToken?: string | null) => {
+    const fetchRankData = async () => {
         try {
             const headers: {
                 'Content-Type': string;
@@ -44,7 +44,9 @@ export default function RankPage() {
                 'Content-Type': 'application/json',
             };
     
-            if (accessToken) {
+            // Check if the user is logged in
+            if (isUserLoggedIn()) {
+                const accessToken = localStorage.getItem('access_token');
                 headers['Authorization'] = `Bearer ${accessToken}`;
             }
     
@@ -83,9 +85,9 @@ export default function RankPage() {
             window.location.href = '/signin';
           }
         
-        const accessToken = localStorage.getItem('access_token');
         try {
             // Extracting the rank IDs from the content object
+            const accessToken = localStorage.getItem('access_token');
             const rankIds = Object.keys(rank!.rank.content);
 
             // Using the extracted rank ID for the API call
@@ -121,9 +123,9 @@ export default function RankPage() {
             window.location.href = '/signin';
           }
 
-        const accessToken = localStorage.getItem('access_token');
         try {
             // Extracting the rank IDs from the content object
+            const accessToken = localStorage.getItem('access_token');
             const rankIds = Object.keys(rank!.rank.content);
 
             // Using the extracted rank ID for the API call
@@ -219,8 +221,8 @@ export default function RankPage() {
             window.location.href = '/signin';
           }
 
-        const accessToken = localStorage.getItem('access_token');
         try {
+            const accessToken = localStorage.getItem('access_token');
             const isSubscribed = rank?.is_subscribed || false;
             const action = isSubscribed ? 'unsubscribe' : 'subscribe';
 
@@ -234,7 +236,7 @@ export default function RankPage() {
             });
 
             if (response.ok) {
-                fetchRankData(accessToken);
+                fetchRankData();
             } else {
                 console.error('Error toggling watch status:', response.status, response.statusText);
                 // Handle the error or provide feedback to the user
@@ -252,10 +254,9 @@ export default function RankPage() {
             window.location.href = '/signin';
           }
 
-        const accessToken = localStorage.getItem('access_token');
         const isSaved = rank && rank.saved_ranks_ids.includes(rank!.rank.id);
         try {
-
+            const accessToken = localStorage.getItem('access_token');
             const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
                 method: 'POST',
                 headers: {
@@ -266,7 +267,7 @@ export default function RankPage() {
             });
 
             if (response.ok) {
-                fetchRankData(accessToken);
+                fetchRankData();
             } else {
                 console.error(`Error ${isSaved ? 'unsaving' : 'saving'} rank:`, response.status, response.statusText);
                 // Handle the error or provide feedback to the user

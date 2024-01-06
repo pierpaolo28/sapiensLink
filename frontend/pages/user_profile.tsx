@@ -47,33 +47,32 @@ export default function UserProfilePage() {
     // Function to fetch user profile data based on the user ID from the previous page's URL
     const fetchUserProfile = async () => {
         try {
-
-            // Make the API call based on the list visibility
             const apiEndpoint = listVisibility === 'public'
                 ? `http://localhost/api/user_profile_page/${profileUserId}/`
                 : `http://localhost/api/private_lists_page/${profileUserId}/`;
-
-            const headers: HeadersInit = listVisibility === 'public'
-            ? { 'Content-Type': 'application/json' }
-            : {
+    
+            const headers: HeadersInit = {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`,
-            } as HeadersInit;
+            };
+    
+            if (isUserLoggedIn()) {
+                const accessToken = localStorage.getItem('access_token');
+                headers['Authorization'] = `Bearer ${accessToken}`;
+            }
     
             const response = await fetch(apiEndpoint, {
                 method: 'GET',
                 headers: headers,
             });
+    
             const apiResponse = await response.json();
-
-            // Extract user data from the API response
             setUserProfile(apiResponse);
-
-            // Handle other data fetching if needed...
+    
         } catch (error) {
             console.error('Error fetching user profile:', error);
         }
     };
+    
 
     useEffect(() => {
         fetchUserProfile();

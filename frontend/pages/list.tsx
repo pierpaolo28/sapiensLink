@@ -58,51 +58,51 @@ const ListPage = () => {
     }
   };
 
-  // Fetch list data based on the extracted id
-  const fetchListData = async (accessToken?: string | null) => {
-    try {
-      const headers: {
-        'Content-Type': string;
-        'Authorization'?: string;
-      } = {
-        'Content-Type': 'application/json',
-      };
-  
-      if (accessToken) {
-        headers['Authorization'] = `Bearer ${accessToken}`;
-      }
-  
-      const response = await fetch(`http://localhost/api/list_page/${id}/`, {
-        method: 'GET',
-        headers: headers,
-      });
-  
-      const data = await response.json();
-      const userData = await getUserData(data.list.author);
-  
-      // Fetch user data for each comment
-      const commentsWithUserData: UserComment[] = await Promise.all(
-        data.list_comments.map(async (comment: any) => {
-          const userData = await getUserData(comment.user);
-          return {
-            id: comment.id,
-            author_id: userData?.id,
-            author: userData?.name || 'Unknown User',
-            text: comment.body,
-            avatar: userData?.avatar,
-            updated: comment.updated,
+  const fetchListData = async () => {
+      try {
+          const headers: {
+              'Content-Type': string;
+              'Authorization'?: string;
+          } = {
+              'Content-Type': 'application/json',
           };
-        })
-      );
   
-      setList(data);
-      setlistAuthor(userData);
-      setCommenters(commentsWithUserData);
-    } catch (error) {
-      console.error('Error fetching list data:', error);
-    }
+          // Check if the user is logged in
+          if (isUserLoggedIn()) {
+              const accessToken = localStorage.getItem('access_token');
+              headers['Authorization'] = `Bearer ${accessToken}`;
+          }
+  
+          const response = await fetch(`http://localhost/api/list_page/${id}/`, {
+              method: 'GET',
+              headers: headers,
+          });
+  
+          const data = await response.json();
+          const userData = await getUserData(data.list.author);
+  
+          // Fetch user data for each comment
+          const commentsWithUserData: UserComment[] = await Promise.all(
+              data.list_comments.map(async (comment: any) => {
+                  const userData = await getUserData(comment.user);
+                  return {
+                      id: comment.id,
+                      author_id: userData?.id,
+                      author: userData?.name || 'Unknown User',
+                      text: comment.body,
+                      avatar: userData?.avatar,
+                      updated: comment.updated,
+                  };
+              })
+          );
+  
+          setList(data);
+          setlistAuthor(userData);
+          setCommenters(commentsWithUserData);
+      } catch (error) {
+          console.error('Error fetching list data:', error);
+      }
   };
-  
 
 
   useEffect(() => {
@@ -198,9 +198,8 @@ const ListPage = () => {
     }
 
     const isSaved = list && list.saved_list_ids.includes(list!.list.id);
-    const accessToken = localStorage.getItem('access_token');
     try {
-
+      const accessToken = localStorage.getItem('access_token');
       const response = await fetch(`http://localhost/api/list_page/${list!.list.id}/`, {
         method: 'POST',
         headers: {
@@ -211,7 +210,7 @@ const ListPage = () => {
       });
 
       if (response.ok) {
-        fetchListData(accessToken);
+        fetchListData()
       } else {
         console.error(`Error ${isSaved ? 'unsaving' : 'saving'} rank:`, response.status, response.statusText);
         // Handle the error or provide feedback to the user
@@ -244,7 +243,7 @@ const ListPage = () => {
       });
 
       if (response.ok) {
-        fetchListData(accessToken);
+        fetchListData();
       } else {
         console.error('Error toggling watch status:', response.status, response.statusText);
       }

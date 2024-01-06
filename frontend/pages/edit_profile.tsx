@@ -12,6 +12,7 @@ import CardContent from '@mui/material/CardContent';
 import CardActions from '@mui/material/CardActions';
 
 import AppLayout from '@/components/AppLayout';
+import { getUserIdFromAccessToken } from "@/utils/auth";
 
 export default function EditProfilePage() {
   const [profile, setProfile] = useState({
@@ -99,26 +100,35 @@ export default function EditProfilePage() {
 
   const handleUpdateProfile = async () => {
     try {
+      // Create FormData object
+      const formData = new FormData();
+  
+      // Append profile data to FormData
+      formData.append('name', profile.name);
+      formData.append('email', profile.email);
+      formData.append('bio', profile.bio);
+      formData.append('social', profile.social);
+      formData.append('password', profile.password);
+  
+      // Append avatar file to FormData if it exists
+      if (avatar) {
+        formData.append('avatar', avatar);
+      }
+  
       // Make a PUT request to update the user profile
       const accessToken = localStorage.getItem('access_token');
       const response = await fetch('http://localhost/api/update_user_page/', {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({
-          name: profile.name,
-          email: profile.email,
-          bio: profile.bio,
-          social: profile.social,
-          password: profile.password,
-        }),
+        body: formData,
       });
-
+  
       if (response.ok) {
         // Handle successful update
         console.log('User profile updated successfully');
+        window.location.href = `/user_profile?id=${getUserIdFromAccessToken()}`;
       } else {
         // Handle update failure
         console.error('Profile update failed:', response.statusText);
@@ -127,6 +137,7 @@ export default function EditProfilePage() {
       console.error('An error occurred during profile update:', error);
     }
   };
+  
 
   const handleDeleteAccount = async () => {
     try {
