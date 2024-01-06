@@ -165,7 +165,7 @@ export default function UserProfilePage() {
                                 <Paper sx={{ p: 2, textAlign: 'center', mb: 2 }}>
                                     <Avatar
                                         alt={userProfile.user.name}
-                                        src={"/static" + userProfile.user.avatar}
+                                        src={"http://localhost/static" + userProfile.user.avatar}
                                         sx={{ width: 80, height: 80, mx: 'auto' }}
                                     />
                                     <Typography variant="h6" sx={{ mt: 2 }}>

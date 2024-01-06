@@ -35,20 +35,31 @@ export default function RankPage() {
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
     // Fetch rank data based on the extracted id
-    const fetchRankData = async () => {
+    const fetchRankData = async (accessToken?: string | null) => {
         try {
+            const headers: {
+                'Content-Type': string;
+                'Authorization'?: string;
+            } = {
+                'Content-Type': 'application/json',
+            };
+    
+            if (accessToken) {
+                headers['Authorization'] = `Bearer ${accessToken}`;
+            }
+    
             const response = await fetch(`http://localhost/api/rank_page/${id}/`, {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: headers,
             });
+    
             const data = await response.json();
             setRank(data);
         } catch (error) {
             console.error('Error fetching rank data:', error);
         }
     };
+    
 
     useEffect(() => {
         // Extract the id parameter from the current URL
@@ -66,17 +77,18 @@ export default function RankPage() {
         }
     }, [id]);
 
+
     const handleVote = async (contentIndex: number, action: string) => {
         if (!isUserLoggedIn()) {
             window.location.href = '/signin';
           }
-
+        
+        const accessToken = localStorage.getItem('access_token');
         try {
             // Extracting the rank IDs from the content object
             const rankIds = Object.keys(rank!.rank.content);
 
             // Using the extracted rank ID for the API call
-            const accessToken = localStorage.getItem('access_token');
             const response = await fetch(`http://localhost/api/vote_rank/${rank!.rank.id}/${rankIds[contentIndex]}/${action}/`, {
                 method: 'POST',
                 headers: {
@@ -109,12 +121,12 @@ export default function RankPage() {
             window.location.href = '/signin';
           }
 
+        const accessToken = localStorage.getItem('access_token');
         try {
             // Extracting the rank IDs from the content object
             const rankIds = Object.keys(rank!.rank.content);
 
             // Using the extracted rank ID for the API call
-            const accessToken = localStorage.getItem('access_token');
             const elementIndex = rankIds[index];
             const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
                 method: 'POST',
@@ -207,8 +219,8 @@ export default function RankPage() {
             window.location.href = '/signin';
           }
 
+        const accessToken = localStorage.getItem('access_token');
         try {
-            const accessToken = localStorage.getItem('access_token');
             const isSubscribed = rank?.is_subscribed || false;
             const action = isSubscribed ? 'unsubscribe' : 'subscribe';
 
@@ -222,7 +234,7 @@ export default function RankPage() {
             });
 
             if (response.ok) {
-                fetchRankData();
+                fetchRankData(accessToken);
             } else {
                 console.error('Error toggling watch status:', response.status, response.statusText);
                 // Handle the error or provide feedback to the user
@@ -240,9 +252,9 @@ export default function RankPage() {
             window.location.href = '/signin';
           }
 
+        const accessToken = localStorage.getItem('access_token');
         const isSaved = rank && rank.saved_ranks_ids.includes(rank!.rank.id);
         try {
-            const accessToken = localStorage.getItem('access_token');
 
             const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
                 method: 'POST',
@@ -254,7 +266,7 @@ export default function RankPage() {
             });
 
             if (response.ok) {
-                fetchRankData();
+                fetchRankData(accessToken);
             } else {
                 console.error(`Error ${isSaved ? 'unsaving' : 'saving'} rank:`, response.status, response.statusText);
                 // Handle the error or provide feedback to the user
@@ -393,7 +405,7 @@ export default function RankPage() {
                                 <List>
                                     {rank.contributors.map((contributor, index) => (
                                         <ListItem key={index}>
-                                            <Avatar src={`/static${contributor.avatar}`} alt={contributor.name} />
+                                            <Avatar src={`http://localhost/static/${contributor.avatar}`} alt={contributor.name} />
                                             <Link key={contributor.id} href={`/user_profile?id=${contributor.id}`} passHref>
                                                 <Typography variant="subtitle1" sx={{ ml: 1 }}>
                                                     {contributor.name}

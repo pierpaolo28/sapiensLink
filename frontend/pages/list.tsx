@@ -59,17 +59,27 @@ const ListPage = () => {
   };
 
   // Fetch list data based on the extracted id
-  const fetchListData = async () => {
+  const fetchListData = async (accessToken?: string | null) => {
     try {
+      const headers: {
+        'Content-Type': string;
+        'Authorization'?: string;
+      } = {
+        'Content-Type': 'application/json',
+      };
+  
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+  
       const response = await fetch(`http://localhost/api/list_page/${id}/`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: headers,
       });
+  
       const data = await response.json();
       const userData = await getUserData(data.list.author);
-
+  
       // Fetch user data for each comment
       const commentsWithUserData: UserComment[] = await Promise.all(
         data.list_comments.map(async (comment: any) => {
@@ -84,7 +94,7 @@ const ListPage = () => {
           };
         })
       );
-
+  
       setList(data);
       setlistAuthor(userData);
       setCommenters(commentsWithUserData);
@@ -92,6 +102,7 @@ const ListPage = () => {
       console.error('Error fetching list data:', error);
     }
   };
+  
 
 
   useEffect(() => {
@@ -187,8 +198,8 @@ const ListPage = () => {
     }
 
     const isSaved = list && list.saved_list_ids.includes(list!.list.id);
+    const accessToken = localStorage.getItem('access_token');
     try {
-      const accessToken = localStorage.getItem('access_token');
 
       const response = await fetch(`http://localhost/api/list_page/${list!.list.id}/`, {
         method: 'POST',
@@ -200,7 +211,7 @@ const ListPage = () => {
       });
 
       if (response.ok) {
-        fetchListData();
+        fetchListData(accessToken);
       } else {
         console.error(`Error ${isSaved ? 'unsaving' : 'saving'} rank:`, response.status, response.statusText);
         // Handle the error or provide feedback to the user
@@ -233,7 +244,7 @@ const ListPage = () => {
       });
 
       if (response.ok) {
-        fetchListData();
+        fetchListData(accessToken);
       } else {
         console.error('Error toggling watch status:', response.status, response.statusText);
       }
@@ -383,7 +394,7 @@ const ListPage = () => {
                     alignItems="center" // Centers vertically
                     mb={2}
                   >
-                    <Avatar src={"/static" + listAuthor.avatar} alt="Profile image" sx={{ marginRight: 2 }} />
+                    <Avatar src={"http://localhost/static/" + listAuthor.avatar} alt="Profile image" sx={{ marginRight: 2 }} />
                     <Typography variant="subtitle1">
                       <Link href={`/user_profile?id=${listAuthor.id}`} color="inherit" underline="hover">
                         {listAuthor.name}
@@ -447,7 +458,7 @@ const ListPage = () => {
                     {commenters.map((comment) => (
                       <ListItem key={comment.id} alignItems="flex-start">
                         <ListItemAvatar>
-                          <Avatar alt={comment.author} src={"/static" + comment.avatar} />
+                          <Avatar alt={comment.author} src={"http://localhost/static/" + comment.avatar} />
                         </ListItemAvatar>
                         <Grid container spacing={1} alignItems="center">
                           <Grid item xs={12} sm={8}>
@@ -510,7 +521,7 @@ const ListPage = () => {
             <List>
               {list.participants.map((participant) => (
                 <ListItem key={participant.name}>
-                  <Avatar src={"/static" + participant.avatar} />
+                  <Avatar src={"http://localhost/static/" + participant.avatar} />
                   <NextLink href={`/user_profile?id=${participant.id}`} passHref>
                     <Typography variant="subtitle1" style={{ marginLeft: '10px' }}>
                       {participant.name}

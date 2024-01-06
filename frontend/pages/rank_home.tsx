@@ -210,7 +210,7 @@ export default function RankHome() {
                     {home.users.map((user, index) => (
                       <ListItem key={user.id}>
                         <ListItemAvatar>
-                          <Avatar src={"/static" + user.avatar} alt={user.name} />
+                          <Avatar src={"http://localhost/static/" + user.avatar} alt={user.name} />
                         </ListItemAvatar>
                         <Link href={`/user_profile?id=${user.id}`} passHref>
                         <ListItemText primary={user.name} />

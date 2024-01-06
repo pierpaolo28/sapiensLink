@@ -244,7 +244,7 @@ export default function ListHome() {
                     {home.users.map((user) => (
                       <ListItem key={user.id}>
                         <ListItemAvatar>
-                          <Avatar src={"/static" + user.avatar} alt={user.name} />
+                          <Avatar src={"http://localhost/static/" + user.avatar} alt={user.name} />
                         </ListItemAvatar>
                         <Link href={`/user_profile?id=${user.id}`} passHref>
                           <ListItemText primary={user.name} />
