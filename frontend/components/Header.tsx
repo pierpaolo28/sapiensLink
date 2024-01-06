@@ -17,6 +17,7 @@ import { useRouter } from 'next/router';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import { isUserLoggedIn, getUserIdFromAccessToken, isAccessTokenExpired, refreshAccessToken } from '@/utils/auth';
 import { Notification } from "@/utils/types";
+import ThemeToggleButton from './ThemeToggleButton';
 
 
 export default function Header() {
@@ -238,7 +239,7 @@ export default function Header() {
           </Link>
         </Typography>
         <Box sx={{ flexGrow: 1 }} />
-
+        <ThemeToggleButton/>
         {isLoggedIn ? (
           <>
             {/* Notification Icon */}
