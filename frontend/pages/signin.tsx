@@ -12,6 +12,8 @@ import Container from '@mui/material/Container';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 import AppLayout from "@/components/AppLayout";
+import GoogleSignIn from "@/components/GoogleSignIn";
+
 
 export default function SignIn() {
   const [error, setError] = useState<string | null>(null);
@@ -102,6 +104,7 @@ export default function SignIn() {
             >
               Sign In
             </Button>
+            <GoogleSignIn/>
             <Grid container>
               <Grid item xs>
                 <Link href="#" variant="body2">

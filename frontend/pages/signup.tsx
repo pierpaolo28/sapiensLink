@@ -10,6 +10,7 @@ import Container from '@mui/material/Container';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 import AppLayout from "@/components/AppLayout";
+import GoogleSignIn from "@/components/GoogleSignIn";
 
 export default function SignUp() {
   const [error, setError] = useState<string | null>(null);
@@ -120,6 +121,7 @@ export default function SignUp() {
             >
               Sign Up
             </Button>
+            <GoogleSignIn/>
             {error && (
               <Typography color="error" variant="body2" sx={{ mt: 1 }}>
                 {error}
