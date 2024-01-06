@@ -92,28 +92,33 @@ const CreateRankForm = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
-    try {
-      const accessToken = localStorage.getItem('access_token');
-      const response = await fetch('http://localhost/api/create_rank_page/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        window.location.href = '/rank_home';
-      } else {
-        console.error('Failed to submit the form');
+  
+    // Check if the mandatory fields are filled
+    if (formData.name && formData.topic && formData.topic.length > 0) {
+      try {
+        const accessToken = localStorage.getItem('access_token');
+        const response = await fetch('http://localhost/api/create_rank_page/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(formData),
+        });
+  
+        if (response.ok) {
+          window.location.href = '/rank_home';
+        } else {
+          console.error('Failed to submit the form');
+        }
+      } catch (error) {
+        console.error('Error submitting the form', error);
       }
-    } catch (error) {
-      console.error('Error submitting the form', error);
+    } else {
+      alert('Please fill in all mandatory fields (Name and Topic).');
     }
   };
-
+  
   return (
     <AppLayout>
       <Container maxWidth="md" sx={{ mt: 4 }}>

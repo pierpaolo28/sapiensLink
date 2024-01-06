@@ -156,7 +156,7 @@ export default function RankPage() {
     const [editedElement, setEditedElement] = useState<string>('');
 
 
-    const handleNewItemKeyPress = async (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const addItem = async (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (!isUserLoggedIn()) {
             window.location.href = '/signin';
           }
@@ -367,7 +367,7 @@ export default function RankPage() {
                                                         label="Press enter to add new item"
                                                         value={newItemText}
                                                         onChange={e => setNewItemText(e.target.value)}
-                                                        onKeyPress={handleNewItemKeyPress}
+                                                        onKeyPress={addItem}
                                                     />
                                                 </ListItem>
                                             </List>

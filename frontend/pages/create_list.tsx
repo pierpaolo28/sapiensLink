@@ -102,7 +102,7 @@ export default function CreateListPage() {
     event.preventDefault();
 
     // Check if the mandatory fields are filled
-    if (listDetails.name && listDetails.topic) {
+    if (listDetails.name && listDetails.topic && listDetails.topic.length > 0) {
       // TODO: Validate the "content" field
       const contentRegex = /^(\d+\.\s|-\s|\*\s)?(?:[A-Za-z0-9\s]+|http[s]?:\/\/[^\s]+)/gm;
       if (contentRegex.test(listDetails.content)) {
@@ -146,7 +146,7 @@ export default function CreateListPage() {
         );
       }
     } else {
-      alert('Please fill in all mandatory fields (Name and Topic).');
+      alert('Please fill in all mandatory fields (Name, Content and Topic).');
     }
   };
   
