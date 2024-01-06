@@ -26,7 +26,8 @@ export default function CreateListPage() {
     topic: [],
   });
   const [isUpdateMode, setIsUpdateMode] = useState(false);
-  const [isLoading, setIsLoading] = useState(true); 
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -101,6 +102,9 @@ export default function CreateListPage() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
+    // Reset error state on each submission attempt
+    setError(null);
+
     // Check if the mandatory fields are filled
     if (listDetails.name && listDetails.topic && listDetails.topic.length > 0) {
       // TODO: Validate the "content" field
@@ -112,7 +116,7 @@ export default function CreateListPage() {
 
           if (isUpdateMode) {
             const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get('id');
+            const id = urlParams.get('id');
             url = `http://localhost/api/update_list_page/${id}/`;
           }
 
@@ -135,18 +139,21 @@ export default function CreateListPage() {
           if (response.ok) {
             window.location.href = '/list_home';
           } else {
-            console.error('Error creating/updating list:', response.status, response.statusText);
+            // Handle server-side errors
+            const responseData = await response.json();
+            setError(responseData.message || 'Failed to submit the form');
           }
         } catch (error) {
           console.error('Error creating/updating list:', error);
+          setError('An unexpected error occurred.');
         }
       } else {
-        alert(
+        setError(
           'Content field should contain ordered/bulleted lists with each item being text or a valid webpage URL.'
         );
       }
     } else {
-      alert('Please fill in all mandatory fields (Name, Content and Topic).');
+      setError('Please fill in all mandatory fields (Name, Content and Topic).');
     }
   };
   
@@ -168,6 +175,11 @@ export default function CreateListPage() {
       <Typography variant="h4" component="h1" gutterBottom>
           {isUpdateMode ? 'Update List' : 'Create List'}
         </Typography>
+        {error && (
+          <Typography variant="body1" color="error" gutterBottom>
+            {error}
+          </Typography>
+        )}
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2}>
             <Grid item xs={12}>

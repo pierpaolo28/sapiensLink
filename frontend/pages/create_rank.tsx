@@ -26,6 +26,7 @@ const CreateRankForm = () => {
     contributors: [],
     content: {},
   });
+  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     // Check if the user is logged in
@@ -93,6 +94,9 @@ const CreateRankForm = () => {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
   
+    // Reset error state on each submission attempt
+    setError(null);
+  
     // Check if the mandatory fields are filled
     if (formData.name && formData.topic && formData.topic.length > 0) {
       try {
@@ -109,15 +113,34 @@ const CreateRankForm = () => {
         if (response.ok) {
           window.location.href = '/rank_home';
         } else {
-          console.error('Failed to submit the form');
+          // Handle server-side errors
+          const responseData = await response.json();
+
+          if (responseData.name) {
+            // Display error for the 'name' field
+            setError(`Name error: ${responseData.name.join(', ')}`);
+          } else if (responseData.error) {
+            if (responseData.error === 'Similar ranks found') {
+              // Display a user-friendly error message for similar ranks
+              setError(`Similar ranks found. Please check the existing ranks: ${responseData.similar_ranks.map((rank: any) => (
+                '<a key=' + rank.id + ' href="/rank?id=' + rank.id + '">' + rank.name + '</a>'
+              )).join(', ')}`);            
+            } else {
+              setError(responseData.message || 'Failed to submit the form');
+            }
+          } else {
+            setError('An unexpected error occurred.');
+          }
         }
       } catch (error) {
         console.error('Error submitting the form', error);
+        setError('An unexpected error occurred.');
       }
     } else {
-      alert('Please fill in all mandatory fields (Name and Topic).');
+      setError('Please fill in all mandatory fields (Name and Topic).');
     }
   };
+  
   
   return (
     <AppLayout>
@@ -125,6 +148,14 @@ const CreateRankForm = () => {
         <Typography variant="h4" gutterBottom>
           Create Rank
         </Typography>
+        {error && (
+          <Typography
+          variant="body1"
+          color="error"
+          gutterBottom
+          dangerouslySetInnerHTML={{ __html: error }}
+        />        
+        )}
         <Box component="form" noValidate autoComplete="off" onSubmit={handleSubmit}>
           <TextField
             required

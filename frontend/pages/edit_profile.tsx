@@ -26,6 +26,7 @@ export default function EditProfilePage() {
   });
   const [avatar, setAvatar] = useState<File | null>(null);
   const [isDeletionConfirmed, setIsDeletionConfirmed] = useState(false);
+  const [error, setError] = useState<string | null>(null); // Add error state
 
   useEffect(() => {
     const accessToken = localStorage.getItem('access_token');
@@ -53,7 +54,6 @@ export default function EditProfilePage() {
             confirmPassword: '',
             deletionReason: '',
           });
-
         } else {
           // Handle error cases
           console.error('Failed to fetch user data:', response.statusText);
@@ -73,7 +73,7 @@ export default function EditProfilePage() {
       [name]: value,
     }));
   };
-  
+
   const handleTextAreaChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     const { name, value } = event.target;
     setProfile((prevProfile) => ({
@@ -102,19 +102,19 @@ export default function EditProfilePage() {
     try {
       // Create FormData object
       const formData = new FormData();
-  
+
       // Append profile data to FormData
       formData.append('name', profile.name);
       formData.append('email', profile.email);
-      formData.append('bio', profile.bio);
-      formData.append('social', profile.social);
+      formData.append('bio', profile.bio || '');
+      formData.append('social', profile.social || '');
       formData.append('password', profile.password);
-  
+
       // Append avatar file to FormData if it exists
       if (avatar) {
         formData.append('avatar', avatar);
       }
-  
+
       // Make a PUT request to update the user profile
       const accessToken = localStorage.getItem('access_token');
       const response = await fetch('http://localhost/api/update_user_page/', {
@@ -124,29 +124,30 @@ export default function EditProfilePage() {
         },
         body: formData,
       });
-  
+
       if (response.ok) {
         // Handle successful update
         console.log('User profile updated successfully');
         window.location.href = `/user_profile?id=${getUserIdFromAccessToken()}`;
       } else {
         // Handle update failure
-        console.error('Profile update failed:', response.statusText);
+        const responseData = await response.json();
+        setError(responseData.message || 'Profile update failed');
       }
     } catch (error) {
       console.error('An error occurred during profile update:', error);
+      setError('An unexpected error occurred.');
     }
   };
-  
 
   const handleDeleteAccount = async () => {
     try {
       // Check if the required fields are filled
       if (!profile.confirmPassword || !isDeletionConfirmed) {
-        console.error('Please fill in all required fields.');
+        setError('Please fill in all required fields.');
         return;
       }
-  
+
       // Make a DELETE request to delete the user account
       const accessToken = localStorage.getItem('access_token');
       const response = await fetch('http://localhost/api/delete_user_page/', {
@@ -163,7 +164,7 @@ export default function EditProfilePage() {
           access_token: accessToken,
         }),
       });
-  
+
       if (response.ok) {
         // Handle successful deletion
         console.log('User account deleted successfully');
@@ -173,10 +174,12 @@ export default function EditProfilePage() {
         window.location.href = '/list_home';
       } else {
         // Handle deletion failure
-        console.error('Account deletion failed:', response.statusText);
+        const responseData = await response.json();
+        setError(responseData.message || 'Account deletion failed');
       }
     } catch (error) {
       console.error('An error occurred during account deletion:', error);
+      setError('An unexpected error occurred.');
     }
   };
   
@@ -186,7 +189,11 @@ export default function EditProfilePage() {
     <AppLayout>
     <Container maxWidth="md">
       <Typography variant="h4" gutterBottom>Edit your Profile</Typography>
-
+      {error && (
+          <Typography variant="body1" color="error" gutterBottom>
+            {error}
+          </Typography>
+        )}
       <Card variant="outlined">
         <CardContent>
           <Box component="form" noValidate autoComplete="off">
