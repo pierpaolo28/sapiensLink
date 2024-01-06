@@ -1,6 +1,7 @@
 import React from 'react';
 import { createContext } from 'react';
 import { useState } from 'react';
+import { useEffect } from 'react';
 import { useMemo } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
@@ -113,15 +114,28 @@ function getDesignTokens(mode: 'light' | 'dark') {
 }
 
 const AppLayout = ({ children }: AppLayoutProps) => {
-  // State to manage theme mode
+  // Initialize state with 'light' mode as default
   const [mode, setMode] = useState<'light' | 'dark'>('light');
 
-  // Function to toggle the theme mode
+  useEffect(() => {
+    // Check for the saved theme mode in localStorage and update the state
+    const savedMode = typeof window !== 'undefined' ? localStorage.getItem('themeMode') as 'light' | 'dark' : 'light';
+    if (savedMode) {
+      setMode(savedMode);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Save the theme mode to localStorage when it changes
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('themeMode', mode);
+    }
+  }, [mode]);
+
   const toggleMode = () => {
-    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+    setMode(prevMode => prevMode === 'light' ? 'dark' : 'light');
   };
 
-  // Create a theme instance based on the current mode
   const theme = useMemo(() => getDesignTokens(mode), [mode]);
 
   return (
