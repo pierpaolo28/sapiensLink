@@ -18,7 +18,7 @@ import { Pagination } from '@mui/material';
 
 import AppLayout from "@/components/AppLayout";
 import { UserProfilePage } from "@/utils/types";
-import { getUserIdFromAccessToken } from "@/utils/auth";
+import { getUserIdFromAccessToken, isUserLoggedIn } from "@/utils/auth";
 
 
 export default function UserProfilePage() {
@@ -52,12 +52,16 @@ export default function UserProfilePage() {
                 ? `http://localhost/api/user_profile_page/${profileUserId}/`
                 : `http://localhost/api/private_lists_page/${profileUserId}/`;
 
+            const headers: HeadersInit = listVisibility === 'public'
+            ? { 'Content-Type': 'application/json' }
+            : {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`,
+            } as HeadersInit;
+    
             const response = await fetch(apiEndpoint, {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`,
-                }
+                headers: headers,
             });
             const apiResponse = await response.json();
 
@@ -88,12 +92,17 @@ export default function UserProfilePage() {
             const apiEndpoint = listVisibility === 'public'
                 ? `http://localhost/api/user_profile_page/${profileUserId}/?page=${page}`
                 : `http://localhost/api/private_lists_page/${profileUserId}/?page=${page}`;
+            
+            const headers: HeadersInit = listVisibility === 'public'
+            ? { 'Content-Type': 'application/json' }
+            : {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`,
+            } as HeadersInit;
+    
             const response = await fetch(apiEndpoint, {
                 method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`,
-                },
+                headers: headers,
             });
 
             if (response.ok) {
@@ -107,7 +116,11 @@ export default function UserProfilePage() {
         }
     };
 
-    const handleButtonClick = async () => {
+    const handleFollowUnfollow = async () => {
+        if (!isUserLoggedIn()) {
+            window.location.href = '/signin';
+          }
+
         try {
             const accessToken = localStorage.getItem('access_token');
 
@@ -134,7 +147,7 @@ export default function UserProfilePage() {
         }
     };
 
-    const handleNavigation = () => {
+    const handleMoreSaved = () => {
         if (profileUserId) {
             router.push(`/saved?id=${profileUserId}`);
         }
@@ -189,7 +202,7 @@ export default function UserProfilePage() {
                                         color="primary"
                                         fullWidth
                                         sx={{ mb: 1 }}
-                                        onClick={handleButtonClick}
+                                        onClick={handleFollowUnfollow}
                                     >
                                         {userProfile.is_following ? 'Unfollow' : 'Follow'}
                                     </Button>
@@ -306,7 +319,7 @@ export default function UserProfilePage() {
                             </Paper>
 
 
-                            <Button fullWidth variant="outlined" onClick={handleNavigation}>
+                            <Button fullWidth variant="outlined" onClick={handleMoreSaved}>
                                 More
                             </Button>
                         </Grid>

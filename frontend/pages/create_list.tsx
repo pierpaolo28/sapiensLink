@@ -12,7 +12,7 @@ import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 
 import AppLayout from "@/components/AppLayout";
-import { getUserIdFromAccessToken } from "@/utils/auth";
+import { getUserIdFromAccessToken, isUserLoggedIn } from "@/utils/auth";
 import { ListForm } from "@/utils/types";
 
 
@@ -31,6 +31,12 @@ export default function CreateListPage() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
+
+    // Check if the user is logged in
+    if (!isUserLoggedIn()) {
+      // Redirect to the sign-in page
+      window.location.href = '/signin';
+    }
 
     if (id) {
       // If ID exists, fetch data for update mode

@@ -12,8 +12,8 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 
 import AppLayout from "@/components/AppLayout";
-import {CreateRankFormData, ContentItem} from "@/utils/types"
-import {getUserIdFromAccessToken} from "@/utils/auth";
+import { CreateRankFormData, ContentItem } from "@/utils/types"
+import { getUserIdFromAccessToken, isUserLoggedIn } from "@/utils/auth";
 
 
 const CreateRankForm = () => {
@@ -28,6 +28,11 @@ const CreateRankForm = () => {
   });
 
   React.useEffect(() => {
+    // Check if the user is logged in
+    if (!isUserLoggedIn()) {
+      // Redirect to the sign-in page
+      window.location.href = '/signin';
+    }
   }, [formData]);
 
   const handleTopicChange = (event: SelectChangeEvent<string[]>) => {

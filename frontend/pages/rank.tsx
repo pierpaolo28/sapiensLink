@@ -20,10 +20,12 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ReportIcon from '@mui/icons-material/Report';
 
 import AppLayout from "@/components/AppLayout";
 import { RankPageResponse } from "@/utils/types";
-import { getUserIdFromAccessToken } from "@/utils/auth";
+import { getUserIdFromAccessToken, isUserLoggedIn } from "@/utils/auth";
+
 
 export default function RankPage() {
     const [rank, setRank] = useState<RankPageResponse | null>(null);
@@ -34,12 +36,10 @@ export default function RankPage() {
     // Fetch rank data based on the extracted id
     const fetchRankData = async () => {
         try {
-            const accessToken = localStorage.getItem('access_token');
             const response = await fetch(`http://localhost/api/rank_page/${id}/`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`,
                 },
             });
             const data = await response.json();
@@ -63,14 +63,13 @@ export default function RankPage() {
         if (id) {
             fetchRankData();
         }
-
-        // Add any cleanup logic if needed
-        return () => {
-            // Cleanup logic here
-        };
     }, [id]);
 
     const handleVote = async (contentIndex: number, action: string) => {
+        if (!isUserLoggedIn()) {
+            window.location.href = '/signin';
+          }
+
         try {
             // Extracting the rank IDs from the content object
             const rankIds = Object.keys(rank!.rank.content);
@@ -105,6 +104,10 @@ export default function RankPage() {
 
 
     const updateElement = async (index: number, editedElement: string) => {
+        if (!isUserLoggedIn()) {
+            window.location.href = '/signin';
+          }
+
         try {
             // Extracting the rank IDs from the content object
             const rankIds = Object.keys(rank!.rank.content);
@@ -139,6 +142,10 @@ export default function RankPage() {
 
 
     const handleNewItemKeyPress = async (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (!isUserLoggedIn()) {
+            window.location.href = '/signin';
+          }
+
         try {
             if (event.key === 'Enter' && newItemText.trim()) {
                 const accessToken = localStorage.getItem('access_token');
@@ -166,6 +173,10 @@ export default function RankPage() {
     };
 
     const handleDelete = async (index: number) => {
+        if (!isUserLoggedIn()) {
+            window.location.href = '/signin';
+          }
+
         try {
             const elementIndex = Object.keys(rank!.rank.content)[index];
             const accessToken = localStorage.getItem('access_token');
@@ -191,6 +202,10 @@ export default function RankPage() {
     };
 
     const toggleWatchStatus = async () => {
+        if (!isUserLoggedIn()) {
+            window.location.href = '/signin';
+          }
+
         try {
             const accessToken = localStorage.getItem('access_token');
             const isSubscribed = rank?.is_subscribed || false;
@@ -220,6 +235,10 @@ export default function RankPage() {
 
 
     const handleSaveUnsaveRank = async () => {
+        if (!isUserLoggedIn()) {
+            window.location.href = '/signin';
+          }
+
         const isSaved = rank && rank.saved_ranks_ids.includes(rank!.rank.id);
         try {
             const accessToken = localStorage.getItem('access_token');
@@ -244,6 +263,14 @@ export default function RankPage() {
             // Handle the error or provide feedback to the user
         }
     };
+
+    const handleReport = () => {
+        if (!isUserLoggedIn()) {
+          window.location.href = '/signin';
+        } else {
+          window.location.href = '/report';
+        }
+      };
 
     return (
         <AppLayout>
@@ -335,9 +362,9 @@ export default function RankPage() {
                                             <Button variant="contained" onClick={handleSaveUnsaveRank} sx={{ mr: 1 }}>
                                                 {rank && rank.saved_ranks_ids.includes(rank!.rank.id) ? 'Unsave' : 'Save'}
                                             </Button>
-                                            <Button variant="outlined" color="error" href="report">
-                                                Report
-                                            </Button>
+                                            <Button startIcon={<ReportIcon />} size="small" onClick={handleReport}>
+                    Report
+                  </Button>
                                         </CardActions>
                                     </Card>
                                 </>

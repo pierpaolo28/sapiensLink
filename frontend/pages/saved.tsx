@@ -23,7 +23,6 @@ export default function SavedPage() {
 
   const fetchData = async (extraParams = '') => {
     try {
-      const accessToken = localStorage.getItem('access_token');
       const currentUrl = window.location.href;
       const url = new URL(currentUrl);
       const userId = url.searchParams.get('id');
@@ -31,7 +30,6 @@ export default function SavedPage() {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
         },
       });
       const data = await response.json();

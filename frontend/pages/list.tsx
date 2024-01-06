@@ -28,7 +28,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 import AppLayout from "@/components/AppLayout";
 import { ListPageResponse, User, UserComment } from "@/utils/types";
-import { getUserIdFromAccessToken } from "@/utils/auth";
+import { getUserIdFromAccessToken, isUserLoggedIn } from "@/utils/auth";
 
 
 const ListPage = () => {
@@ -40,13 +40,12 @@ const ListPage = () => {
   const [id, setId] = useState<string | null>(null);
 
   // Function to fetch user data
-  const getUserData = async (userId: number, accessToken: string) => {
+  const getUserData = async (userId: number) => {
     try {
       const userResponse = await fetch(`http://localhost/api/get_user/${userId}/`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
         },
       });
       const userData = await userResponse.json();
@@ -60,23 +59,22 @@ const ListPage = () => {
   // Fetch list data based on the extracted id
   const fetchListData = async () => {
     try {
-      const accessToken = localStorage.getItem('access_token');
       const response = await fetch(`http://localhost/api/list_page/${id}/`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
         },
       });
       const data = await response.json();
-      const userData = await getUserData(data.list.author, accessToken!);
+      const userData = await getUserData(data.list.author);
 
       // Fetch user data for each comment
       const commentsWithUserData: UserComment[] = await Promise.all(
         data.list_comments.map(async (comment: any) => {
-          const userData = await getUserData(comment.user, accessToken!);
+          const userData = await getUserData(comment.user);
           return {
             id: comment.id,
+            author_id: userData?.id,
             author: userData?.name || 'Unknown User',
             text: comment.body,
             avatar: userData?.avatar,
@@ -116,6 +114,12 @@ const ListPage = () => {
 
   // Handler for adding new comment
   const handleCommentSubmit = async () => {
+    // Check if the user is logged in
+    if (!isUserLoggedIn()) {
+      // Redirect to the sign-in page
+      window.location.href = '/signin';
+    }
+
     if (newComment.trim()) {
       try {
         const accessToken = localStorage.getItem('access_token');
@@ -142,6 +146,12 @@ const ListPage = () => {
 
   // Function to delete a comment
   const handleDeleteComment = async (commentId: number) => {
+    // Check if the user is logged in
+    if (!isUserLoggedIn()) {
+      // Redirect to the sign-in page
+      window.location.href = '/signin';
+    }
+
     if (list && id) {
       try {
         const accessToken = localStorage.getItem('access_token');
@@ -168,6 +178,12 @@ const ListPage = () => {
   };
 
   const handleSaveList = async () => {
+    // Check if the user is logged in
+    if (!isUserLoggedIn()) {
+      // Redirect to the sign-in page
+      window.location.href = '/signin';
+    }
+
     const isSaved = list && list.saved_list_ids.includes(list!.list.id);
     try {
       const accessToken = localStorage.getItem('access_token');
@@ -194,6 +210,12 @@ const ListPage = () => {
   };
 
   const toggleWatchStatus = async () => {
+    // Check if the user is logged in
+    if (!isUserLoggedIn()) {
+      // Redirect to the sign-in page
+      window.location.href = '/signin';
+    }
+
     try {
       const accessToken = localStorage.getItem('access_token');
       const isSubscribed = list?.is_subscribed || false;
@@ -220,6 +242,12 @@ const ListPage = () => {
 
   // Function to handle upvoting
   const handleUpvote = async () => {
+    // Check if the user is logged in
+    if (!isUserLoggedIn()) {
+      // Redirect to the sign-in page
+      window.location.href = '/signin';
+    }
+
     if (list && id) {
       try {
         const accessToken = localStorage.getItem('access_token');
@@ -247,6 +275,12 @@ const ListPage = () => {
 
   // Function to handle downvoting
   const handleDownvote = async () => {
+    // Check if the user is logged in
+    if (!isUserLoggedIn()) {
+      // Redirect to the sign-in page
+      window.location.href = '/signin';
+    }
+
     if (list && id) {
       try {
         const accessToken = localStorage.getItem('access_token');
@@ -274,6 +308,12 @@ const ListPage = () => {
 
   // Function to handle deleting the list
   const handleDeleteList = async () => {
+    // Check if the user is logged in
+    if (!isUserLoggedIn()) {
+      // Redirect to the sign-in page
+      window.location.href = '/signin';
+    }
+
     try {
       const accessToken = localStorage.getItem('access_token');
 
@@ -295,6 +335,22 @@ const ListPage = () => {
     } catch (error) {
       console.error('Error deleting list:', error);
       // Handle the error or provide feedback to the user
+    }
+  };
+
+  const handleSuggestEdit = () => {
+    if (!isUserLoggedIn()) {
+      window.location.href = '/signin';
+    } else {
+      window.location.href = '/list_pr';
+    }
+  };
+
+  const handleReport = () => {
+    if (!isUserLoggedIn()) {
+      window.location.href = '/signin';
+    } else {
+      window.location.href = '/report';
     }
   };
 
@@ -373,10 +429,10 @@ const ListPage = () => {
                   </CardActions>
                 )}
                 <CardActions>
-                  <Button startIcon={<EditIcon />} size="small" href="list_pr">
+                  <Button startIcon={<EditIcon />} size="small" onClick={handleSuggestEdit}>
                     Suggest Edit
                   </Button>
-                  <Button startIcon={<ReportIcon />} size="small" href="report">
+                  <Button startIcon={<ReportIcon />} size="small" onClick={handleReport}>
                     Report
                   </Button>
                 </CardActions>
@@ -404,9 +460,11 @@ const ListPage = () => {
                             </Typography>
                           </Grid>
                         </Grid>
+                        {(comment.author_id ==  getUserIdFromAccessToken()) && (
                         <IconButton aria-label="delete" onClick={() => handleDeleteComment(comment.id)}>
                           <DeleteIcon />
                         </IconButton>
+                        )}
                       </ListItem>
                     ))}
                   </List>

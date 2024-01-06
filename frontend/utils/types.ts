@@ -226,6 +226,7 @@ export interface Notification {
 
 export type UserComment = {
   id: number;
+  author_id: number;
   author: string;
   text: string;
   avatar: string;
