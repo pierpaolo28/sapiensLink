@@ -21,7 +21,6 @@ export default function EditProfilePage() {
     bio: '',
     social: '',
     password: '',
-    confirmPassword: '',
     deletionReason: '',
   });
   const [avatar, setAvatar] = useState<File | null>(null);
@@ -51,7 +50,6 @@ export default function EditProfilePage() {
             bio: userData.bio,
             social: userData.social,
             password: '',
-            confirmPassword: '',
             deletionReason: '',
           });
         } else {
@@ -143,8 +141,8 @@ export default function EditProfilePage() {
   const handleDeleteAccount = async () => {
     try {
       // Check if the required fields are filled
-      if (!profile.confirmPassword || !isDeletionConfirmed) {
-        setError('Please fill in all required fields.');
+      if (!isDeletionConfirmed) {
+        setError('Please confirm deletion intention.');
         return;
       }
 
@@ -158,7 +156,6 @@ export default function EditProfilePage() {
           'Authorization': `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          password: profile.confirmPassword,
           confirm_delete: "on",
           feedback: profile.deletionReason,
           access_token: accessToken,
@@ -272,16 +269,7 @@ export default function EditProfilePage() {
           </Typography>
           <TextField
             fullWidth
-            label="Confirm Password"
-            name="confirmPassword"
-            type="password"
-            value={profile.confirmPassword}
-            onChange={handleChange}
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Reason for Deletion (optional)"
+            label="Reason for Deletion"
             name="deletionReason"
             value={profile.deletionReason}
             onChange={handleChange}

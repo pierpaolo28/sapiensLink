@@ -1632,7 +1632,6 @@ def report_rank_page(request):
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            'password': openapi.Schema(type=openapi.TYPE_STRING),
             'confirm_delete': openapi.Schema(type=openapi.TYPE_STRING),
             'feedback': openapi.Schema(type=openapi.TYPE_STRING),
             'access_token': openapi.Schema(type=openapi.TYPE_STRING),
@@ -1648,13 +1647,12 @@ def report_rank_page(request):
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def delete_user_page(request):
-    password = request.data.get('password')
     confirm_delete = request.data.get('confirm_delete')
     feedback = request.data.get('feedback')
 
     Feedback.objects.create(feedback=feedback)
 
-    user = authenticate(request, email=request.user, password=password)
+    user = request.user
 
     if user is not None and confirm_delete == 'on':
         # Delete the user account
