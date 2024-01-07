@@ -60,14 +60,14 @@ export default function SignIn() {
         await fetch(`http://localhost/api/email_unsubscribe/?access_token=${accessToken}&inactive=${inactiveValue}`)
           .then((response) => {
             if (!response.ok) {
-              throw new Error('Failed to unsubscribe from inactive emails.');
+              throw new Error('Failed to unsubscribe from inactive user emails.');
             }
-            const successMessage = 'Successfully unsubscribed from inactive emails.';
+            const successMessage = 'Successfully unsubscribed from inactive user emails.';
             router.push(`/list_home?success=${encodeURIComponent(successMessage)}`);
           })
           .catch((error) => {
-            console.error('Error while unsubscribing from inactive emails:', error);
-            const errorMessage = 'Failed to unsubscribe from inactive emails. Please try again.';
+            console.error('Error while unsubscribing from inactive user emails:', error);
+            const errorMessage = 'Failed to unsubscribe from inactive user emails. Please try again.';
             router.push(`/list_home?error=${encodeURIComponent(errorMessage)}`);
           });
       }
@@ -78,14 +78,14 @@ export default function SignIn() {
         await fetch(`http://localhost/api/email_unsubscribe/?access_token=${accessToken}&unread=${unreadValue}`)
           .then((response) => {
             if (!response.ok) {
-              throw new Error('Failed to unsubscribe from unread emails.');
+              throw new Error('Failed to unsubscribe from unread notifications emails.');
             }
-            const successMessage = 'Successfully unsubscribed from unread emails.';
+            const successMessage = 'Successfully unsubscribed from unread notifications emails.';
             router.push(`/list_home?success=${encodeURIComponent(successMessage)}`);
           })
           .catch((error) => {
-            console.error('Error while unsubscribing from unread emails:', error);
-            const errorMessage = 'Failed to unsubscribe from unread emails. Please try again.';
+            console.error('Error while unsubscribing from unread notifications emails:', error);
+            const errorMessage = 'Failed to unsubscribe from unread notifications emails. Please try again.';
             router.push(`/list_home?error=${encodeURIComponent(errorMessage)}`);
           });
       }
