@@ -1,31 +1,33 @@
 "use client";
 import React from "react";
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import Stack from '@mui/material/Stack';
-import Link from '@mui/material/Link';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import Avatar from '@mui/material/Avatar';
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Container from "@mui/material/Container";
+import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Stack from "@mui/material/Stack";
+import Link from "@mui/material/Link";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
+import ListItemAvatar from "@mui/material/ListItemAvatar";
+import Avatar from "@mui/material/Avatar";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import "react-responsive-carousel/lib/styles/carousel.min.css";
+import { Carousel } from "react-responsive-carousel";
 
 import AppLayout from "@/components/AppLayout";
 
 const testimonials = [
   {
-    name: 'John Doe',
-    text: 'This service is outstanding! I highly recommend it.',
-    image: '/path-to-image1.jpg'
+    name: "John Doe",
+    text: "This service is outstanding! I highly recommend it.",
+    image: "/path-to-image1.jpg"
   },
   {
-    name: 'Jane Smith',
-    text: 'A truly transformative experience. Excellent support and features.',
-    image: '/path-to-image2.jpg'
+    name: "Jane Smith",
+    text: "A truly transformative experience. Excellent support and features.",
+    image: "/path-to-image2.jpg"
   },
 ];
 
@@ -41,11 +43,11 @@ interface TestimonialCardProps {
 
 const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial }) => {
   return (
-    <Paper elevation={3} sx={{ p: 3, minHeight: 250, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+    <Paper elevation={3} sx={{ p: 3, minHeight: 250, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
       <Typography variant="body1" sx={{ mb: 2 }}>
         {testimonial.text}
       </Typography>
-      <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
         <Avatar src={testimonial.image} alt={testimonial.name} sx={{ width: 60, height: 60, mr: 2 }} />
         <Typography variant="subtitle1">{testimonial.name}</Typography>
       </Box>
@@ -55,333 +57,371 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial }) => {
 
 export default function Index() {
   return (
-      <AppLayout>
-        <Container maxWidth="lg" sx={{ my: 4 }}>
-          {/* Main content */}
-          <Box sx={{ my: 4, textAlign: "center" }}>
-            <Typography variant="h1" component="h1" gutterBottom>
-              Sharing Knowledge One link at a time
-            </Typography>
-            <Typography variant="subtitle1" color="textSecondary" paragraph>
-              Lorem ipsum has been the industry&aposs standard dummy text ever since
-              the 1500s, when an unknown printer took a galley of type and
-              scrambled it to make a type specimen book.
-            </Typography>
-            <Button variant="contained" color="primary" size="large" href="list_home">
-              Get Started
-            </Button>
-          </Box>
-
-          {/* Features section */}
-          <Typography variant="h2" align="center" gutterBottom>
-            In Sapiens Link
+    <AppLayout>
+      <Container maxWidth="lg" sx={{ my: 4 }}>
+        {/* Main content */}
+        <Box sx={{ my: 4, textAlign: "center", position: "relative" }}>
+        <Carousel showStatus={false} showThumbs={false} infiniteLoop={true} autoPlay={true}>
+          <div>
+            <img
+              src="3.jpeg"
+              alt="Image 1"
+              style={{
+                maxWidth: "50%",
+                height: "auto",
+                display: "block",
+                margin: "0 auto",
+              }}
+            />
+          </div>
+          <div>
+            <img
+              src="4.jpeg"
+              alt="Image 2"
+              style={{
+                maxWidth: "50%",
+                height: "auto",
+                display: "block",
+                margin: "0 auto",
+              }}
+            />
+          </div>
+          <div>
+            <img
+              src="1.png"
+              alt="Image 3"
+              style={{
+                maxWidth: "50%",
+                height: "auto",
+                display: "block",
+                margin: "0 auto",
+              }}
+            />
+          </div>
+        </Carousel>
+          <Typography variant="h1" component="h1" gutterBottom>
+            Sharing Knowledge One link at a time
           </Typography>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            {/* Repeat for each feature */}
-            <Grid item xs={12} md={4}>
-              <Paper elevation={3} sx={{ p: 2, height: "100%" }}>
-                <Typography gutterBottom variant="h5" component="h3">
-                  Lists
+          <Typography variant="subtitle1" color="textSecondary" paragraph>
+            Lorem ipsum has been the industry&aposs standard dummy text ever since
+            the 1500s, when an unknown printer took a galley of type and
+            scrambled it to make a type specimen book.
+          </Typography>
+          <Button variant="contained" color="primary" size="large" href="list_home">
+            Get Started
+          </Button>
+        </Box>
+
+        {/* Features section */}
+        <Typography variant="h2" align="center" gutterBottom>
+          In Sapiens Link
+        </Typography>
+        <Grid container spacing={2} sx={{ mt: 1 }}>
+          {/* Repeat for each feature */}
+          <Grid item xs={12} md={4}>
+            <Paper elevation={3} sx={{ p: 2, height: "100%" }}>
+              <Typography gutterBottom variant="h5" component="h3">
+                Lists
+              </Typography>
+              <Typography variant="body1">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                Pellentesque massa nunc.
+              </Typography>
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="center"
+                sx={{ mt: 2 }}
+              >
+                <Button variant="outlined">Learn More</Button>
+              </Stack>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Paper elevation={3} sx={{ p: 2, height: "100%" }}>
+              <Typography gutterBottom variant="h5" component="h3">
+                Suggest Edits
+              </Typography>
+              <Typography variant="body1">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                Pellentesque massa nunc.
+              </Typography>
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="center"
+                sx={{ mt: 2 }}
+              >
+                <Button variant="outlined">Learn More</Button>
+              </Stack>
+            </Paper>
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <Paper elevation={3} sx={{ p: 2, height: "100%" }}>
+              <Typography gutterBottom variant="h5" component="h3">
+                Ranks
+              </Typography>
+              <Typography variant="body1">
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                Pellentesque massa nunc.
+              </Typography>
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="center"
+                sx={{ mt: 2 }}
+              >
+                <Button variant="outlined">Learn More</Button>
+              </Stack>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        {/* User list with links */}
+        <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+          {/* Other content */}
+          <Grid
+            container
+            spacing={4}
+            justifyContent="center"
+            alignItems="center"
+            sx={{ my: 4 }}
+          >
+            {/* Left section with user list and links */}
+            <Grid item xs={12} md={7}>
+              <Paper elevation={1} sx={{ p: 2 }}>
+                <ListItem alignItems="flex-start">
+                  <ListItemAvatar>
+                    <Avatar sx={{ bgcolor: "secondary.main" }}>
+                      <AccountCircleIcon />
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary="Jen O&aposConnor"
+                    secondary={
+                      <>
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          color="textPrimary"
+                        >
+                          Design System
+                        </Typography>
+                      </>
+                    }
+                  />
+                </ListItem>
+                <Typography variant="body1" sx={{ mt: 2 }}>
+                  Hi there! Here my collection of resources to start with Design
+                  Systems... Enjoy!
                 </Typography>
-                <Typography variant="body1">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Pellentesque massa nunc.
-                </Typography>
-                <Stack
-                  direction="row"
-                  spacing={2}
-                  justifyContent="center"
-                  sx={{ mt: 2 }}
-                >
-                  <Button variant="outlined">Learn More</Button>
-                </Stack>
+                <Box sx={{ display: "flex", flexDirection: "column", mt: 2 }}>
+                  {/* Links here */}
+                  <Link href="#" underline="hover" color="primary">
+                    www.wix.com/studio/blog/design-system-examples
+                  </Link>
+                  <Link href="#" underline="hover" color="primary">
+                    www.wix.com/studio/blog/design-system-examples
+                  </Link>
+                  <Link href="#" underline="hover" color="primary">
+                    www.wix.com/studio/blog/design-system-examples
+                  </Link>
+                  {/* Add more links */}
+                </Box>
               </Paper>
             </Grid>
-            <Grid item xs={12} md={4}>
-              <Paper elevation={3} sx={{ p: 2, height: "100%" }}>
-                <Typography gutterBottom variant="h5" component="h3">
-                  Suggest Edits
-                </Typography>
-                <Typography variant="body1">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Pellentesque massa nunc.
-                </Typography>
-                <Stack
-                  direction="row"
-                  spacing={2}
-                  justifyContent="center"
-                  sx={{ mt: 2 }}
-                >
-                  <Button variant="outlined">Learn More</Button>
-                </Stack>
-              </Paper>
+
+
+            {/* Right section with additional text or content */}
+            <Grid item xs={12} md={5}>
+              <Typography variant="h2" gutterBottom>
+                Lists
+              </Typography>
+              <Typography variant="body1">
+                Create, share and find meaningful resources!
+              </Typography>
+              <Typography variant="body1" sx={{ mt: 2 }}>
+                Lorem ipsum dolor sit amet consectetur. Sem augue.
+              </Typography>
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="center"
+                sx={{ mt: 2 }}
+              >
+                <Button variant="contained" href="list">Get Started</Button>
+              </Stack>
             </Grid>
-            <Grid item xs={12} md={4}>
-              <Paper elevation={3} sx={{ p: 2, height: "100%" }}>
-                <Typography gutterBottom variant="h5" component="h3">
-                  Ranks
+          </Grid>
+
+          <Grid
+            container
+            spacing={4}
+            justifyContent="center"
+            alignItems="center"
+            sx={{ my: 4 }}
+          >
+            {/* Right section with additional text or content */}
+            <Grid item xs={12} md={5}>
+              <Typography variant="h2" gutterBottom>
+                Suggest Edits
+              </Typography>
+              <Typography variant="body1">
+                Create, share and find meaningful resources!
+              </Typography>
+              <Typography variant="body1" sx={{ mt: 2 }}>
+                Lorem ipsum dolor sit amet consectetur. Sem augue.
+              </Typography>
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="center"
+                sx={{ mt: 2 }}
+              >
+                <Button variant="contained" href="list_pr">Get Started</Button>
+              </Stack>
+            </Grid>
+
+            {/* Left section with user list and links */}
+            <Grid item xs={12} md={7}>
+              <Paper elevation={1} sx={{ p: 2 }}>
+                <ListItem alignItems="flex-start">
+                  <ListItemAvatar>
+                    <Avatar sx={{ bgcolor: "secondary.main" }}>
+                      <AccountCircleIcon />
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary="Jen O&aposConnor"
+                    secondary={
+                      <>
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          color="textPrimary"
+                        >
+                          Design System
+                        </Typography>
+                      </>
+                    }
+                  />
+                </ListItem>
+                <Typography variant="body1" sx={{ mt: 2 }}>
+                  Hi there! Here my collection of resources to start with
+                  Design Systems... Enjoy!
                 </Typography>
-                <Typography variant="body1">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                  Pellentesque massa nunc.
-                </Typography>
-                <Stack
-                  direction="row"
-                  spacing={2}
-                  justifyContent="center"
-                  sx={{ mt: 2 }}
-                >
-                  <Button variant="outlined">Learn More</Button>
-                </Stack>
+                <Box sx={{ display: "flex", flexDirection: "column", mt: 2 }}>
+                  {/* Links here */}
+                  <Link href="#" underline="hover" color="primary">
+                    www.wix.com/studio/blog/design-system-examples
+                  </Link>
+                  {/* Add more links */}
+                </Box>
               </Paper>
             </Grid>
           </Grid>
 
-          {/* User list with links */}
-          <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-            {/* Other content */}
-            <Grid
-              container
-              spacing={4}
-              justifyContent="center"
-              alignItems="center"
-              sx={{ my: 4 }}
-            >
-              {/* Left section with user list and links */}
-              <Grid item xs={12} md={7}>
-                <Paper elevation={1} sx={{ p: 2 }}>
-                  <ListItem alignItems="flex-start">
-                    <ListItemAvatar>
-                      <Avatar sx={{ bgcolor: "secondary.main" }}>
-                        <AccountCircleIcon />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary="Jen O&aposConnor"
-                      secondary={
-                        <>
-                          <Typography
-                            component="span"
-                            variant="body2"
-                            color="textPrimary"
-                          >
-                            Design System
-                          </Typography>
-                        </>
-                      }
-                    />
-                  </ListItem>
-                  <Typography variant="body1" sx={{ mt: 2 }}>
-                    Hi there! Here my collection of resources to start with Design
-                    Systems... Enjoy!
-                  </Typography>
-                  <Box sx={{ display: "flex", flexDirection: "column", mt: 2 }}>
-                    {/* Links here */}
-                    <Link href="#" underline="hover" color="primary">
-                      www.wix.com/studio/blog/design-system-examples
-                    </Link>
-                    <Link href="#" underline="hover" color="primary">
-                      www.wix.com/studio/blog/design-system-examples
-                    </Link>
-                    <Link href="#" underline="hover" color="primary">
-                      www.wix.com/studio/blog/design-system-examples
-                    </Link>
-                    {/* Add more links */}
-                  </Box>
-                </Paper>
-              </Grid>
-
-
-              {/* Right section with additional text or content */}
-              <Grid item xs={12} md={5}>
-                <Typography variant="h2" gutterBottom>
-                  Lists
-                </Typography>
-                <Typography variant="body1">
-                  Create, share and find meaningful resources!
-                </Typography>
+          <Grid
+            container
+            spacing={4}
+            justifyContent="center"
+            alignItems="center"
+            sx={{ my: 4 }}
+          >
+            {/* Left section with user list and links */}
+            <Grid item xs={12} md={7}>
+              <Paper elevation={1} sx={{ p: 2 }}>
+                <ListItem alignItems="flex-start">
+                  <ListItemAvatar>
+                    <Avatar sx={{ bgcolor: "secondary.main" }}>
+                      <AccountCircleIcon />
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary="Jen O&aposConnor"
+                    secondary={
+                      <>
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          color="textPrimary"
+                        >
+                          Design System
+                        </Typography>
+                      </>
+                    }
+                  />
+                </ListItem>
                 <Typography variant="body1" sx={{ mt: 2 }}>
-                  Lorem ipsum dolor sit amet consectetur. Sem augue.
+                  Hi there! Here my collection of resources to start with
+                  Design Systems... Enjoy!
                 </Typography>
-                <Stack
-                  direction="row"
-                  spacing={2}
-                  justifyContent="center"
-                  sx={{ mt: 2 }}
-                >
-                  <Button variant="contained" href="list">Get Started</Button>
-                </Stack>
-              </Grid>
+                <Box sx={{ display: "flex", flexDirection: "column", mt: 2 }}>
+                  {/* Links here */}
+                  <Link href="#" underline="hover" color="primary">
+                    www.wix.com/studio/blog/design-system-examples
+                  </Link>
+                  {/* Add more links */}
+                </Box>
+              </Paper>
             </Grid>
 
-            <Grid
-              container
-              spacing={4}
-              justifyContent="center"
-              alignItems="center"
-              sx={{ my: 4 }}
-            >
-              {/* Right section with additional text or content */}
-              <Grid item xs={12} md={5}>
-                <Typography variant="h2" gutterBottom>
-                  Suggest Edits
-                </Typography>
-                <Typography variant="body1">
-                  Create, share and find meaningful resources!
-                </Typography>
-                <Typography variant="body1" sx={{ mt: 2 }}>
-                  Lorem ipsum dolor sit amet consectetur. Sem augue.
-                </Typography>
-                <Stack
-                  direction="row"
-                  spacing={2}
-                  justifyContent="center"
-                  sx={{ mt: 2 }}
-                >
-                  <Button variant="contained" href="list_pr">Get Started</Button>
-                </Stack>
-              </Grid>
-
-              {/* Left section with user list and links */}
-              <Grid item xs={12} md={7}>
-                <Paper elevation={1} sx={{ p: 2 }}>
-                  <ListItem alignItems="flex-start">
-                    <ListItemAvatar>
-                      <Avatar sx={{ bgcolor: "secondary.main" }}>
-                        <AccountCircleIcon />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary="Jen O&aposConnor"
-                      secondary={
-                        <>
-                          <Typography
-                            component="span"
-                            variant="body2"
-                            color="textPrimary"
-                          >
-                            Design System
-                          </Typography>
-                        </>
-                      }
-                    />
-                  </ListItem>
-                  <Typography variant="body1" sx={{ mt: 2 }}>
-                    Hi there! Here my collection of resources to start with
-                    Design Systems... Enjoy!
-                  </Typography>
-                  <Box sx={{ display: "flex", flexDirection: "column", mt: 2 }}>
-                    {/* Links here */}
-                    <Link href="#" underline="hover" color="primary">
-                      www.wix.com/studio/blog/design-system-examples
-                    </Link>
-                    {/* Add more links */}
-                  </Box>
-                </Paper>
-              </Grid>
+            {/* Right section with additional text or content */}
+            <Grid item xs={12} md={5}>
+              <Typography variant="h2" gutterBottom>
+                Ranks
+              </Typography>
+              <Typography variant="body1">
+                Create, share and find meaningful resources!
+              </Typography>
+              <Typography variant="body1" sx={{ mt: 2 }}>
+                Lorem ipsum dolor sit amet consectetur. Sem augue.
+              </Typography>
+              <Stack
+                direction="row"
+                spacing={2}
+                justifyContent="center"
+                sx={{ mt: 2 }}
+              >
+                <Button variant="contained" href="rank">Get Started</Button>
+              </Stack>
             </Grid>
-
-            <Grid
-              container
-              spacing={4}
-              justifyContent="center"
-              alignItems="center"
-              sx={{ my: 4 }}
-            >
-              {/* Left section with user list and links */}
-              <Grid item xs={12} md={7}>
-                <Paper elevation={1} sx={{ p: 2 }}>
-                  <ListItem alignItems="flex-start">
-                    <ListItemAvatar>
-                      <Avatar sx={{ bgcolor: "secondary.main" }}>
-                        <AccountCircleIcon />
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary="Jen O&aposConnor"
-                      secondary={
-                        <>
-                          <Typography
-                            component="span"
-                            variant="body2"
-                            color="textPrimary"
-                          >
-                            Design System
-                          </Typography>
-                        </>
-                      }
-                    />
-                  </ListItem>
-                  <Typography variant="body1" sx={{ mt: 2 }}>
-                    Hi there! Here my collection of resources to start with
-                    Design Systems... Enjoy!
-                  </Typography>
-                  <Box sx={{ display: "flex", flexDirection: "column", mt: 2 }}>
-                    {/* Links here */}
-                    <Link href="#" underline="hover" color="primary">
-                      www.wix.com/studio/blog/design-system-examples
-                    </Link>
-                    {/* Add more links */}
-                  </Box>
-                </Paper>
-              </Grid>
-
-              {/* Right section with additional text or content */}
-              <Grid item xs={12} md={5}>
-                <Typography variant="h2" gutterBottom>
-                  Ranks
-                </Typography>
-                <Typography variant="body1">
-                  Create, share and find meaningful resources!
-                </Typography>
-                <Typography variant="body1" sx={{ mt: 2 }}>
-                  Lorem ipsum dolor sit amet consectetur. Sem augue.
-                </Typography>
-                <Stack
-                  direction="row"
-                  spacing={2}
-                  justifyContent="center"
-                  sx={{ mt: 2 }}
-                >
-                  <Button variant="contained" href="rank">Get Started</Button>
-                </Stack>
-              </Grid>
-            </Grid>
-          </Container>
-
-          <Container maxWidth="lg" sx={{ my: 4 }}>
-            <Typography variant="h2" align="center" gutterBottom>
-              Testimonials
-            </Typography>
-            <Grid container spacing={4} justifyContent="center">
-              {testimonials.map((testimonial, index) => (
-                <Grid item xs={12} sm={6} md={4} key={index}>
-                  <TestimonialCard testimonial={testimonial} />
-                </Grid>
-              ))}
-            </Grid>
-          </Container>
-
-          {/* Call to action */}
-          <Box sx={{ textAlign: "center", mt: 8 }}>
-            <Typography variant="h2" component="h2" gutterBottom>
-              Start now
-            </Typography>
-            <Stack
-              direction="row"
-              spacing={2}
-              justifyContent="center"
-              sx={{ mt: 2 }}
-            >
-              <Button variant="outlined" size="large">
-                Contact Us
-              </Button>
-              <Button variant="contained" size="large" href="list_home">
-                Get Started
-              </Button>
-            </Stack>
-          </Box>
+          </Grid>
         </Container>
-      </AppLayout>
+
+        <Container maxWidth="lg" sx={{ my: 4 }}>
+          <Typography variant="h2" align="center" gutterBottom>
+            Testimonials
+          </Typography>
+          <Grid container spacing={4} justifyContent="center">
+            {testimonials.map((testimonial, index) => (
+              <Grid item xs={12} sm={6} md={4} key={index}>
+                <TestimonialCard testimonial={testimonial} />
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+
+        {/* Call to action */}
+        <Box sx={{ textAlign: "center", mt: 8 }}>
+          <Typography variant="h2" component="h2" gutterBottom>
+            Start now
+          </Typography>
+          <Stack
+            direction="row"
+            spacing={2}
+            justifyContent="center"
+            sx={{ mt: 2 }}
+          >
+            <Button variant="outlined" size="large">
+              Contact Us
+            </Button>
+            <Button variant="contained" size="large" href="list_home">
+              Get Started
+            </Button>
+          </Stack>
+        </Box>
+      </Container>
+    </AppLayout>
   );
 }
