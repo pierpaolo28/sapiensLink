@@ -376,8 +376,6 @@ def register_user(request):
     },
 )
 @api_view(['POST'])
-@authentication_classes([JWTAuthentication])  # Use JSONWebTokenAuthentication for secure authentication
-@permission_classes([IsAuthenticated])  # Ensure that the user is authenticated
 def password_reset(request):
     email = request.data.get('email', '')
     try:

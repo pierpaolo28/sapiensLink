@@ -2,20 +2,15 @@ import React, { useState } from "react";
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 import AppLayout from "@/components/AppLayout";
-import GoogleSignIn from "@/components/GoogleSignIn";
 
 
-export default function SignIn() {
+export default function ResetPassword() {
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -23,33 +18,25 @@ export default function SignIn() {
     const data = new FormData(event.currentTarget);
 
     try {
-      const response = await fetch('http://localhost/api/login_user/', {
+      const response = await fetch('http://localhost/api/password_reset/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           email: data.get('email'),
-          password: data.get('password'),
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        setError(errorData.message || 'Failed to sign in. Please check your credentials.');
+        setError(errorData.message || 'Failed to reset password. Please check your email.');
         return;
       }
 
-      const responseData = await response.json();
-
-      // Store tokens in local storage
-      localStorage.setItem('access_token', responseData.access_token);
-      localStorage.setItem('refresh_token', responseData.refresh_token);
-      localStorage.setItem('expiration_time', responseData.expiration_time.toString());
-
-      window.location.href = '/list_home';
+      window.location.href = '/';
     } catch (error) {
-      console.error('An error occurred while signing in:', error);
+      console.error('An error occurred while resetting password:', error);
       setError('An unexpected error occurred. Please try again.');
     }
   };
@@ -69,7 +56,7 @@ export default function SignIn() {
             <LockOutlinedIcon />
           </Avatar>
           <Typography component="h1" variant="h5">
-            Sign in
+            Reset Password
           </Typography>
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
             <TextField
@@ -82,41 +69,14 @@ export default function SignIn() {
               autoComplete="email"
               autoFocus
             />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-            />
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
-            />
             <Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Sign In
+              Get Instructions
             </Button>
-            <GoogleSignIn/>
-            <Grid container>
-              <Grid item xs>
-                <Link href="reset_password" variant="body2">
-                  Forgot password?
-                </Link>
-              </Grid>
-              <Grid item>
-                <Link href="signup" variant="body2">
-                  {"Don't have an account? Sign Up"}
-                </Link>
-              </Grid>
-            </Grid>
             {error && (
               <Typography color="error" variant="body2" sx={{ mt: 1 }}>
                 {error}
