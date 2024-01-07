@@ -83,13 +83,13 @@ def send_inactive_user_notifications():
     # Get latest posts
     latest_lists = List.objects.order_by('-created')[:5]
     latest_ranks = Rank.objects.order_by('-created')[:5]
-    lists_html = "\n".join([f"<li><a href='{DOMAIN}/list/{post.id}'>{markdown.markdown(post.name)}</a></li>" for post in latest_lists])
-    ranks_html = "\n".join([f"<li><a href='{DOMAIN}/rank/{post.id}'>{markdown.markdown(post.name)}</a></li>" for post in latest_ranks])
+    lists_html = "\n".join([f"<li><a href='{DOMAIN}/list?{post.id}'>{markdown.markdown(post.name)}</a></li>" for post in latest_lists])
+    ranks_html = "\n".join([f"<li><a href='{DOMAIN}/rank?{post.id}'>{markdown.markdown(post.name)}</a></li>" for post in latest_ranks])
 
     # Send email to each inactive user
     for user in inactive_users:
         if user.email_subscription.receive_inactive_user_notifications:
-            unsubscribe_url = f"{DOMAIN}/login/?next={reverse('email_unsubscribe')}?inactive=True"
+            unsubscribe_url = f"{DOMAIN}/signin?inactive=True"
 
             # Construct the email using SendGrid
             message = Mail(
@@ -142,7 +142,7 @@ def send_unread_notification_reminders():
     # Send email to each user with unread notifications
     for user in users_with_unread_notifications:
         if user.email_subscription.receive_unread_notification_reminders:
-            unsubscribe_url = f"{DOMAIN}/login/?next={reverse('email_unsubscribe')}?unread=True"
+            unsubscribe_url = f"{DOMAIN}/signin?unread=True"
 
             unread_notifications = Notification.objects.filter(
                 receiver=user.id,

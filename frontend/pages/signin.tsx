@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useRouter } from 'next/router';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -16,6 +17,7 @@ import GoogleSignIn from "@/components/GoogleSignIn";
 
 
 export default function SignIn() {
+  const router = useRouter();
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -47,7 +49,48 @@ export default function SignIn() {
       localStorage.setItem('refresh_token', responseData.refresh_token);
       localStorage.setItem('expiration_time', responseData.expiration_time.toString());
 
-      window.location.href = '/list_home';
+      // Check for query parameters and make GET request
+      const query = new URLSearchParams(window.location.search);
+      const inactiveValue = query.get('inactive');
+      const unreadValue = query.get('unread');
+
+      if (inactiveValue !== null && inactiveValue !== undefined) {
+        const accessToken = localStorage.getItem('access_token');
+        query.delete('inactive');
+        await fetch(`http://localhost/api/email_unsubscribe/?access_token=${accessToken}&inactive=${inactiveValue}`)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error('Failed to unsubscribe from inactive emails.');
+            }
+            const successMessage = 'Successfully unsubscribed from inactive emails.';
+            router.push(`/list_home?success=${encodeURIComponent(successMessage)}`);
+          })
+          .catch((error) => {
+            console.error('Error while unsubscribing from inactive emails:', error);
+            const errorMessage = 'Failed to unsubscribe from inactive emails. Please try again.';
+            router.push(`/list_home?error=${encodeURIComponent(errorMessage)}`);
+          });
+      }
+  
+      if (unreadValue !== null && unreadValue !== undefined) {
+        const accessToken = localStorage.getItem('access_token');
+        query.delete('unread');
+        await fetch(`http://localhost/api/email_unsubscribe/?access_token=${accessToken}&unread=${unreadValue}`)
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error('Failed to unsubscribe from unread emails.');
+            }
+            const successMessage = 'Successfully unsubscribed from unread emails.';
+            router.push(`/list_home?success=${encodeURIComponent(successMessage)}`);
+          })
+          .catch((error) => {
+            console.error('Error while unsubscribing from unread emails:', error);
+            const errorMessage = 'Failed to unsubscribe from unread emails. Please try again.';
+            router.push(`/list_home?error=${encodeURIComponent(errorMessage)}`);
+          });
+      }
+
+      router.push('/list_home')
     } catch (error) {
       console.error('An error occurred while signing in:', error);
       setError('An unexpected error occurred. Please try again.');
@@ -104,7 +147,7 @@ export default function SignIn() {
             >
               Sign In
             </Button>
-            <GoogleSignIn/>
+            <GoogleSignIn />
             <Grid container>
               <Grid item xs>
                 <Link href="reset_password" variant="body2">
