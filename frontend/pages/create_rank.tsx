@@ -15,6 +15,11 @@ import AppLayout from "@/components/AppLayout";
 import { CreateRankFormData, ContentItem } from "@/utils/types"
 import { getUserIdFromAccessToken, isUserLoggedIn } from "@/utils/auth";
 
+import dynamic from 'next/dynamic';
+import 'react-quill/dist/quill.snow.css';
+// Dynamically import ReactQuill only on the client side
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+
 
 const CreateRankForm = () => {
   const [selectedTopics, setSelectedTopics] = React.useState<string[]>([]);
@@ -43,15 +48,15 @@ const CreateRankForm = () => {
   };  
   
 
-  const handleElementChange = (index: number, event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleElementChange = (index: number, value: string) => {
     const newElements = [...elements];
-    newElements[index] = event.target.value;
+    newElements[index] = value;
 
     const newContent: { [key: string]: ContentItem } = { ...formData.content };
     const key = String.fromCharCode('a'.charCodeAt(0) + index);
 
     newContent[key] = {
-      element: event.target.value,
+      element: value,
       user_id: getUserIdFromAccessToken(),
     };
 
@@ -181,21 +186,31 @@ const CreateRankForm = () => {
           />
           {elements.map((element, index) => (
             <Box key={index} sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-            <TextField
-              fullWidth
-              id={`element-${index}`}
-              label="Element"
-              value={element}
-              onChange={(event) => handleElementChange(index, event)}
-              margin="normal"
-              variant="outlined"
-            />
-            {index === elements.length - 1 && (
-              <IconButton onClick={addElement} color="primary">
-                <AddCircleOutlineIcon />
-              </IconButton>
-            )}
-          </Box>
+              <ReactQuill
+                value={element}
+                onChange={(value) => handleElementChange(index, value)}
+                modules={{
+                  toolbar: [
+                    [{ 'header': [1, 2, false] }],
+                    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                    [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
+                    ['link'],
+                    ['clean'],
+                  ],
+                }}
+                formats={[
+                  'header',
+                  'bold', 'italic', 'underline', 'strike', 'blockquote',
+                  'list', 'bullet', 'indent',
+                  'link',
+                ]}
+              />
+              {index === elements.length - 1 && (
+                <IconButton onClick={addElement} color="primary">
+                  <AddCircleOutlineIcon />
+                </IconButton>
+              )}
+            </Box>
           ))}
           <FormControl required fullWidth margin="normal" variant="outlined" sx={{ mt: 2 }}>
             <InputLabel id="topic-label">Topic</InputLabel>

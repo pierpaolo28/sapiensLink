@@ -10,6 +10,10 @@ import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
+// Dynamically import ReactQuill only on the client side
+import dynamic from 'next/dynamic';
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import 'react-quill/dist/quill.snow.css'; 
 
 import AppLayout from "@/components/AppLayout";
 import { getUserIdFromAccessToken, isUserLoggedIn } from "@/utils/auth";
@@ -81,6 +85,13 @@ export default function CreateListPage() {
     }
   };
 
+  const handleQuillChange = (value: string) => {
+    setListDetails((prevDetails) => ({
+      ...prevDetails,
+      content: value,
+    }));
+  };
+
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked, type } = event.target;
     setListDetails((prevDetails) => ({
@@ -108,8 +119,8 @@ export default function CreateListPage() {
     // Check if the mandatory fields are filled
     if (listDetails.name && listDetails.topic && listDetails.topic.length > 0) {
       // TODO: Validate the "content" field
-      const contentRegex = /^(\d+\.\s|-\s|\*\s)?(?:[A-Za-z0-9\s]+|http[s]?:\/\/[^\s]+)/gm;
-      if (contentRegex.test(listDetails.content)) {
+      // const contentRegex = /^(\d+\.\s|-\s|\*\s)?(?:[A-Za-z0-9\s]+|http[s]?:\/\/[^\s]+)/gm;
+      // if (contentRegex.test(listDetails.content)) {
         try {
           const accessToken = localStorage.getItem('access_token');
           let url = 'http://localhost/api/create_list_page';
@@ -147,11 +158,11 @@ export default function CreateListPage() {
           console.error('Error creating/updating list:', error);
           setError('An unexpected error occurred.');
         }
-      } else {
-        setError(
-          'Content field should contain ordered/bulleted lists with each item being text or a valid webpage URL.'
-        );
-      }
+      // } else {
+      //   setError(
+      //     'Content field should contain ordered/bulleted lists with each item being text or a valid webpage URL.'
+      //   );
+      // }
     } else {
       setError('Please fill in all mandatory fields (Name, Content and Topic).');
     }
@@ -204,16 +215,32 @@ export default function CreateListPage() {
               />
             </Grid>
             <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Content"
-                name="content"
-                multiline
-                rows={4}
-                value={listDetails.content}
-                onChange={handleInputChange}
-                required
-              />
+              {/* Adjust styles to create separation between InputLabel and ReactQuill */}
+              <div style={{ marginBottom: '10px' }}>
+                <InputLabel id="content-label">Content</InputLabel>
+              </div>
+              <FormControl fullWidth>
+                <ReactQuill
+                  id="content"
+                  value={listDetails.content}
+                  onChange={handleQuillChange}
+                  modules={{
+                    toolbar: [
+                      [{ 'header': [1, 2, false] }],
+                      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                      [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
+                      ['link'],
+                      ['clean'],
+                    ],
+                  }}
+                  formats={[
+                    'header',
+                    'bold', 'italic', 'underline', 'strike', 'blockquote',
+                    'list', 'bullet', 'indent',
+                    'link',
+                  ]}
+                />
+              </FormControl>
             </Grid>
             <Grid item xs={12}>
               <TextField

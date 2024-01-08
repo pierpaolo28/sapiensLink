@@ -404,10 +404,9 @@ const ListPage = () => {
 
                 {/* Dynamic list of links */}
                 <Box sx={{ mb: 2 }}>
-                  <Typography>
-                    {list.list.content}
-                  </Typography>
-                </Box>
+                    {/* Display HTML content safely */}
+                    <Typography dangerouslySetInnerHTML={{ __html: list.list.content }} />
+                  </Box>
 
                 <CardActions>
                   <CardActions>

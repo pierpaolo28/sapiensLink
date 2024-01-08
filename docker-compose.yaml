@@ -93,6 +93,7 @@ services:
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/mediafiles
+      - ./backend/static/images:/app/staticfiles/images
     depends_on:
       - django
       - nextjs

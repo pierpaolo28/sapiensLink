@@ -1,3 +1,4 @@
+import dynamic from 'next/dynamic';
 import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -5,7 +6,6 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import IconButton from '@mui/material/IconButton';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -27,6 +27,10 @@ import AppLayout from "@/components/AppLayout";
 import { RankPageResponse } from "@/utils/types";
 import { getUserIdFromAccessToken, isUserLoggedIn } from "@/utils/auth";
 
+// Dynamically import ReactQuill only on the client side
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
+import 'react-quill/dist/quill.snow.css'; // Import the styles for the react-quill component
+
 
 export default function RankPage() {
     const [rank, setRank] = useState<RankPageResponse | null>(null);
@@ -34,6 +38,8 @@ export default function RankPage() {
     const [id, setId] = useState<string | null>(null);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [editedElement, setEditedElement] = useState<string>('');
+    const [isEditing, setIsEditing] = useState<boolean>(false);
 
     // Fetch rank data based on the extracted id
     const fetchRankData = async () => {
@@ -116,8 +122,20 @@ export default function RankPage() {
     };
 
     const handleEdit = (index: number) => {
+        const rankIds = Object.keys(rank!.rank.content);
+        const elementIndex = rankIds[index];
+      
+        // Set the initial value of editedElement to the existing value
+        setEditedElement(rank!.rank.content[elementIndex].element);
         setEditingIndex(index);
-    };
+        setIsEditing(true);
+      };
+      
+      const handleBlur = () => {
+        // Cancel the edit operation when the component loses focus
+        setEditingIndex(null);
+        setIsEditing(false);
+      };
 
 
     const updateElement = async (index: number, editedElement: string) => {
@@ -155,39 +173,38 @@ export default function RankPage() {
         setEditingIndex(null);
     };
 
-    const [editedElement, setEditedElement] = useState<string>('');
 
-
-    const addItem = async (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const addItem = async (event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         if (!isUserLoggedIn()) {
-            window.location.href = '/signin';
+          window.location.href = '/signin';
         }
-
+      
         try {
-            if (event.key === 'Enter' && newItemText.trim()) {
-                const accessToken = localStorage.getItem('access_token');
-                const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`,
-                    },
-                    body: JSON.stringify({ element: newItemText }),
-                });
-
-                if (response.ok) {
-                    setNewItemText("")
-                    fetchRankData();
-                } else {
-                    console.error('Error adding new item:', response.status, response.statusText);
-                    setError('Failed to add a new item. Please try again.');
-                }
+          if (event.key === 'Enter' && newItemText.trim()) {
+            const accessToken = localStorage.getItem('access_token');
+            const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({ element: newItemText }),
+            });
+      
+            if (response.ok) {
+              setNewItemText("");
+              fetchRankData();
+            } else {
+              console.error('Error adding new item:', response.status, response.statusText);
+              setError('Failed to add a new item. Please try again.');
             }
+          }
         } catch (error) {
-            console.error('Error adding new item:', error);
-            setError('An unexpected error occurred while adding a new item.');
+          console.error('Error adding new item:', error);
+          setError('An unexpected error occurred while adding a new item.');
         }
-    };
+      };
+      
 
     const handleDelete = async (index: number) => {
         if (!isUserLoggedIn()) {
@@ -326,31 +343,53 @@ export default function RankPage() {
                                     </Typography>
 
                                     <Card variant="outlined" sx={{ mb: 4 }}>
-                                        <CardContent>
-                                            <List>
-                                                {Object.entries(rank.rank.content)
-                                                    .map(([key, element], index) => ({
-                                                        key,
-                                                        element,
-                                                        score: rank.content_scores[key] || 0,
-                                                        originalIndex: index,
-                                                    }))
-                                                    .sort((a, b) => b.score - a.score)
-                                                    .map((sortedElement, index) => (
-                                                        <ListItem key={index}>
-                                                            {editingIndex === sortedElement.originalIndex ? (
-                                                                <TextField
-                                                                    fullWidth
-                                                                    value={editedElement}
-                                                                    onChange={(e) => setEditedElement(e.target.value)}
-                                                                    onKeyDown={(e) => e.key === 'Enter' && updateElement(sortedElement.originalIndex, editedElement)}
-                                                                    autoFocus
-                                                                />
-                                                            ) : (
-                                                                <Grid container alignItems="center">
-                                                                    <Grid item xs>
-                                                                        <ListItemText primary={sortedElement.element.element} />
-                                                                    </Grid>
+                    <CardContent>
+                      <List>
+                        {Object.entries(rank.rank.content)
+                          .map(([key, element], index) => ({
+                            key,
+                            element,
+                            score: rank.content_scores[key] || 0,
+                            originalIndex: index,
+                          }))
+                          .sort((a, b) => b.score - a.score)
+                          .map((sortedElement, index) => (
+                            <ListItem key={index}>
+                              {editingIndex === sortedElement.originalIndex ? (
+                               <ReactQuill
+                               value={editedElement}
+                               onChange={(value) => setEditedElement(value)}
+                               onBlur={handleBlur}
+                               onKeyDown={(e) => {
+                                 if (e.key === 'Enter') {
+                                   e.preventDefault(); // Prevent the default behavior of adding a new line
+                                   updateElement(sortedElement.originalIndex, editedElement);
+                                   setIsEditing(false);
+                                 }
+                               }}
+                               modules={{
+                                 toolbar: [
+                                   [{ 'header': [1, 2, false] }],
+                                   ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                                   [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
+                                   ['link'],
+                                   ['clean'],
+                                 ],
+                               }}
+                               formats={[
+                                 'header',
+                                 'bold', 'italic', 'underline', 'strike', 'blockquote',
+                                 'list', 'bullet', 'indent',
+                                 'link',
+                               ]}
+                             />
+                              
+                              ) : (
+                                <Grid container alignItems="center">
+                                  <Grid item xs>
+                                    {/* Rendering HTML content correctly */}
+                                    <ListItemText primary={<div dangerouslySetInnerHTML={{ __html: sortedElement.element.element }} />} />
+                                  </Grid>
                                                                     <Grid item>
                                                                         <IconButton onClick={() => handleVote(sortedElement.originalIndex, 'upvote')}><ArrowUpwardIcon /></IconButton>
                                                                         <IconButton onClick={() => handleVote(sortedElement.originalIndex, 'downvote')}><ArrowDownwardIcon /></IconButton>
@@ -369,16 +408,29 @@ export default function RankPage() {
                                                         </ListItem>
                                                     ))}
                                                 <ListItem>
-                                                    <TextField
-                                                        fullWidth
-                                                        label="Press enter to add new item"
-                                                        value={newItemText}
-                                                        onChange={e => setNewItemText(e.target.value)}
-                                                        onKeyPress={addItem}
-                                                    />
-                                                </ListItem>
-                                            </List>
-                                        </CardContent>
+                          <ReactQuill
+                            value={newItemText}
+                            onChange={(value) => setNewItemText(value)}
+                            onKeyDown={(e) => addItem(e)} 
+                            modules={{
+                              toolbar: [
+                                [{ 'header': [1, 2, false] }],
+                                ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                                [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
+                                ['link'],
+                                ['clean'],
+                              ],
+                            }}
+                            formats={[
+                              'header',
+                              'bold', 'italic', 'underline', 'strike', 'blockquote',
+                              'list', 'bullet', 'indent',
+                              'link',
+                            ]}
+                          />
+                        </ListItem>
+                      </List>
+                    </CardContent>
                                         <CardActions>
                                             <Button variant="contained" onClick={handleSaveUnsaveRank} sx={{ mr: 1 }}>
                                                 {rank && rank.saved_ranks_ids.includes(rank!.rank.id) ? 'Unsave' : 'Save'}
