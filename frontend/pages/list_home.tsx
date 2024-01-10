@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
@@ -21,6 +22,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import Pagination from '@mui/material/Pagination';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 const DynamicToggleButton = dynamic(
   () => import('@mui/material/ToggleButton'),
   { ssr: false } // Disable server-side rendering
@@ -37,6 +40,8 @@ import { isUserLoggedIn } from '@/utils/auth';
 export default function ListHome() {
   const [home, setHome] = useState<HomeResponse | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
+  const { success, error } = router.query;
 
   const fetchData = async (extraParams = '') => {
     try {
@@ -61,7 +66,7 @@ export default function ListHome() {
       console.error("Error fetching home data:", error);
     }
   };
-  
+
 
 
   useEffect(() => {
@@ -133,7 +138,7 @@ export default function ListHome() {
                         <ListItem>
                           <ListItemText primary={topic[0] + " " + topic[1]} />
                         </ListItem>
-                        </Link>
+                      </Link>
                     ))}
                     <Button href="/list_topics">More</Button>
                   </List>
@@ -176,6 +181,41 @@ export default function ListHome() {
                   />
                 </form>
                 <Stack spacing={2}>
+                  {Array.isArray(success) ? (
+                    // Handle array case
+                    success.map((message, index) => (
+                      <Alert key={index} severity="success">
+                        <AlertTitle>Success</AlertTitle>
+                        {decodeURIComponent(message)}
+                      </Alert>
+                    ))
+                  ) : (
+                    // Handle string case
+                    success && (
+                      <Alert severity="success">
+                        <AlertTitle>Success</AlertTitle>
+                        {decodeURIComponent(success)}
+                      </Alert>
+                    )
+                  )}
+
+                  {Array.isArray(error) ? (
+                    // Handle array case
+                    error.map((message, index) => (
+                      <Alert key={index} severity="error">
+                        <AlertTitle>Error</AlertTitle>
+                        {decodeURIComponent(message)}
+                      </Alert>
+                    ))
+                  ) : (
+                    // Handle string case
+                    error && (
+                      <Alert severity="error">
+                        <AlertTitle>Error</AlertTitle>
+                        {decodeURIComponent(error)}
+                      </Alert>
+                    )
+                  )}
                   <Button href='create_list'>Create List</Button>
                   {home && home.lists ? ( // Check if home and home.lists are available
                     home.lists.map((list, i) => (

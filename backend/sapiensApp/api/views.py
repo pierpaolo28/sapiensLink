@@ -158,28 +158,6 @@ def login_user(request):
         if user is not None:
             login(request, user)
 
-            # Retrieve the 'next' parameter from the query string
-            next_url = request.GET.get('next')
-
-            if next_url:
-                # If 'next' is provided, preserve existing query parameters
-                existing_params = request.GET.urlencode()
-                separator = '&' if existing_params else ''
-                
-                # Include the entire response_data and existing query parameters in the redirect URL
-                refresh = RefreshToken.for_user(user)
-                response_data = {
-                    'access_token': str(refresh.access_token),
-                    'refresh_token': str(refresh),
-                    'expiration_time': refresh.access_token['exp'] * 1000
-                }
-                query_params = urlencode(response_data)
-                redirect_url = f"{next_url}?{existing_params}{separator}{query_params}"
-
-                # Redirect to the specified URL after successful login
-                return redirect(redirect_url)
-            
-            # If 'next' is not provided, return your response as before
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
             
@@ -376,8 +354,6 @@ def register_user(request):
     },
 )
 @api_view(['POST'])
-@authentication_classes([JWTAuthentication])  # Use JSONWebTokenAuthentication for secure authentication
-@permission_classes([IsAuthenticated])  # Ensure that the user is authenticated
 def password_reset(request):
     email = request.data.get('email', '')
     try:
