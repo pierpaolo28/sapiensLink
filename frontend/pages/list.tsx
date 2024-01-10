@@ -109,7 +109,6 @@ const ListPage = () => {
     // Extract the id parameter from the current URL
     const urlParams = new URLSearchParams(window.location.search);
     const extractedId = urlParams.get('id');
-
     // Update the id state if it is different
     if (extractedId !== id) {
       setId(extractedId);
@@ -354,7 +353,7 @@ const ListPage = () => {
     if (!isUserLoggedIn()) {
       window.location.href = '/signin';
     } else {
-      window.location.href = '/list_pr';
+      window.location.href = '/list_pr?id=' + id;
     }
   };
 

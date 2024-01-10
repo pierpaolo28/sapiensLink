@@ -42,7 +42,7 @@ urlpatterns = [
     path('update_list_page/<str:pk>/', views.update_list_page),
     path('list_pr_page/<str:pk>/', views.list_pr_page),
     path('approve_suggestion_action/<str:suggestion_id>/', views.approve_suggestion_action),
-    path('approve_suggestion_action/<str:suggestion_id>/', views.approve_suggestion_action),
+    path('decline_suggestion_action/<str:suggestion_id>/', views.decline_suggestion_action),
     path('delete_pr_comment_action/<str:comment_id>/', views.delete_pr_comment_action),
     path('private_lists_page/<str:pk>/', views.private_lists_page),
     path('saved_content_page/<str:pk>/', views.saved_content_page),

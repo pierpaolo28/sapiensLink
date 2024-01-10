@@ -104,7 +104,7 @@ export interface List {
   participants: string[];
   name: string;
   description?: string;
-  content: string[];
+  content: string;
   updated: string;
   created: string;
   score: number;
@@ -232,3 +232,24 @@ export type UserComment = {
   avatar: string;
   updated: EpochTimeStamp;
 };
+
+export interface Suggestion {
+  id: number;
+  suggestion_text: string;
+  is_accepted: boolean;
+  list: number;
+  suggested_by: number;
+}
+
+export interface EditComment {
+  id: number;
+  text: string;
+  edit_suggestion: number;
+  commenter: number;
+}
+
+export interface ListPrPageResponse {
+  list: List;
+  suggestions: Suggestion[];
+  pr_comments: EditComment[]; // Define Comment interface if needed
+}
