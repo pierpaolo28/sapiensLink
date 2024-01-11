@@ -32,16 +32,33 @@ const DynamicToggleButton = dynamic(
 import AppLayout from "@/components/AppLayout";
 // import DBSetup from "@/components/DBSetup";
 import { getHome } from "@/utils/routes";
-import { HomeResponse } from "@/utils/types";
+import { HomeWithUserDataResponse } from "@/utils/types";
 import ListRankSwitcher from '@/components/ListRankSwitcher';
 import { isUserLoggedIn } from '@/utils/auth';
 
 
 export default function ListHome() {
-  const [home, setHome] = useState<HomeResponse | null>(null);
+  const [home, setHome] = useState<HomeWithUserDataResponse | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
   const { success, error } = router.query;
+
+  // Function to fetch user data
+  const getUserData = async (userId: number) => {
+    try {
+      const userResponse = await fetch(`http://localhost/api/get_user/${userId}/`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const userData = await userResponse.json();
+      return userData;
+    } catch (error) {
+      console.error(`Error fetching user data for user ${userId}:`, error);
+      return null;
+    }
+  };
 
   const fetchData = async (extraParams = '') => {
     try {
@@ -55,12 +72,42 @@ export default function ListHome() {
           },
         });
         const homeData = await response.json();
-        setHome(homeData);
+
+        // Fetch user data for each commenter
+        const listsWithUserData = await Promise.all(homeData.lists.map(async (list: any) => {
+          const userData = await getUserData(list.author);
+          return {
+            ...list,
+            authorData: userData,
+          };
+        }));
+
+        const updatedData = {
+          ...homeData,
+          lists: listsWithUserData,
+        };
+        setHome(updatedData);
+
       } else {
         // Use the updated currentPage state to fetch the corresponding page
         const updatedParams = `page=${currentPage}&${extraParams}`;
         const homeData = await getHome(updatedParams);
-        setHome(homeData);
+
+        // Fetch user data for each commenter
+        const listsWithUserData = await Promise.all(homeData.lists.map(async (list: any) => {
+          const userData = await getUserData(list.author);
+          return {
+            ...list,
+            authorData: userData,
+          };
+        }));
+
+        const updatedData = {
+          ...homeData,
+          lists: listsWithUserData,
+        };
+
+        setHome(updatedData);
       }
     } catch (error) {
       console.error("Error fetching home data:", error);
@@ -239,17 +286,19 @@ export default function ListHome() {
                                 </Stack>
                               </Grid>
                               <Grid item xs></Grid>
-                              <Grid item xs>
-                                <Stack
-                                  direction="row"
-                                  spacing={1}
-                                  alignItems="center"
-                                  justifyContent="end"
-                                >
-                                  <Avatar sx={{ width: 32, height: 32 }} />
-                                  <div>{list.author}</div>
-                                </Stack>
-                              </Grid>
+                              {list.authorData &&
+                                <Grid item xs>
+                                  <Stack
+                                    direction="row"
+                                    spacing={1}
+                                    alignItems="center"
+                                    justifyContent="end"
+                                  >
+                                    <Avatar sx={{ width: 32, height: 32 }} />
+                                    <div>{list.authorData.name}</div>
+                                  </Stack>
+                                </Grid>
+                              }
                             </Grid>
                           </CardContent>
                         </CardActionArea>

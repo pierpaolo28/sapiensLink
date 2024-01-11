@@ -255,3 +255,34 @@ export interface ListPrPageWithUserDataResponse {
   suggestions: SuggestionWithUserData[];
   pr_comments: EditCommentWithUserData[];
 }
+
+interface ListWithUserData {
+  id: number;
+  topic: Topic[];
+  participants: string[];
+  name: string;
+  description?: string;
+  content: string;
+  updated: string;
+  created: string;
+  score: number;
+  source: string;
+  public: true;
+  author?: number;
+  authorData: User;
+  subscribed_users: string[];
+}
+
+export interface HomeWithUserDataResponse {
+  pagination: {
+    next_page?: string;
+    previous_page?: string;
+    total_pages: number;
+    current_page: number;
+  };
+  lists: ListWithUserData[];
+  users: User[];
+  list_count: number;
+  topic_counts: [string, number][];
+  all_list_count: number;
+}
