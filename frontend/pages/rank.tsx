@@ -21,6 +21,7 @@ import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ReportIcon from '@mui/icons-material/Report';
+import ShareIcon from '@mui/icons-material/Share';
 import Link from 'next/link';
 
 import AppLayout from "@/components/AppLayout";
@@ -305,6 +306,15 @@ export default function RankPage() {
         }
     };
 
+    const handleCopyLink = async () => {
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          console.log('Link copied to clipboard');
+        } catch (error: any) {
+          console.error('Error copying link to clipboard:', error.message);
+        }
+      };
+
     return (
         <AppLayout>
             <Container maxWidth="md">
@@ -438,6 +448,9 @@ export default function RankPage() {
                                             <Button startIcon={<ReportIcon />} size="small" onClick={handleReport}>
                                                 Report
                                             </Button>
+                                            <IconButton onClick={handleCopyLink} color="primary">
+                  <ShareIcon />
+                </IconButton>
                                         </CardActions>
                                     </Card>
                                 </>

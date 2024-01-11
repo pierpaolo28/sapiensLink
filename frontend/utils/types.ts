@@ -233,23 +233,25 @@ export type UserComment = {
   updated: EpochTimeStamp;
 };
 
-export interface Suggestion {
+export interface EditCommentWithUserData {
+  id: number;
+  text: string;
+  edit_suggestion: number;
+  commenter: number;
+  commenterData: User;
+}
+
+interface SuggestionWithUserData {
   id: number;
   suggestion_text: string;
   is_accepted: boolean;
   list: number;
   suggested_by: number;
+  suggestedByData: User;
 }
 
-export interface EditComment {
-  id: number;
-  text: string;
-  edit_suggestion: number;
-  commenter: number;
-}
-
-export interface ListPrPageResponse {
+export interface ListPrPageWithUserDataResponse {
   list: List;
-  suggestions: Suggestion[];
-  pr_comments: EditComment[]; // Define Comment interface if needed
+  suggestions: SuggestionWithUserData[];
+  pr_comments: EditCommentWithUserData[];
 }

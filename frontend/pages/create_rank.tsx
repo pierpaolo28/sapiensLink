@@ -9,7 +9,9 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import IconButton from '@mui/material/IconButton';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
+import Select from '@mui/material/Select';
+import { SelectChangeEvent } from '@mui/material/Select';
 
 import AppLayout from "@/components/AppLayout";
 import { CreateRankFormData, ContentItem } from "@/utils/types"
@@ -46,23 +48,6 @@ const CreateRankForm = () => {
     setSelectedTopics(event.target.value as string[]);
     handleFormChange('topic', selectedTopicsData);
   };  
-  
-
-  const handleElementChange = (index: number, value: string) => {
-    const newElements = [...elements];
-    newElements[index] = value;
-
-    const newContent: { [key: string]: ContentItem } = { ...formData.content };
-    const key = String.fromCharCode('a'.charCodeAt(0) + index);
-
-    newContent[key] = {
-      element: value,
-      user_id: getUserIdFromAccessToken(),
-    };
-
-    setElements(newElements);
-    handleFormChange('content', newContent);
-  };
 
   const handleFormChange = (field: keyof CreateRankFormData, value: any) => {
     if (field === 'name') {
@@ -134,6 +119,7 @@ const CreateRankForm = () => {
               setError(responseData.message || 'Failed to submit the form');
             }
           } else {
+            console.log(JSON.stringify(formData))
             setError('An unexpected error occurred.');
           }
         }
@@ -143,6 +129,46 @@ const CreateRankForm = () => {
       }
     } else {
       setError('Please fill in all mandatory fields (Name and Topic).');
+    }
+  };
+
+
+const removeElement = (indexToRemove: number) => {
+  const newElements = elements.filter((_, index) => index !== indexToRemove);
+  const newContent: { [key: string]: ContentItem } = {};
+
+  newElements.forEach((value, index) => {
+    const key = String.fromCharCode('a'.charCodeAt(0) + index);
+    newContent[key] = {
+      element: value,
+      user_id: getUserIdFromAccessToken(),
+    };
+  });
+
+  setElements(newElements);
+  handleFormChange('content', newContent);
+};
+
+  const handleElementChange = (index: number, value: string) => {
+    const newElements = [...elements];
+    newElements[index] = value;
+  
+    const newContent: { [key: string]: ContentItem } = { ...formData.content };
+    const key = String.fromCharCode('a'.charCodeAt(0) + index);
+  
+    newContent[key] = {
+      element: value,
+      user_id: getUserIdFromAccessToken(),
+    };
+  
+    setElements(newElements);
+    handleFormChange('content', newContent);
+  };
+  
+  const handleQuillKeyDown = (event: any) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      addElement();
     }
   };
   
@@ -186,31 +212,38 @@ const CreateRankForm = () => {
           />
           {elements.map((element, index) => (
             <Box key={index} sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-              <ReactQuill
-                value={element}
-                onChange={(value) => handleElementChange(index, value)}
-                modules={{
-                  toolbar: [
-                    [{ 'header': [1, 2, false] }],
-                    ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                    [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
-                    ['link'],
-                    ['clean'],
-                  ],
-                }}
-                formats={[
-                  'header',
-                  'bold', 'italic', 'underline', 'strike', 'blockquote',
-                  'list', 'bullet', 'indent',
-                  'link',
-                ]}
-              />
-              {index === elements.length - 1 && (
-                <IconButton onClick={addElement} color="primary">
-                  <AddCircleOutlineIcon />
-                </IconButton>
-              )}
-            </Box>
+            <ReactQuill
+              value={element}
+              onChange={(value) => handleElementChange(index, value)}
+              onKeyDown={(event) => handleQuillKeyDown(event)}
+              modules={{
+                toolbar: [
+                  [{ 'header': [1, 2, false] }],
+                  ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                  [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
+                  ['link'],
+                  ['clean'],
+                ],
+              }}
+              formats={[
+                'header',
+                'bold', 'italic', 'underline', 'strike', 'blockquote',
+                'list', 'bullet', 'indent',
+                'link',
+              ]}
+              theme="snow"
+            />
+            {elements.length > 1 && (
+      <IconButton onClick={() => removeElement(index)} color="secondary">
+        <RemoveCircleOutlineIcon />
+      </IconButton>
+    )}
+    {index === elements.length - 1 && (
+      <IconButton onClick={addElement} color="primary">
+        <AddCircleOutlineIcon />
+      </IconButton>
+    )}
+          </Box>
           ))}
           <FormControl required fullWidth margin="normal" variant="outlined" sx={{ mt: 2 }}>
             <InputLabel id="topic-label">Topic</InputLabel>

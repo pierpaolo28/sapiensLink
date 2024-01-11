@@ -9,7 +9,8 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import Select from '@mui/material/Select';
+import { SelectChangeEvent } from '@mui/material/Select';
 // Dynamically import ReactQuill only on the client side
 import dynamic from 'next/dynamic';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
@@ -177,7 +178,7 @@ export default function CreateListPage() {
     { label: 'Finance', value: 'finance' },
     { label: 'Technology', value: 'technology' },
     { label: 'Health', value: 'health' },
-    // Add more topics as needed
+    // TODO: Add more topics as needed
   ];
 
   return (

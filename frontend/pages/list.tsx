@@ -25,6 +25,7 @@ import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ShareIcon from '@mui/icons-material/Share';
 import NextLink from 'next/link';
 
 
@@ -59,49 +60,49 @@ const ListPage = () => {
   };
 
   const fetchListData = async () => {
-      try {
-          const headers: {
-              'Content-Type': string;
-              'Authorization'?: string;
-          } = {
-              'Content-Type': 'application/json',
-          };
-  
-          // Check if the user is logged in
-          if (isUserLoggedIn()) {
-              const accessToken = localStorage.getItem('access_token');
-              headers['Authorization'] = `Bearer ${accessToken}`;
-          }
-  
-          const response = await fetch(`http://localhost/api/list_page/${id}/`, {
-              method: 'GET',
-              headers: headers,
-          });
-  
-          const data = await response.json();
-          const userData = await getUserData(data.list.author);
-  
-          // Fetch user data for each comment
-          const commentsWithUserData: UserComment[] = await Promise.all(
-              data.list_comments.map(async (comment: any) => {
-                  const userData = await getUserData(comment.user);
-                  return {
-                      id: comment.id,
-                      author_id: userData?.id,
-                      author: userData?.name || 'Unknown User',
-                      text: comment.body,
-                      avatar: userData?.avatar,
-                      updated: comment.updated,
-                  };
-              })
-          );
-  
-          setList(data);
-          setlistAuthor(userData);
-          setCommenters(commentsWithUserData);
-      } catch (error) {
-          console.error('Error fetching list data:', error);
+    try {
+      const headers: {
+        'Content-Type': string;
+        'Authorization'?: string;
+      } = {
+        'Content-Type': 'application/json',
+      };
+
+      // Check if the user is logged in
+      if (isUserLoggedIn()) {
+        const accessToken = localStorage.getItem('access_token');
+        headers['Authorization'] = `Bearer ${accessToken}`;
       }
+
+      const response = await fetch(`http://localhost/api/list_page/${id}/`, {
+        method: 'GET',
+        headers: headers,
+      });
+
+      const data = await response.json();
+      const userData = await getUserData(data.list.author);
+
+      // Fetch user data for each comment
+      const commentsWithUserData: UserComment[] = await Promise.all(
+        data.list_comments.map(async (comment: any) => {
+          const userData = await getUserData(comment.user);
+          return {
+            id: comment.id,
+            author_id: userData?.id,
+            author: userData?.name || 'Unknown User',
+            text: comment.body,
+            avatar: userData?.avatar,
+            updated: comment.updated,
+          };
+        })
+      );
+
+      setList(data);
+      setlistAuthor(userData);
+      setCommenters(commentsWithUserData);
+    } catch (error) {
+      console.error('Error fetching list data:', error);
+    }
   };
 
 
@@ -365,6 +366,15 @@ const ListPage = () => {
     }
   };
 
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      console.log('Link copied to clipboard');
+    } catch (error: any) {
+      console.error('Error copying link to clipboard:', error.message);
+    }
+  };
+
 
   return <AppLayout>
     <Container component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
@@ -403,10 +413,16 @@ const ListPage = () => {
 
                 {/* Dynamic list of links */}
                 <Box sx={{ mb: 2 }}>
-                    {/* Display HTML content safely */}
-                    <Typography dangerouslySetInnerHTML={{ __html: list.list.content }} />
-                  </Box>
-
+                  {/* Display HTML content safely */}
+                  <Typography dangerouslySetInnerHTML={{ __html: list.list.content }} />
+                </Box>
+                {list.list.source && (
+                  <Typography variant="body2" sx={{ my: 1 }}>
+                    <Link href={list.list.source} target="_blank" rel="noopener noreferrer">
+                      Source
+                    </Link>
+                  </Typography>
+                )}
                 <CardActions>
                   <CardActions>
                     <IconButton aria-label="upvote" onClick={handleUpvote}>
@@ -446,6 +462,9 @@ const ListPage = () => {
                     Report
                   </Button>
                 </CardActions>
+                <IconButton onClick={handleCopyLink} color="primary">
+                  <ShareIcon />
+                </IconButton>
               </CardContent>
               {/* Comment section */}
               {commenters && (
@@ -470,10 +489,10 @@ const ListPage = () => {
                             </Typography>
                           </Grid>
                         </Grid>
-                        {(comment.author_id ==  getUserIdFromAccessToken()) && (
-                        <IconButton aria-label="delete" onClick={() => handleDeleteComment(comment.id)}>
-                          <DeleteIcon />
-                        </IconButton>
+                        {(comment.author_id == getUserIdFromAccessToken()) && (
+                          <IconButton aria-label="delete" onClick={() => handleDeleteComment(comment.id)}>
+                            <DeleteIcon />
+                          </IconButton>
                         )}
                       </ListItem>
                     ))}
