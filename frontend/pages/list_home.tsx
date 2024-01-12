@@ -264,7 +264,7 @@ export default function ListHome() {
                     )
                   )}
                   <Button href='create_list'>Create List</Button>
-                  {home && home.lists ? ( // Check if home and home.lists are available
+                  {home && home.lists ? (
                     home.lists.map((list, i) => (
                       <Card key={list.id}>
                         <CardActionArea>
@@ -274,10 +274,21 @@ export default function ListHome() {
                                 {list.name}
                               </Typography>
                             </Link>
-                            <Typography paragraph color="text.secondary">
+                            {list.authorData && (
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                alignItems="center"
+                                sx={{ marginTop: 1 }}
+                              >
+                                <Avatar sx={{ width: 32, height: 32 }} />
+                                <Typography variant="subtitle2">{list.authorData.name}</Typography>
+                              </Stack>
+                            )}
+                            <Typography paragraph color="text.secondary" sx={{ marginTop: 1 }}>
                               {list.description}
                             </Typography>
-                            <Grid container spacing={3} alignItems="center">
+                            <Grid container spacing={3} alignItems="center" sx={{ marginTop: 1 }}>
                               <Grid item xs>
                                 <Stack direction="row" spacing={1}>
                                   {list.topic.map((topic) => (
@@ -285,20 +296,13 @@ export default function ListHome() {
                                   ))}
                                 </Stack>
                               </Grid>
-                              <Grid item xs></Grid>
-                              {list.authorData &&
-                                <Grid item xs>
-                                  <Stack
-                                    direction="row"
-                                    spacing={1}
-                                    alignItems="center"
-                                    justifyContent="end"
-                                  >
-                                    <Avatar sx={{ width: 32, height: 32 }} />
-                                    <div>{list.authorData.name}</div>
-                                  </Stack>
+                              {list.score !== undefined && (
+                                <Grid item xs sx={{ textAlign: 'right' }}>
+                                  <Typography variant="subtitle1" color={list.score >= 0 ? 'primary' : 'error'}>
+                                    {list.score >= 0 ? `+${list.score}` : list.score}
+                                  </Typography>
                                 </Grid>
-                              }
+                              )}
                             </Grid>
                           </CardContent>
                         </CardActionArea>
@@ -308,6 +312,7 @@ export default function ListHome() {
                     // Render loading state or an error message
                     <Typography>Loading...</Typography>
                   )}
+
                 </Stack>
                 {/* Pagination component */}
                 {home && home.pagination && (

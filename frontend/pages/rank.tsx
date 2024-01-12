@@ -11,17 +11,18 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
-import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import Chip from '@mui/material/Chip';
 import Avatar from '@mui/material/Avatar';
-import CardActions from '@mui/material/CardActions';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ReportIcon from '@mui/icons-material/Report';
 import ShareIcon from '@mui/icons-material/Share';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
 import Link from 'next/link';
 
 import AppLayout from "@/components/AppLayout";
@@ -125,18 +126,23 @@ export default function RankPage() {
     const handleEdit = (index: number) => {
         const rankIds = Object.keys(rank!.rank.content);
         const elementIndex = rankIds[index];
-      
+
         // Set the initial value of editedElement to the existing value
         setEditedElement(rank!.rank.content[elementIndex].element);
         setEditingIndex(index);
         setIsEditing(true);
-      };
-      
-      const handleBlur = () => {
+    };
+
+    const handleBlur = () => {
         // Cancel the edit operation when the component loses focus
         setEditingIndex(null);
         setIsEditing(false);
-      };
+    };
+
+    const removeEmptyParagraphTags = (htmlString: any) => {
+        // Remove <p><br></p> from the HTML string
+        return htmlString.replace(/<p><br><\/p>/g, '');
+    };
 
 
     const updateElement = async (index: number, editedElement: string) => {
@@ -157,7 +163,7 @@ export default function RankPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${accessToken}`,
                 },
-                body: JSON.stringify({ edit_element_index: elementIndex, edit_element: editedElement }),
+                body: JSON.stringify({ edit_element_index: elementIndex, edit_element: removeEmptyParagraphTags(editedElement) }),
             });
 
             if (response.ok) {
@@ -177,35 +183,35 @@ export default function RankPage() {
 
     const addItem = async (event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         if (!isUserLoggedIn()) {
-          window.location.href = '/signin';
+            window.location.href = '/signin';
         }
-      
+
         try {
-          if (event.key === 'Enter' && newItemText.trim()) {
-            const accessToken = localStorage.getItem('access_token');
-            const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${accessToken}`,
-              },
-              body: JSON.stringify({ element: newItemText }),
-            });
-      
-            if (response.ok) {
-              setNewItemText("");
-              fetchRankData();
-            } else {
-              console.error('Error adding new item:', response.status, response.statusText);
-              setError('Failed to add a new item. Please try again.');
+            if (event.key === 'Enter' && newItemText.trim()) {
+                const accessToken = localStorage.getItem('access_token');
+                const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`,
+                    },
+                    body: JSON.stringify({ element: removeEmptyParagraphTags(newItemText) }),
+                });
+
+                if (response.ok) {
+                    setNewItemText("");
+                    fetchRankData();
+                } else {
+                    console.error('Error adding new item:', response.status, response.statusText);
+                    setError('Failed to add a new item. Please try again.');
+                }
             }
-          }
         } catch (error) {
-          console.error('Error adding new item:', error);
-          setError('An unexpected error occurred while adding a new item.');
+            console.error('Error adding new item:', error);
+            setError('An unexpected error occurred while adding a new item.');
         }
-      };
-      
+    };
+
 
     const handleDelete = async (index: number) => {
         if (!isUserLoggedIn()) {
@@ -308,12 +314,12 @@ export default function RankPage() {
 
     const handleCopyLink = async () => {
         try {
-          await navigator.clipboard.writeText(window.location.href);
-          console.log('Link copied to clipboard');
+            await navigator.clipboard.writeText(window.location.href);
+            console.log('Link copied to clipboard');
         } catch (error: any) {
-          console.error('Error copying link to clipboard:', error.message);
+            console.error('Error copying link to clipboard:', error.message);
         }
-      };
+    };
 
     return (
         <AppLayout>
@@ -337,10 +343,18 @@ export default function RankPage() {
                                         <Typography variant="body1">
                                             Last Activity: {new Date(rank.rank.updated).toLocaleString()}
                                         </Typography>
-                                        <FormControlLabel
+                                        {/* <FormControlLabel
                                             control={<Switch checked={rank.is_subscribed} onChange={toggleWatchStatus} />}
                                             label={rank.is_subscribed ? 'Unwatch Rank' : 'Watch Rank'}
-                                        />
+                                        /> */}
+                                        <Box>
+                                        <IconButton aria-label="watch/unwatch list" onClick={toggleWatchStatus}>
+                                            {rank.is_subscribed ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                        </IconButton>
+                                        <IconButton aria-label="save list" onClick={handleSaveUnsaveRank}>
+                                            {rank.saved_ranks_ids.includes(rank.rank.id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+                                        </IconButton>
+                                        </Box>
                                     </Box>
 
                                     <Typography variant="subtitle1" gutterBottom>
@@ -353,53 +367,53 @@ export default function RankPage() {
                                     </Typography>
 
                                     <Card variant="outlined" sx={{ mb: 4 }}>
-                    <CardContent>
-                      <List>
-                        {Object.entries(rank.rank.content)
-                          .map(([key, element], index) => ({
-                            key,
-                            element,
-                            score: rank.content_scores[key] || 0,
-                            originalIndex: index,
-                          }))
-                          .sort((a, b) => b.score - a.score)
-                          .map((sortedElement, index) => (
-                            <ListItem key={index}>
-                              {editingIndex === sortedElement.originalIndex ? (
-                               <ReactQuill
-                               value={editedElement}
-                               onChange={(value) => setEditedElement(value)}
-                               onBlur={handleBlur}
-                               onKeyDown={(e) => {
-                                 if (e.key === 'Enter') {
-                                   e.preventDefault(); // Prevent the default behavior of adding a new line
-                                   updateElement(sortedElement.originalIndex, editedElement);
-                                   setIsEditing(false);
-                                 }
-                               }}
-                               modules={{
-                                 toolbar: [
-                                   [{ 'header': [1, 2, false] }],
-                                   ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                                   [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
-                                   ['link'],
-                                   ['clean'],
-                                 ],
-                               }}
-                               formats={[
-                                 'header',
-                                 'bold', 'italic', 'underline', 'strike', 'blockquote',
-                                 'list', 'bullet', 'indent',
-                                 'link',
-                               ]}
-                             />
-                              
-                              ) : (
-                                <Grid container alignItems="center">
-                                  <Grid item xs>
-                                    {/* Rendering HTML content correctly */}
-                                    <ListItemText primary={<div dangerouslySetInnerHTML={{ __html: sortedElement.element.element }} />} />
-                                  </Grid>
+                                        <CardContent>
+                                            <List>
+                                                {Object.entries(rank.rank.content)
+                                                    .map(([key, element], index) => ({
+                                                        key,
+                                                        element,
+                                                        score: rank.content_scores[key] || 0,
+                                                        originalIndex: index,
+                                                    }))
+                                                    .sort((a, b) => b.score - a.score)
+                                                    .map((sortedElement, index) => (
+                                                        <ListItem key={index}>
+                                                            {editingIndex === sortedElement.originalIndex ? (
+                                                                <ReactQuill
+                                                                    value={editedElement}
+                                                                    onChange={(value) => setEditedElement(value)}
+                                                                    onBlur={handleBlur}
+                                                                    onKeyDown={(e) => {
+                                                                        if (e.key === 'Enter') {
+                                                                            e.preventDefault(); // Prevent the default behavior of adding a new line
+                                                                            updateElement(sortedElement.originalIndex, editedElement);
+                                                                            setIsEditing(false);
+                                                                        }
+                                                                    }}
+                                                                    modules={{
+                                                                        toolbar: [
+                                                                            [{ 'header': [1, 2, false] }],
+                                                                            ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                                                                            [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
+                                                                            ['link'],
+                                                                            ['clean'],
+                                                                        ],
+                                                                    }}
+                                                                    formats={[
+                                                                        'header',
+                                                                        'bold', 'italic', 'underline', 'strike', 'blockquote',
+                                                                        'list', 'bullet', 'indent',
+                                                                        'link',
+                                                                    ]}
+                                                                />
+
+                                                            ) : (
+                                                                <Grid container alignItems="center">
+                                                                    <Grid item xs>
+                                                                        {/* Rendering HTML content correctly */}
+                                                                        <ListItemText primary={<div dangerouslySetInnerHTML={{ __html: sortedElement.element.element }} />} />
+                                                                    </Grid>
                                                                     <Grid item>
                                                                         <IconButton onClick={() => handleVote(sortedElement.originalIndex, 'upvote')}><ArrowUpwardIcon /></IconButton>
                                                                         <IconButton onClick={() => handleVote(sortedElement.originalIndex, 'downvote')}><ArrowDownwardIcon /></IconButton>
@@ -418,40 +432,37 @@ export default function RankPage() {
                                                         </ListItem>
                                                     ))}
                                                 <ListItem>
-                          <ReactQuill
-                            value={newItemText}
-                            onChange={(value) => setNewItemText(value)}
-                            onKeyDown={(e) => addItem(e)} 
-                            modules={{
-                              toolbar: [
-                                [{ 'header': [1, 2, false] }],
-                                ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                                [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
-                                ['link'],
-                                ['clean'],
-                              ],
-                            }}
-                            formats={[
-                              'header',
-                              'bold', 'italic', 'underline', 'strike', 'blockquote',
-                              'list', 'bullet', 'indent',
-                              'link',
-                            ]}
-                          />
-                        </ListItem>
-                      </List>
-                    </CardContent>
-                                        <CardActions>
-                                            <Button variant="contained" onClick={handleSaveUnsaveRank} sx={{ mr: 1 }}>
-                                                {rank && rank.saved_ranks_ids.includes(rank!.rank.id) ? 'Unsave' : 'Save'}
-                                            </Button>
+                                                    <ReactQuill
+                                                        value={newItemText}
+                                                        onChange={(value) => setNewItemText(value)}
+                                                        onKeyDown={(e) => addItem(e)}
+                                                        modules={{
+                                                            toolbar: [
+                                                                [{ 'header': [1, 2, false] }],
+                                                                ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                                                                [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
+                                                                ['link'],
+                                                                ['clean'],
+                                                            ],
+                                                        }}
+                                                        formats={[
+                                                            'header',
+                                                            'bold', 'italic', 'underline', 'strike', 'blockquote',
+                                                            'list', 'bullet', 'indent',
+                                                            'link',
+                                                        ]}
+                                                    />
+                                                </ListItem>
+                                            </List>
+                                        </CardContent>
+                                        <Box display="flex" justifyContent="right" alignItems="center" mt={2}>
                                             <Button startIcon={<ReportIcon />} size="small" onClick={handleReport}>
                                                 Report
                                             </Button>
                                             <IconButton onClick={handleCopyLink} color="primary">
-                  <ShareIcon />
-                </IconButton>
-                                        </CardActions>
+                                                <ShareIcon />
+                                            </IconButton>
+                                            </Box>
                                     </Card>
                                 </>
                             )}

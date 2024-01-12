@@ -37,10 +37,11 @@ class ListSerializer(ModelSerializer):
             raise ValidationError("Unacceptable language detected in the description.")
         return data
 
-    def validate_content(self, data):
-        if profanity.contains_profanity(data):
-            raise ValidationError("Unacceptable language detected in the content.")
-        return data
+    # TODO: Improve profanity detection
+    # def validate_content(self, data):
+    #     if profanity.contains_profanity(data):
+    #         raise ValidationError("Unacceptable language detected in the content.")
+    #     return data
 
     topic = TopicSerializer(many=True)
     participants = PrimaryKeyRelatedField(many=True, queryset=User.objects.all())
@@ -130,10 +131,11 @@ class RankSerializer(ModelSerializer):
             raise ValidationError("Unacceptable language detected in the description.")
         return value
 
-    def validate_content(self, value):
-        element_values = ''.join([content['element'] for content in value.values()])
-        if profanity.contains_profanity(element_values):
-            raise ValidationError("Unacceptable language detected in the content.")
+    # TODO: Improve profanity detection
+    # def validate_content(self, value):
+    #     element_values = ''.join([content['element'] for content in value.values()])
+    #     if profanity.contains_profanity(element_values):
+    #         raise ValidationError("Unacceptable language detected in the content.")
         
         return value
 
@@ -286,10 +288,11 @@ class CommentSerializer(ModelSerializer):
 
 class EditSuggestionSerializer(ModelSerializer):
 
-    def validate_suggestion_text(self, data):
-        if profanity.contains_profanity(data):
-            raise ValidationError("Unacceptable language detected in the suggested new list.")
-        return data
+    # TODO: Improve profanity detection
+    # def validate_suggestion_text(self, data):
+    #     if profanity.contains_profanity(data):
+    #         raise ValidationError("Unacceptable language detected in the suggested new list.")
+    #     return data
 
     class Meta:
         model = EditSuggestion

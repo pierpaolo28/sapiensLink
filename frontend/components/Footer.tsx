@@ -22,91 +22,61 @@ export default function Footer(props: any) {
         setEmail(""); // Clear the email field after subscribing
     };
 
-    return (<Box sx={{ bgcolor: 'background.default', py: 6 }} component="footer">
-        <Container maxWidth="lg">
-            <Divider />
-            <Grid container justifyContent="center" spacing={4}>
-                <Grid item xs={12} sm={5}>
-                    <Grid container spacing={2} justifyContent="center" sx={{ mt: 4 }}>
-                        <Grid item xs={12} sm={3} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <Typography variant="h6" color="textPrimary" gutterBottom>
-                                Product
-                            </Typography>
-                            <Box>
-                                <Link href="#" variant="subtitle1" color="textSecondary">
-                                    Overview
-                                </Link><br />
-                                <Link href="#" variant="subtitle1" color="textSecondary">
-                                    Features
-                                </Link><br />
-                            </Box>
-                        </Grid>
-                        <Grid item xs={12} sm={3} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <Typography variant="h6" color="textPrimary" gutterBottom>
-                                Company
-                            </Typography>
-                            <Box>
-                                <Link href="#" variant="subtitle1" color="textSecondary">
-                                    About us
-                                </Link><br />
-                                <Link href="#" variant="subtitle1" color="textSecondary">
-                                    Press
-                                </Link><br />
-                            </Box>
-                        </Grid>
-                        <Grid item xs={12} sm={3} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <Typography variant="h6" color="textPrimary" gutterBottom>
-                                Resources
-                            </Typography>
-                            <Box>
-                                <Link href="#" variant="subtitle1" color="textSecondary">
-                                    Tutorials
-                                </Link><br />
-                                <Link href="#" variant="subtitle1" color="textSecondary">
-                                    Support
-                                </Link><br />
-                            </Box>
-                        </Grid>
+    return (
+        <Box sx={{ bgcolor: 'background.default', py: 6 }} component="footer">
+            <Container maxWidth="lg">
+                <Divider />
+                <Grid container spacing={4} justifyContent="center" sx={{ mt: 4 }}>
+                    <Grid item xs={12} md={4} lg={3}>
+                        <Typography variant="h6" color="textPrimary" gutterBottom>
+                            Product
+                        </Typography>
+                        <Link href="#" variant="subtitle1" color="textSecondary">
+                            Overview
+                        </Link><br />
+                        <Link href="#" variant="subtitle1" color="textSecondary">
+                            Vision
+                        </Link><br />
                     </Grid>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                <Box sx={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    alignItems: 'center', 
-                    mt: 4, // increased top margin
-                }}>
-                    <Typography 
-                        variant="h6" 
-                        color="textPrimary" 
-                        gutterBottom
-                        sx={{ fontWeight: 'bold' }} // make the title bold
-                    >
-                        Subscribe to Mailing List
-                    </Typography>
-                    <Box sx={{ width: '100%', mt: 2 }}> {/* full width and margin top */}
+                    <Grid item xs={12} md={4} lg={3}>
+                        <Typography variant="h6" color="textPrimary" gutterBottom>
+                            Company
+                        </Typography>
+                        <Link href="#" variant="subtitle1" color="textSecondary">
+                            About us
+                        </Link><br />
+                        <Link href="#" variant="subtitle1" color="textSecondary">
+                            Press
+                        </Link><br />
+                    </Grid>
+                    <Grid item xs={12} md={4} lg={3}>
+                        <Typography 
+                            variant="h6" 
+                            color="textPrimary" 
+                            gutterBottom
+                            sx={{ fontWeight: 'bold' }}
+                        >
+                            Subscribe for updates!
+                        </Typography>
                         <TextField
-                            fullWidth // make the text field full width
+                            fullWidth
                             label="Email"
                             variant="outlined"
                             size="small"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            sx={{ mb: 2 }} // margin bottom to separate from button
+                            sx={{ mb: 2 }}
                         />
                         <Button
-                            fullWidth // make the button full width
+                            fullWidth
                             variant="contained"
-                            color="secondary" // change color for emphasis
-                            size="medium" // slightly larger button
+                            color="secondary"
+                            size="medium"
                             onClick={handleSubscribe}
                         >
                             Subscribe
                         </Button>
-                    </Box>
-
-                        {/* Social Icons */}
-                        <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                        <Box sx={{ display: 'flex', gap: 2, mt: 2, justifyContent: 'center' }}>
                             <IconButton color="primary" component={Link} href="#" target="_blank">
                                 <LinkedInIcon />
                             </IconButton>
@@ -115,13 +85,12 @@ export default function Footer(props: any) {
                             </IconButton>
                             {/* Add more social icons as needed */}
                         </Box>
-                    </Box>
+                    </Grid>
                 </Grid>
-                </Grid>
-                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: { xs: 'column', sm: 'row' }, textAlign: 'center', gap: 2, mt: 4 }}>
-                    <Copyright sx={{ mt: 8, mb: 4 }} />
+                <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', textAlign: 'center', gap: 2, mt: 4 }}>
+                    <Copyright />
                 </Box>
-        </Container>
-    </Box>
+            </Container>
+        </Box>
     );
 }

@@ -358,7 +358,7 @@ const ListPrPage = () => {
     const showNext = currentSuggestionIndex < listData.suggestions.length - 1
 
     return (<AppLayout>
-        <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Grid container justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
                 <Grid item>
                     <Typography variant="h5" gutterBottom>

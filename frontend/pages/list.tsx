@@ -13,9 +13,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
-import CardActions from '@mui/material/CardActions';
 import Chip from '@mui/material/Chip';
-import Switch from '@mui/material/Switch';
 import Link from '@mui/material/Link';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
@@ -23,11 +21,13 @@ import EditIcon from '@mui/icons-material/Edit';
 import ReportIcon from '@mui/icons-material/Report';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShareIcon from '@mui/icons-material/Share';
 import NextLink from 'next/link';
-
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { Menu, MenuItem } from '@mui/material';
 
 import AppLayout from "@/components/AppLayout";
 import { ListPageResponse, User, UserComment } from "@/utils/types";
@@ -41,6 +41,16 @@ const ListPage = () => {
   const [commenters, setCommenters] = useState<UserComment[] | null>(null);
   const [listAuthor, setlistAuthor] = useState<User | null>(null);
   const [id, setId] = useState<string | null>(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleMenuClick = (event: any) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
 
   // Function to fetch user data
   const getUserData = async (userId: number) => {
@@ -147,6 +157,7 @@ const ListPage = () => {
 
         if (response.ok) {
           // Fetch updated list data and comments after submitting the comment
+          setNewComment('');
           fetchListData();
         } else {
           console.error('Error submitting comment:', response.status, response.statusText);
@@ -375,6 +386,10 @@ const ListPage = () => {
     }
   };
 
+  const handleEditList = () => {
+    window.location.href = `/create_list?id=${id}`;
+  };
+
 
   return <AppLayout>
     <Container component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
@@ -383,37 +398,42 @@ const ListPage = () => {
           {list && list.list && (
             <Card variant="outlined" sx={{ mb: 2 }}>
               <CardContent>
-                <Typography variant="h5" gutterBottom>
-                  {list.list.name}
-                </Typography>
-                <Typography color="textSecondary" sx={{ mb: 2 }}>
-                  Last activity: {new Date(list.list.updated).toLocaleString()}
-                </Typography>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                  <Typography variant="h5" gutterBottom>
+                    {list.list.name}
+                  </Typography>
+                  <Box>
+                    <IconButton aria-label="watch/unwatch list" onClick={toggleWatchStatus}>
+                      {list.is_subscribed ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    </IconButton>
+                    <IconButton aria-label="save list" onClick={handleSaveList}>
+                      {list.saved_list_ids.includes(list.list.id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+                    </IconButton>
+                  </Box>
+                </Box>
 
-                <FormControlLabel
-                  control={<Switch checked={list.is_subscribed} onChange={toggleWatchStatus} />}
-                  label={list.is_subscribed ? 'Unwatch List' : 'Watch List'}
-                />
 
                 {listAuthor && (
-                  <Box
-                    display="flex"
-                    justifyContent="center" // Centers horizontally
-                    alignItems="center" // Centers vertically
-                    mb={2}
-                  >
-                    <Avatar src={"http://localhost/static/" + listAuthor.avatar} alt="Profile image" sx={{ marginRight: 2 }} />
-                    <Typography variant="subtitle1">
-                      <Link href={`/user_profile?id=${listAuthor.id}`} color="inherit" underline="hover">
-                        {listAuthor.name}
-                      </Link>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="body2" color="textSecondary">
+                      Last activity: {new Date(list.list.updated).toLocaleString()}
                     </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+                      <Avatar src={`http://localhost/static/${listAuthor.avatar}`} alt="Profile image" sx={{ marginRight: 2 }} />
+                      <Typography variant="subtitle1">
+                        <Link href={`/user_profile?id=${listAuthor.id}`} color="inherit" underline="hover">
+                          {listAuthor.name}
+                        </Link>
+                      </Typography>
+                    </Box>
                   </Box>
                 )}
+
 
                 {/* Dynamic list of links */}
                 <Box sx={{ mb: 2 }}>
                   {/* Display HTML content safely */}
+                  {list.list.description}
                   <Typography dangerouslySetInnerHTML={{ __html: list.list.content }} />
                 </Box>
                 {list.list.source && (
@@ -423,48 +443,56 @@ const ListPage = () => {
                     </Link>
                   </Typography>
                 )}
-                <CardActions>
-                  <CardActions>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
+                  <Box>
                     <IconButton aria-label="upvote" onClick={handleUpvote}>
                       <ArrowUpwardIcon />
                     </IconButton>
-                    <Typography variant="subtitle1">
+                    <Typography variant="subtitle1" display="inline">
                       {list && list.list ? list.list.score : 0} {/* Display total score */}
                     </Typography>
                     <IconButton aria-label="downvote" onClick={handleDownvote}>
                       <ArrowDownwardIcon />
                     </IconButton>
-                    {/* ... (existing code) */}
-                  </CardActions>
-                  <IconButton aria-label="save list" onClick={handleSaveList}>
-                    {list && list.saved_list_ids.includes(list!.list.id) ? (
-                      <BookmarkIcon /> // Use the icon for saved state, e.g., BookmarkIcon
-                    ) : (
-                      <BookmarkBorderIcon /> // Use the icon for unsaved state
+                  </Box>
+                  <Box>
+                    <Button startIcon={<EditIcon />} size="small" onClick={handleSuggestEdit}>
+                      Suggest Edit
+                    </Button>
+                    <Button startIcon={<ReportIcon />} size="small" onClick={handleReport}>
+                      Report
+                    </Button>
+                    <IconButton onClick={handleCopyLink} color="primary">
+                      <ShareIcon />
+                    </IconButton>
+                    {listAuthor && (listAuthor.id == getUserIdFromAccessToken()) && (
+                      <>
+                        <IconButton
+                          aria-label="more"
+                          aria-controls="long-menu"
+                          aria-haspopup="true"
+                          onClick={handleMenuClick}
+                        >
+                          <MoreVertIcon />
+                        </IconButton>
+                        <Menu
+                          id="long-menu"
+                          anchorEl={anchorEl}
+                          keepMounted
+                          open={Boolean(anchorEl)}
+                          onClose={handleMenuClose}
+                        >
+                          <MenuItem onClick={() => { handleEditList(); handleMenuClose(); }}>
+                            Edit List
+                          </MenuItem>
+                          <MenuItem onClick={() => { handleDeleteList(); handleMenuClose(); }}>
+                            Delete List
+                          </MenuItem>
+                        </Menu>
+                      </>
                     )}
-                  </IconButton>
-                </CardActions>
-                {listAuthor && (listAuthor.id == getUserIdFromAccessToken()) && (
-                  <CardActions>
-                    <Button startIcon={<EditIcon />} size="small" href={`/create_list?id=${list.list.id}`}>
-                      Edit List
-                    </Button>
-                    <Button startIcon={<DeleteIcon />} size="small" onClick={handleDeleteList}>
-                      Delete List
-                    </Button>
-                  </CardActions>
-                )}
-                <CardActions>
-                  <Button startIcon={<EditIcon />} size="small" onClick={handleSuggestEdit}>
-                    Suggest Edit
-                  </Button>
-                  <Button startIcon={<ReportIcon />} size="small" onClick={handleReport}>
-                    Report
-                  </Button>
-                </CardActions>
-                <IconButton onClick={handleCopyLink} color="primary">
-                  <ShareIcon />
-                </IconButton>
+                  </Box>
+                </Box>
               </CardContent>
               {/* Comment section */}
               {commenters && (

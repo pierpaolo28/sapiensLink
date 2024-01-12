@@ -12,11 +12,13 @@ import TextField from '@mui/material/TextField';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
-import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';
 import SearchIcon from '@mui/icons-material/Search';
 import Link from 'next/link';
+import Chip from '@mui/material/Chip';
+import CardActionArea from '@mui/material/CardActionArea';
+import CardContent from '@mui/material/CardContent';
 
 import AppLayout from "@/components/AppLayout";
 // import DBSetup from "@/components/DBSetup";
@@ -36,14 +38,14 @@ export default function RankHome() {
     try {
       // Use the updated currentPage state to fetch the corresponding page
       const updatedParams = `page=${currentPage}&${extraParams}`;
-  
+
       const homeData = await getRankHome(updatedParams);
       setHome(homeData);
     } catch (error) {
       console.error("Error fetching home data:", error);
     }
   };
-  
+
 
   useEffect(() => {
     // Parse the query parameter from the URL
@@ -79,7 +81,7 @@ export default function RankHome() {
     setCurrentPage(newPage);
     fetchData(`q=${searchTerm}&page=${newPage}`);
   };
-  
+
 
   return (
     <>
@@ -96,10 +98,10 @@ export default function RankHome() {
                 {home && home.topic_counts && (
                   <List>
                     {home.topic_counts.map((topic, index) => (
-                       <Link key={index} href={`/rank_home?q=${topic[0]}`} passHref>
-                      <ListItem key={index}>
-                        <ListItemText primary={topic[0] + " " + topic[1]} />
-                      </ListItem>
+                      <Link key={index} href={`/rank_home?q=${topic[0]}`} passHref>
+                        <ListItem key={index}>
+                          <ListItemText primary={topic[0] + " " + topic[1]} />
+                        </ListItem>
                       </Link>
                     ))}
                     <Button href="/rank_topics">More</Button>
@@ -138,48 +140,39 @@ export default function RankHome() {
                     }}
                   />
                 </form>
-                <Stack spacing={2} sx={{ justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+                <Stack spacing={2}>
                   <Button href='create_rank'>Create Rank</Button>
                   {home && home.ranks ? (
                     home.ranks.map((rank, i) => (
-                      <Grid item key={rank.id} sx={{ width: '100%' }}>
-                        <Card variant="outlined" sx={{ p: 2, mb: 4 }}>
-                          <Link href={`/rank?id=${rank.id}`} passHref>
-                            <Typography variant="h5" gutterBottom>
-                              {rank.name}
+                      <Card key={rank.id}>
+                        <CardActionArea>
+                          <CardContent>
+                            <Link href={`/rank?id=${rank.id}`} passHref>
+                              <Typography gutterBottom variant="h5">
+                                {rank.name}
+                              </Typography>
+                            </Link>
+                            <Typography paragraph color="text.secondary">
+                              {rank.description}
                             </Typography>
-                          </Link>
-
-                          {/* Last activity and watch toggle */}
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                            <Typography variant="body2">
-                              Last Activity: {new Date(rank.updated).toLocaleString()}
-                            </Typography>
-                          </Box>
-
-                          <Typography variant="body1" gutterBottom>
-                            {rank.description}
-                          </Typography>
-
-                          {/* Overall score */}
-                          <Typography variant="body2" gutterBottom>
-                            Overall Score: {rank.score}
-                          </Typography>
-
-                          {/* Display each element in content */}
-                          <List>
-                            {Object.values(rank.content).map((element, index) => (
-                              <ListItem key={index}>
-                                <Grid container alignItems="center">
-                                  <Grid item xs>
-                                    <ListItemText primary={element.element} />
-                                  </Grid>
-                                </Grid>
-                              </ListItem>
-                            ))}
-                          </List>
-                        </Card>
-                      </Grid>
+                            <Grid container spacing={3} alignItems="center">
+                              <Grid item xs>
+                                <Stack direction="row" spacing={1}>
+                                  {rank.topic.map((topic) => (
+                                    <Chip key={topic.id} label={topic.name} />
+                                  ))}
+                                </Stack>
+                              </Grid>
+                              <Grid item>
+                                {/* Display the score as text with plus/minus sign */}
+                                <Typography variant="subtitle1" color={rank.score >= 0 ? 'primary' : 'error'}>
+                                  {rank.score >= 0 ? `+${rank.score}` : rank.score}
+                                </Typography>
+                              </Grid>
+                            </Grid>
+                          </CardContent>
+                        </CardActionArea>
+                      </Card>
                     ))
                   ) : (
                     // Render loading state or an error message
@@ -213,7 +206,7 @@ export default function RankHome() {
                           <Avatar src={"http://localhost/static/" + user.avatar} alt={user.name} />
                         </ListItemAvatar>
                         <Link href={`/user_profile?id=${user.id}`} passHref>
-                        <ListItemText primary={user.name} />
+                          <ListItemText primary={user.name} />
                         </Link>
                       </ListItem>
                     ))}

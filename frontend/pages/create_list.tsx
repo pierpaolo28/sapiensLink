@@ -138,7 +138,6 @@ export default function CreateListPage() {
             participants: [getUserIdFromAccessToken()],
             topic: listDetails.topic.map((topicName) => ({ name: topicName })),
           };
-
           const response = await fetch(url, {
             method: isUpdateMode ? 'PUT' : 'POST',
             headers: {
