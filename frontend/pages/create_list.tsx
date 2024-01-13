@@ -250,15 +250,12 @@ export default function CreateListPage() {
     return doc.body.innerHTML;
   };
   
-  
-
   const isValidListContent = (content: any) => {
     const div = document.createElement('div');
     div.innerHTML = content;
     const items = div.querySelectorAll('ol, ul');
     return div.childNodes.length === items.length; // Check if all child nodes are lists
   };
-
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();

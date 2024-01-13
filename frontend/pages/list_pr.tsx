@@ -103,10 +103,9 @@ const ListPrPage = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const handleCloseModal = () => setModalOpen(false);
     const [commentText, setCommentText] = useState('');
+    const [error, setError] = useState<string | null>(null);
 
     const handleOpenModal = () => {
-        // Set newSuggestionText to the content of the old list when the modal opens
-        setNewSuggestionText(listData?.list?.content || '');
         setModalOpen(true);
     };
 
@@ -245,14 +244,81 @@ const ListPrPage = () => {
         }
     };
 
+    const convertQuillContentToHtml = (quillHtml: string) => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(quillHtml, 'text/html');
+        const elements = Array.from(doc.body.querySelectorAll('*'));
+      
+        elements.forEach(el => {
+          Array.from(el.childNodes).forEach(node => {
+            if (node.nodeType === Node.TEXT_NODE && node.textContent) {
+              const span = document.createElement('span');
+              span.textContent = node.textContent;
+              
+              const html = span.innerHTML.replace(/((https?:\/\/|www\.)[^\s]+)(?![^<]*>|[^<>]*<\/a>)/g, (url) => {
+                // Prepend 'http://' if the URL starts with 'www.'
+                const href = url.startsWith('www.') ? `http://${url}` : url;
+                return `<a href="${href}" target="_blank">${url}</a>`;
+              });
+      
+              span.innerHTML = html;
+              if (node.parentNode) {
+                node.parentNode.replaceChild(span, node);
+              }
+            }
+          });
+        });
+      
+        return doc.body.innerHTML;
+      };
+
+    const isValidListContent = (content: any) => {
+        const div = document.createElement('div');
+        div.innerHTML = content;
+        const items = div.querySelectorAll('ol, ul');
+        return div.childNodes.length === items.length; // Check if all child nodes are lists
+    };
+
+    const appendLists = (oldText: string, newText: string) => {
+        // Check if the list is ordered (starts with <ol>)
+        const isOrdered = /^\s*<ol>/.test(oldText);
+
+        // Apply the appropriate regex based on the list type
+        const modifiedContent = isOrdered
+            ? oldText.replace(/<\/ol><br><\/ol>$/, '') + newText.replace(/<ol>/, '')
+            : oldText.replace(/<\/ul><br><\/ul>$/, '') + newText.replace(/<ul>/, '');
+        return convertQuillContentToHtml(modifiedContent);
+    }
+
 
     const handleNewSuggestionSubmit = async () => {
+        setError(null);
         const accessToken = localStorage.getItem('access_token');
+        // Check if listData and listData.list are not null
+        if (!listData || !listData.list) {
+            console.error("List data is not available.");
+            return;
+        }
+
+        // Validate content
+        if (!isValidListContent(newSuggestionText)) {
+            setError('Content must be in bullet or numbered list format.');
+            return;
+        }
+
+        const updatedContent = appendLists(listData.list.content, newSuggestionText);
+
+        // Validate content
+        if (!isValidListContent(updatedContent)) {
+            setError('Content must be in bullet or numbered list format.');
+            return;
+        }
+
         const payload = {
             edit_suggestion: {
                 list: id,
                 suggested_by: getUserIdFromAccessToken(),
-                suggestion_text: newSuggestionText,
+                suggestion_text: updatedContent,
             },
         };
 
@@ -508,13 +574,18 @@ const ListPrPage = () => {
                 <Typography id="submit-edit-suggestion-modal" variant="h6" component="h2">
                     Submit New Edit Suggestion
                 </Typography>
-                <Typography id="submit-edit-suggestion-modal-description" sx={{ mt: 2 }}>
-                    Fill in the details for your new edit suggestion.
-                </Typography>
+                {error && (
+                    <Typography variant="body1" color="error" gutterBottom>
+                        {error}
+                    </Typography>
+                )}
                 {/* Submit Edit Suggestion Section */}
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={6}>
                         <Card variant="outlined" sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                            <Typography id="submit-edit-suggestion-modal-description" sx={{ mt: 2 }}>
+                                Write here the new elements you want to add.
+                            </Typography>
                             <CardContent sx={{ flexGrow: 1 }}>
                                 <FormControl fullWidth>
                                     <ReactQuill
@@ -523,19 +594,10 @@ const ListPrPage = () => {
                                         onChange={(value) => setNewSuggestionText(value)}
                                         modules={{
                                             toolbar: [
-                                                [{ 'header': [1, 2, false] }],
-                                                ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                                                [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
-                                                ['link'],
-                                                ['clean'],
+                                                [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                                ['link'] // Only allow bullet and numbered lists
                                             ],
                                         }}
-                                        formats={[
-                                            'header',
-                                            'bold', 'italic', 'underline', 'strike', 'blockquote',
-                                            'list', 'bullet', 'indent',
-                                            'link',
-                                        ]}
                                     />
                                 </FormControl>
                             </CardContent>
@@ -553,10 +615,16 @@ const ListPrPage = () => {
                     <Grid item xs={12} md={6}>
                         <Card variant="outlined" sx={{ height: '100%' }}>
                             <CardContent>
-                                <Typography variant="subtitle1" gutterBottom>
-                                    Old List
-                                </Typography>
-                                <Typography sx={{ whiteSpace: 'pre-wrap' }} dangerouslySetInnerHTML={{ __html: listData.list.content }} />
+                                {listData && listData.list ? (
+                                    <>
+                                        <Typography variant="subtitle1" gutterBottom>
+                                            Preview of your proposal:
+                                        </Typography>
+                                        <div dangerouslySetInnerHTML={{ __html: appendLists(listData.list.content, newSuggestionText) }} />
+                                    </>
+                                ) : (
+                                    <Typography>Loading...</Typography>
+                                )}
                             </CardContent>
                         </Card>
                     </Grid>
