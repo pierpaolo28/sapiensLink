@@ -46,7 +46,7 @@ export default function Footer(props: any) {
                             About us
                         </Link><br />
                         <Link href="#" variant="subtitle1" color="textSecondary">
-                            Press
+                            Support us
                         </Link><br />
                     </Grid>
                     <Grid item xs={12} md={4} lg={3}>

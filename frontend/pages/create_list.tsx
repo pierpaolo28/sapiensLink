@@ -11,15 +11,15 @@ import InputLabel from '@mui/material/InputLabel';
 import FormControl from '@mui/material/FormControl';
 import Select from '@mui/material/Select';
 import { SelectChangeEvent } from '@mui/material/Select';
-// Dynamically import ReactQuill only on the client side
+import { Switch } from '@mui/material';
 import dynamic from 'next/dynamic';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-import 'react-quill/dist/quill.snow.css'; 
+import 'react-quill/dist/quill.snow.css';
 
 import AppLayout from "@/components/AppLayout";
 import { getUserIdFromAccessToken, isUserLoggedIn } from "@/utils/auth";
 import { ListForm } from "@/utils/types";
-
+import BulletNumberTextArea from '@/components/BulletNumberTextArea';
 
 export default function CreateListPage() {
   const [listDetails, setListDetails] = useState<ListForm>({
@@ -33,22 +33,33 @@ export default function CreateListPage() {
   const [isUpdateMode, setIsUpdateMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedEditor, setSelectedEditor] = useState('quill'); // Default to 'quill'
+
+  const handleBulletNumberTextAreaChange = (content: string) => {
+    // Initialize a local variable to store the updated content
+    let updatedContent = '';
+  
+    updatedContent = convertPlainTextToHtml(content);
+  
+    // Update the content in listDetails with the local variable
+    setListDetails((prevDetails) => ({
+      ...prevDetails,
+      content: updatedContent,
+    }));
+  };
+  
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const id = urlParams.get('id');
 
-    // Check if the user is logged in
     if (!isUserLoggedIn()) {
-      // Redirect to the sign-in page
       window.location.href = '/signin';
     }
 
     if (id) {
-      // If ID exists, fetch data for update mode
       fetchListData(id);
     } else {
-      // If no ID, set loading to false
       setIsLoading(false);
     }
   }, []);
@@ -81,16 +92,116 @@ export default function CreateListPage() {
     } catch (error) {
       console.error('Error fetching list data:', error);
     } finally {
-      // Set loading to false once data is fetched or an error occurs
       setIsLoading(false);
     }
   };
+
+  const convertPlainTextToHtml = (plainText: string) => {
+    const lines = plainText.split(/\r?\n/);
+    let html = '';
+  
+    let isNumbered = false;
+  
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+  
+      if (line.match(/^\d+\./)) {
+        // Detect numbered list item
+        if (!isNumbered) {
+          // Start a numbered list
+          html += '<ol>';
+          isNumbered = true;
+        }
+  
+        // Remove the numbering (e.g., 1.)
+        const textWithoutNumbering = line.replace(/^\d+\.\s*/, '');
+  
+        // Extract the text and link from the line
+        const parts = textWithoutNumbering.split(' ');
+        const text = parts.slice(0, parts.length - 1).join(' ');
+        const link = parts[parts.length - 1];
+  
+        if (link.startsWith('http')) {
+          // Create an HTML link within a list item if the link is present
+          html += `<li><a href="${link}" target="_blank">${text}</a></li>`;
+        } else {
+          // Create a list item without an href if there is no link
+          html += `<li>${textWithoutNumbering}</li>`;
+        }
+      } else {
+        if (isNumbered) {
+          // Close the numbered list
+          html += '</ol>';
+          isNumbered = false;
+        }
+  
+        if (line.startsWith('•')) {
+          // Detect bulleted list item
+          if (!html.includes('<ul>')) {
+            // Start a bulleted list if not already started
+            html += '<ul>';
+          }
+  
+          // Remove the bullet character (•)
+          const textWithoutBullet = line.replace(/^•\s*/, '');
+  
+          // Extract the text and link from the line
+          const parts = textWithoutBullet.split(' ');
+          const text = parts.slice(0, parts.length - 1).join(' ');
+          const link = parts[parts.length - 1];
+  
+          if (link.startsWith('http')) {
+            // Create an HTML link within a list item if the link is present
+            html += `<li><a href="${link}" target="_blank">${text}</a></li>`;
+          } else {
+            // Create a list item without an href if there is no link
+            html += `<li>${textWithoutBullet}</li>`;
+          }
+        } else {
+          // If the line doesn't start with '•' or numbering, treat it as plain text
+          if (html.includes('<ul>')) {
+            // Close the bulleted list if it's open
+            html += '</ul>';
+          } else if (isNumbered) {
+            // Close the numbered list if it's open
+            html += '</ol>';
+          }
+          html += `${line}<br>`;
+        }
+      }
+    }
+  
+    if (isNumbered) {
+      // Close the numbered list if it's still open
+      html += '</ol>';
+    }
+  
+    if (html.includes('<ul>')) {
+      // Close the bulleted list if it's open
+      html += '</ul>';
+    }
+  
+    return html;
+  };  
+
 
   const handleQuillChange = (value: string) => {
     setListDetails((prevDetails) => ({
       ...prevDetails,
       content: value,
     }));
+  };
+
+  const handleEditorSwitch = (editor: string) => {
+    setSelectedEditor(editor);
+
+    // Clear the content when switching to Quill Editor
+    if (editor === 'quill') {
+      setListDetails((prevDetails) => ({
+        ...prevDetails,
+        content: '', // Clear the content
+      }));
+    }
   };
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -100,74 +211,92 @@ export default function CreateListPage() {
       [name]: type === 'checkbox' ? checked : value,
     }));
   };
-  
 
   const handleTopicChange = (event: SelectChangeEvent<string[]>) => {
     const value = event.target.value;
-    // 'value' will be a string[] for the multiple select
     setListDetails((prevDetails) => ({
       ...prevDetails,
       topic: typeof value === 'string' ? value.split(',') : value,
     }));
   };
 
+  const isValidListContent = (content: any) => {
+    const div = document.createElement('div');
+    div.innerHTML = content;
+    const items = div.querySelectorAll('ol, ul');
+    return div.childNodes.length === items.length; // Check if all child nodes are lists
+  };
+
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
-    // Reset error state on each submission attempt
     setError(null);
 
-    // Check if the mandatory fields are filled
+    if (selectedEditor === 'bulletNumberTextArea') {
+      // Convert the plain text to HTML
+      const contentHtml = convertPlainTextToHtml(listDetails.content);
+
+      // Update the content in listDetails
+      setListDetails((prevDetails) => ({
+        ...prevDetails,
+        content: contentHtml,
+      }));
+    }
+
+    if (selectedEditor === 'quill') {
+      // Validate content
+      if (!isValidListContent(listDetails.content)) {
+        setError('Content must be in bullet or numbered list format.');
+        return;
+      }
+      // Content comes from Quill Editor
+      // Set it in listDetails.content if needed
+      setListDetails((prevDetails) => ({
+        ...prevDetails,
+        content: listDetails.content, // Set content from Quill Editor if needed
+      }));
+    }
+
     if (listDetails.name && listDetails.topic && listDetails.topic.length > 0) {
-      // TODO: Validate the "content" field
-      // const contentRegex = /^(\d+\.\s|-\s|\*\s)?(?:[A-Za-z0-9\s]+|http[s]?:\/\/[^\s]+)/gm;
-      // if (contentRegex.test(listDetails.content)) {
-        try {
-          const accessToken = localStorage.getItem('access_token');
-          let url = 'http://localhost/api/create_list_page';
+      try {
+        const accessToken = localStorage.getItem('access_token');
+        let url = 'http://localhost/api/create_list_page';
 
-          if (isUpdateMode) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const id = urlParams.get('id');
-            url = `http://localhost/api/update_list_page/${id}/`;
-          }
-
-          // Include the participants field with the user ID of the current user
-          const updatedListDetails = {
-            ...listDetails,
-            participants: [getUserIdFromAccessToken()],
-            topic: listDetails.topic.map((topicName) => ({ name: topicName })),
-          };
-          const response = await fetch(url, {
-            method: isUpdateMode ? 'PUT' : 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${accessToken}`,
-            },
-            body: JSON.stringify(updatedListDetails),
-          });
-
-          if (response.ok) {
-            window.location.href = '/list_home';
-          } else {
-            // Handle server-side errors
-            const responseData = await response.json();
-            setError(responseData.message || 'Failed to submit the form');
-          }
-        } catch (error) {
-          console.error('Error creating/updating list:', error);
-          setError('An unexpected error occurred.');
+        if (isUpdateMode) {
+          const urlParams = new URLSearchParams(window.location.search);
+          const id = urlParams.get('id');
+          url = `http://localhost/api/update_list_page/${id}/`;
         }
-      // } else {
-      //   setError(
-      //     'Content field should contain ordered/bulleted lists with each item being text or a valid webpage URL.'
-      //   );
-      // }
+
+        const updatedListDetails = {
+          ...listDetails,
+          participants: [getUserIdFromAccessToken()],
+          topic: listDetails.topic.map((topicName) => ({ name: topicName })),
+        };
+        const response = await fetch(url, {
+          method: isUpdateMode ? 'PUT' : 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify(updatedListDetails),
+        });
+
+        if (response.ok) {
+          window.location.href = '/list_home';
+        } else {
+          const responseData = await response.json();
+          setError(responseData.message || 'Failed to submit the form');
+        }
+      } catch (error) {
+        console.error('Error creating/updating list:', error);
+        setError('An unexpected error occurred.');
+      }
     } else {
-      setError('Please fill in all mandatory fields (Name, Content and Topic).');
+      setError('Please fill in all mandatory fields (Name, Content, and Topic).');
     }
   };
-  
+
   if (isLoading) {
     // Render a loading screen while fetching data
     return <div>Loading...</div>;
@@ -183,7 +312,7 @@ export default function CreateListPage() {
   return (
     <AppLayout>
       <Container maxWidth="md">
-      <Typography variant="h4" component="h1" gutterBottom>
+        <Typography variant="h4" component="h1" gutterBottom>
           {isUpdateMode ? 'Update List' : 'Create List'}
         </Typography>
         {error && (
@@ -215,32 +344,39 @@ export default function CreateListPage() {
               />
             </Grid>
             <Grid item xs={12}>
-              {/* Adjust styles to create separation between InputLabel and ReactQuill */}
               <div style={{ marginBottom: '10px' }}>
                 <InputLabel id="content-label">Content</InputLabel>
               </div>
-              <FormControl fullWidth>
-                <ReactQuill
-                  id="content"
-                  value={listDetails.content}
-                  onChange={handleQuillChange}
-                  modules={{
-                    toolbar: [
-                      [{ 'header': [1, 2, false] }],
-                      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                      [{'list': 'ordered'}, {'list': 'bullet'}, {'indent': '-1'}, {'indent': '+1'}],
-                      ['link'],
-                      ['clean'],
-                    ],
-                  }}
-                  formats={[
-                    'header',
-                    'bold', 'italic', 'underline', 'strike', 'blockquote',
-                    'list', 'bullet', 'indent',
-                    'link',
-                  ]}
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={selectedEditor === 'bulletNumberTextArea'}
+                    onChange={() => handleEditorSwitch(selectedEditor === 'quill' ? 'bulletNumberTextArea' : 'quill')}
+                  />
+                }
+                label={selectedEditor === 'quill' ? 'Create list' : 'Import list'}
+              />
+
+              {/* Conditional Rendering of Editors */}
+              {selectedEditor === 'quill' ? (
+                <FormControl fullWidth>
+                  <ReactQuill
+                    id="content"
+                    value={listDetails.content}
+                    onChange={handleQuillChange}
+                    modules={{
+                      toolbar: [
+                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                        ['link'] // Only allow bullet and numbered lists
+                      ],
+                    }}
+                  />
+                </FormControl>
+              ) : (
+                <BulletNumberTextArea
+                  onContentChange={handleBulletNumberTextAreaChange}
                 />
-              </FormControl>
+              )}
             </Grid>
             <Grid item xs={12}>
               <TextField
@@ -252,7 +388,7 @@ export default function CreateListPage() {
               />
             </Grid>
             <Grid item xs={12}>
-            <FormControlLabel
+              <FormControlLabel
                 control={
                   <Checkbox
                     checked={listDetails.public}
@@ -264,39 +400,38 @@ export default function CreateListPage() {
               />
             </Grid>
             <Grid item xs={12}>
-            <FormControl fullWidth>
-      <InputLabel id="topic-label">Topic</InputLabel>
-      <Select
-        labelId="topic-label"
-        id="topic-select"
-        multiple
-        value={listDetails.topic}
-        onChange={handleTopicChange}
-        name="topic"
-        renderValue={(selected) => selected.join(', ')}
-        MenuProps={{
-          PaperProps: {
-            style: {
-              maxHeight: 224,
-              width: 250,
-            },
-          },
-        }}
-      >
-        {topics.map((topic) => (
-          <MenuItem key={topic.value} value={topic.value}>
-            {topic.label}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-
+              <FormControl fullWidth>
+                <InputLabel id="topic-label">Topic</InputLabel>
+                <Select
+                  labelId="topic-label"
+                  id="topic-select"
+                  multiple
+                  value={listDetails.topic}
+                  onChange={handleTopicChange}
+                  name="topic"
+                  renderValue={(selected) => selected.join(', ')}
+                  MenuProps={{
+                    PaperProps: {
+                      style: {
+                        maxHeight: 224,
+                        width: 250,
+                      },
+                    },
+                  }}
+                >
+                  {topics.map((topic) => (
+                    <MenuItem key={topic.value} value={topic.value}>
+                      {topic.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </Grid>
-            <Grid item xs={12}>
-              <Button variant="outlined" href="/list_home">
+            <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}> 
+              <Button variant="outlined" color="secondary" href="/list_home">
                 Cancel
               </Button>
-              <Button variant="contained" color="primary" type="submit" style={{ marginLeft: 8 }}>
+              <Button variant="contained" color="primary" type="submit">
                 {isUpdateMode ? 'Update' : 'Submit'}
               </Button>
             </Grid>

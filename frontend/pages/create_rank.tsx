@@ -159,21 +159,21 @@ const CreateRankForm = () => {
         .replace(/<br>/g, '')
         .replace(/<\/p><p>/g, '')
         .replace(/<p><br><\/p>$/, '');
-  
+
       // Add the element to the elements array
       const newElements = [...elements, sanitizedElement];
       setElements(newElements);
       setCurrentElement('');
-  
+
       // Update formData.content with the new element
       const newContent = { ...formData.content };
       const key = String.fromCharCode('a'.charCodeAt(0) + elements.length); // Calculate the next key based on the length of the elements array
-  
+
       newContent[key] = {
         element: sanitizedElement,
         user_id: getUserIdFromAccessToken(),
       };
-  
+
       // Update the formData state
       handleFormChange('content', newContent);
     } else {
@@ -181,7 +181,7 @@ const CreateRankForm = () => {
       alert('Please enter some text before adding an element.');
     }
   };
-  
+
   const saveEditedElement = (index: any) => {
     if (currentEditedElement.trim() !== '') {
       // Sanitize the input
@@ -189,21 +189,21 @@ const CreateRankForm = () => {
         .replace(/<br>/g, '')
         .replace(/<\/p><p>/g, '')
         .replace(/<p><br><\/p>$/, '');
-  
+
       // Update the elements array
       const newElements = [...elements];
       newElements[index] = sanitizedElement;
       setElements(newElements);
-  
+
       // Update the content object
       const newContent = { ...formData.content };
       const key = String.fromCharCode('a'.charCodeAt(0) + index); // Use the existing key for the element being edited
-  
+
       newContent[key] = {
         element: sanitizedElement,
         user_id: getUserIdFromAccessToken(),
       };
-  
+
       // Update the formData state
       handleFormChange('content', newContent);
       // Exit the editing mode
@@ -253,6 +253,9 @@ const CreateRankForm = () => {
             value={formData.description}
             onChange={(e) => handleFormChange('description', e.target.value)}
           />
+          <div style={{ marginBottom: '10px' }}>
+            <InputLabel id="content-label">Content</InputLabel>
+          </div>
           <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, width: '100%' }}>
             <Box sx={{ flexGrow: 1, mr: 1 }}> {/* flexGrow allows the box to expand, mr adds some margin to the right */}
               <ReactQuill
