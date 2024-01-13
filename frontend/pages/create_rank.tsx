@@ -145,50 +145,74 @@ const CreateRankForm = () => {
     }
   };
 
-  const handleEditQuillKeyDown = (event: any) => {
+  const handleEditQuillKeyDown = (event: any, index: any) => {
     if (event.key === 'Enter') {
       event.preventDefault();
-      saveEditedElement();
+      saveEditedElement(index);
     }
   };
 
   const addElement = () => {
-    // Check if the currentElement is not just empty or whitespace
-    console.log(currentElement)
-    if (currentElement !== '<p><br></p><p><br></p>') {
-      // Sanitize and add the element as before
+    if (currentElement.trim() !== '') {
+      // Sanitize the input
       let sanitizedElement = currentElement
         .replace(/<br>/g, '')
         .replace(/<\/p><p>/g, '')
         .replace(/<p><br><\/p>$/, '');
-
+  
+      // Add the element to the elements array
       const newElements = [...elements, sanitizedElement];
       setElements(newElements);
       setCurrentElement('');
+  
+      // Update formData.content with the new element
+      const newContent = { ...formData.content };
+      const key = String.fromCharCode('a'.charCodeAt(0) + elements.length); // Calculate the next key based on the length of the elements array
+  
+      newContent[key] = {
+        element: sanitizedElement,
+        user_id: getUserIdFromAccessToken(),
+      };
+  
+      // Update the formData state
+      handleFormChange('content', newContent);
     } else {
-      // Optionally, provide feedback to the user that input is required
+      // Handle the case where the element is empty
       alert('Please enter some text before adding an element.');
     }
   };
-
-
-  const saveEditedElement = () => {
-    // Now save the edited element value to the elements array
-    const updatedElements = elements.map((element, index) => {
-      if (index === editingElementIndex) {
-        let sanitizedElement = currentEditedElement
-          .replace(/<br>/g, '')
-          .replace(/<\/p><p>/g, '')
-          .replace(/<p><br><\/p>$/, '');
-        return sanitizedElement;
-      }
-      return element;
-    });
-
-    setElements(updatedElements);
-    // Clear the edited values and close the editor
-    setCurrentEditedElement('');
-    setEditingElementIndex(null);
+  
+  const saveEditedElement = (index: any) => {
+    if (currentEditedElement.trim() !== '') {
+      // Sanitize the input
+      let sanitizedElement = currentEditedElement
+        .replace(/<br>/g, '')
+        .replace(/<\/p><p>/g, '')
+        .replace(/<p><br><\/p>$/, '');
+  
+      // Update the elements array
+      const newElements = [...elements];
+      newElements[index] = sanitizedElement;
+      setElements(newElements);
+  
+      // Update the content object
+      const newContent = { ...formData.content };
+      const key = String.fromCharCode('a'.charCodeAt(0) + index); // Use the existing key for the element being edited
+  
+      newContent[key] = {
+        element: sanitizedElement,
+        user_id: getUserIdFromAccessToken(),
+      };
+  
+      // Update the formData state
+      handleFormChange('content', newContent);
+      // Exit the editing mode
+      setEditingElementIndex(null);
+      setCurrentEditedElement('');
+    } else {
+      // Handle the case where the edited element is empty
+      alert('Please enter some text to save the edited element.');
+    }
   };
 
 
@@ -252,10 +276,10 @@ const CreateRankForm = () => {
                     <ReactQuill
                       value={currentEditedElement}
                       onChange={(value) => setCurrentEditedElement(value)}
-                      onKeyDown={(event) => handleEditQuillKeyDown(event)}
+                      onKeyDown={(event) => handleEditQuillKeyDown(event, index)}
                       theme="snow"
                     />
-                    <IconButton onClick={() => saveEditedElement()} color="primary">
+                    <IconButton onClick={() => saveEditedElement(index)} color="primary">
                       <CheckIcon />
                     </IconButton>
                   </>
