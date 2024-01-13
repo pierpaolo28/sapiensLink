@@ -19,7 +19,7 @@ import 'react-quill/dist/quill.snow.css';
 import AppLayout from "@/components/AppLayout";
 import { getUserIdFromAccessToken, isUserLoggedIn } from "@/utils/auth";
 import { ListForm } from "@/utils/types";
-import BulletNumberTextArea from '@/components/BulletNumberTextArea';
+import ImportList from '@/components/ImportList';
 
 export default function CreateListPage() {
   const [listDetails, setListDetails] = useState<ListForm>({
@@ -35,7 +35,7 @@ export default function CreateListPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedEditor, setSelectedEditor] = useState('quill'); // Default to 'quill'
 
-  const handleBulletNumberTextAreaChange = (content: string) => {
+  const handleImportListChange = (content: string) => {
     // Initialize a local variable to store the updated content
     let updatedContent = '';
   
@@ -121,9 +121,10 @@ export default function CreateListPage() {
         const text = parts.slice(0, parts.length - 1).join(' ');
         const link = parts[parts.length - 1];
   
-        if (link.startsWith('http')) {
+        if (link.startsWith('http') || link.startsWith('www.')) {
           // Create an HTML link within a list item if the link is present
-          html += `<li><a href="${link}" target="_blank">${text}</a></li>`;
+          const href = link.startsWith('http') ? link : `http://${link}`;
+          html += `<li><a href="${href}" target="_blank">${text}</a></li>`;
         } else {
           // Create a list item without an href if there is no link
           html += `<li>${textWithoutNumbering}</li>`;
@@ -150,9 +151,10 @@ export default function CreateListPage() {
           const text = parts.slice(0, parts.length - 1).join(' ');
           const link = parts[parts.length - 1];
   
-          if (link.startsWith('http')) {
+          if (link.startsWith('http') || link.startsWith('www.')) {
             // Create an HTML link within a list item if the link is present
-            html += `<li><a href="${link}" target="_blank">${text}</a></li>`;
+            const href = link.startsWith('http') ? link : `http://${link}`;
+            html += `<li><a href="${href}" target="_blank">${text}</a></li>`;
           } else {
             // Create a list item without an href if there is no link
             html += `<li>${textWithoutBullet}</li>`;
@@ -182,8 +184,8 @@ export default function CreateListPage() {
     }
   
     return html;
-  };  
-
+  };
+   
 
   const handleQuillChange = (value: string) => {
     setListDetails((prevDetails) => ({
@@ -220,6 +222,36 @@ export default function CreateListPage() {
     }));
   };
 
+  const convertQuillContentToHtml = (quillHtml: string) => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(quillHtml, 'text/html');
+    const elements = Array.from(doc.body.querySelectorAll('*'));
+  
+    elements.forEach(el => {
+      Array.from(el.childNodes).forEach(node => {
+        if (node.nodeType === Node.TEXT_NODE && node.textContent) {
+          const span = document.createElement('span');
+          span.textContent = node.textContent;
+          
+          const html = span.innerHTML.replace(/((https?:\/\/|www\.)[^\s]+)(?![^<]*>|[^<>]*<\/a>)/g, (url) => {
+            // Prepend 'http://' if the URL starts with 'www.'
+            const href = url.startsWith('www.') ? `http://${url}` : url;
+            return `<a href="${href}" target="_blank">${url}</a>`;
+          });
+  
+          span.innerHTML = html;
+          if (node.parentNode) {
+            node.parentNode.replaceChild(span, node);
+          }
+        }
+      });
+    });
+  
+    return doc.body.innerHTML;
+  };
+  
+  
+
   const isValidListContent = (content: any) => {
     const div = document.createElement('div');
     div.innerHTML = content;
@@ -231,30 +263,19 @@ export default function CreateListPage() {
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
+    let contentHtml: string = listDetails.content;
 
-    if (selectedEditor === 'bulletNumberTextArea') {
+    if (selectedEditor === 'ImportList') {
       // Convert the plain text to HTML
-      const contentHtml = convertPlainTextToHtml(listDetails.content);
-
-      // Update the content in listDetails
-      setListDetails((prevDetails) => ({
-        ...prevDetails,
-        content: contentHtml,
-      }));
+      contentHtml = convertPlainTextToHtml(listDetails.content);
     }
-
-    if (selectedEditor === 'quill') {
+    else if (selectedEditor === 'quill') {
       // Validate content
       if (!isValidListContent(listDetails.content)) {
         setError('Content must be in bullet or numbered list format.');
         return;
       }
-      // Content comes from Quill Editor
-      // Set it in listDetails.content if needed
-      setListDetails((prevDetails) => ({
-        ...prevDetails,
-        content: listDetails.content, // Set content from Quill Editor if needed
-      }));
+      contentHtml = convertQuillContentToHtml(listDetails.content);
     }
 
     if (listDetails.name && listDetails.topic && listDetails.topic.length > 0) {
@@ -270,6 +291,7 @@ export default function CreateListPage() {
 
         const updatedListDetails = {
           ...listDetails,
+          content: contentHtml,
           participants: [getUserIdFromAccessToken()],
           topic: listDetails.topic.map((topicName) => ({ name: topicName })),
         };
@@ -350,8 +372,8 @@ export default function CreateListPage() {
               <FormControlLabel
                 control={
                   <Switch
-                    checked={selectedEditor === 'bulletNumberTextArea'}
-                    onChange={() => handleEditorSwitch(selectedEditor === 'quill' ? 'bulletNumberTextArea' : 'quill')}
+                    checked={selectedEditor === 'ImportList'}
+                    onChange={() => handleEditorSwitch(selectedEditor === 'quill' ? 'ImportList' : 'quill')}
                   />
                 }
                 label={selectedEditor === 'quill' ? 'Create list' : 'Import list'}
@@ -373,8 +395,8 @@ export default function CreateListPage() {
                   />
                 </FormControl>
               ) : (
-                <BulletNumberTextArea
-                  onContentChange={handleBulletNumberTextAreaChange}
+                <ImportList
+                  onContentChange={handleImportListChange}
                 />
               )}
             </Grid>

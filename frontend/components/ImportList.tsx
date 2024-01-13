@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { TextField, FormControlLabel, Switch } from '@mui/material';
 
-interface BulletNumberTextAreaProps {
+interface ImportListProps {
     onContentChange: (content: string) => void;
   }
 
-  const BulletNumberTextArea: React.FC<BulletNumberTextAreaProps> = ({ onContentChange }) => {
+  const ImportList: React.FC<ImportListProps> = ({ onContentChange }) => {
     const [rawText, setRawText] = useState(''); // Stores the unformatted text
     const [isNumbered, setIsNumberedLocal] = useState(false);
 
@@ -48,9 +48,9 @@ interface BulletNumberTextAreaProps {
         event.preventDefault();
         let pastedText = event.clipboardData.getData('text');
 
-        // Remove pre-existing bullet points and numbers
+        // Updated regular expressions
         const bulletPointRegex = /^[*-]\s+/gm; // Matches bullet points like '* ' or '- '
-        const numberedListRegex = /^\d+\.\s+/gm; // Matches numbered list like '1. '
+        const numberedListRegex = /^\d+\.\s+|^\d+\)\s+|^\[\d+\]\s+/gm; // Matches '1. ', '1) ', '[1] '
 
         // Replace bullet points and numbers with empty strings
         pastedText = pastedText.replace(bulletPointRegex, '');
@@ -91,4 +91,4 @@ interface BulletNumberTextAreaProps {
     );
 };
 
-export default BulletNumberTextArea;
+export default ImportList;
