@@ -265,7 +265,7 @@ const CreateRankForm = () => {
                 theme="snow"
                 modules={{
                   toolbar: [
-                      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                      ['bold', 'italic', 'underline', 'strike'],
                       ['link'],
                   ],
               }}
@@ -290,7 +290,7 @@ const CreateRankForm = () => {
                       theme="snow"
                       modules={{
                         toolbar: [
-                            ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                            ['bold', 'italic', 'underline', 'strike'],
                             ['link'],
                         ],
                     }}

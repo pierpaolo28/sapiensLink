@@ -28,7 +28,7 @@ import Link from 'next/link';
 import AppLayout from "@/components/AppLayout";
 import { RankPageResponse } from "@/utils/types";
 import { getUserIdFromAccessToken, isUserLoggedIn } from "@/utils/auth";
-import { convertQuillContentToHtml } from "@/utils/html";
+import { convertQuillContentToHtml, sanitizeContent } from "@/utils/html";
 
 // Dynamically import ReactQuill only on the client side
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
@@ -135,16 +135,13 @@ export default function RankPage() {
     };
 
     const handleBlur = () => {
-        // Cancel the edit operation when the component loses focus
-        setEditingIndex(null);
-        setIsEditing(false);
-    };
-
-    const removeEmptyParagraphTags = (htmlString: any) => {
-        // Remove <p><br></p> from the HTML string
-        return htmlString.replace(/<p><br><\/p>/g, '');
-    };
-
+        const quillEditorElement = document.querySelector('.quill');
+        if (quillEditorElement && !quillEditorElement.contains(document.activeElement)) {
+            // Close the Quill editor if the clicked element is not part of the Quill UI
+            setEditingIndex(null);
+            setIsEditing(false);
+        }
+    };    
 
     const updateElement = async (index: number, editedElement: string) => {
         if (!isUserLoggedIn()) {
@@ -152,10 +149,10 @@ export default function RankPage() {
         }
 
         try {
+            if (editedElement != '<p><br></p><p><br></p>') {
             // Extracting the rank IDs from the content object
             const accessToken = localStorage.getItem('access_token');
             const rankIds = Object.keys(rank!.rank.content);
-
             // Using the extracted rank ID for the API call
             const elementIndex = rankIds[index];
             const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
@@ -164,7 +161,7 @@ export default function RankPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${accessToken}`,
                 },
-                body: JSON.stringify({ edit_element_index: elementIndex, edit_element: convertQuillContentToHtml(removeEmptyParagraphTags(editedElement)) }),
+                body: JSON.stringify({ edit_element_index: elementIndex, edit_element: convertQuillContentToHtml(sanitizeContent(editedElement)) }),
             });
 
             if (response.ok) {
@@ -173,6 +170,7 @@ export default function RankPage() {
                 console.error('Error editing element:', response.status, response.statusText);
                 // Handle the error or provide feedback to the user
             }
+        }
         } catch (error) {
             console.error('Error editing element:', error);
             // Handle the error or provide feedback to the user
@@ -188,7 +186,9 @@ export default function RankPage() {
         }
 
         try {
-            if (event.key === 'Enter' && newItemText.trim()) {
+            // Prevent users to submit an empty element
+            if (event.key === 'Enter' && newItemText != '<p><br></p><p><br></p>') {
+                console.log(newItemText)
                 const accessToken = localStorage.getItem('access_token');
                 const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
                     method: 'POST',
@@ -196,7 +196,7 @@ export default function RankPage() {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${accessToken}`,
                     },
-                    body: JSON.stringify({ element: convertQuillContentToHtml(removeEmptyParagraphTags(newItemText)) }),
+                    body: JSON.stringify({ element: convertQuillContentToHtml(sanitizeContent(newItemText)) }),
                 });
 
                 if (response.ok) {
@@ -206,6 +206,8 @@ export default function RankPage() {
                     console.error('Error adding new item:', response.status, response.statusText);
                     setError('Failed to add a new item. Please try again.');
                 }
+            } else if (event.key === 'Enter') {
+                setNewItemText("");
             }
         } catch (error) {
             console.error('Error adding new item:', error);
@@ -396,7 +398,7 @@ export default function RankPage() {
                                                                     theme="snow"
                                                                     modules={{
                                                                         toolbar: [
-                                                                            ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                                                                            ['bold', 'italic', 'underline', 'strike'],
                                                                             ['link'],
                                                                         ],
                                                                     }}
@@ -435,7 +437,7 @@ export default function RankPage() {
                                                         theme="snow"
                                                         modules={{
                                                             toolbar: [
-                                                                ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                                                                ['bold', 'italic', 'underline', 'strike'],
                                                                 ['link'],
                                                             ],
                                                         }}
