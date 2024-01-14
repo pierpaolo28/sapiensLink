@@ -19,7 +19,6 @@ import Container from '@mui/material/Container';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import { diffWords } from 'diff';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SendIcon from '@mui/icons-material/Send';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIos';
@@ -33,6 +32,8 @@ import 'react-quill/dist/quill.snow.css';
 import AppLayout from "@/components/AppLayout";
 import { EditCommentWithUserData, ListPrPageWithUserDataResponse } from '@/utils/types';
 import { getUserIdFromAccessToken } from "@/utils/auth";
+import {extractWordsFromHTML, extractAddedWords, highlightWordsInHtml } from "@/utils/html";
+
 
 // Function to style the modal
 const modalStyle = {
@@ -46,50 +47,6 @@ const modalStyle = {
     bgcolor: 'background.paper',
     boxShadow: 24,
     p: 4,
-};
-
-const stripHtmlTags = (text: any) => {
-    const div = document.createElement('div');
-    div.innerHTML = text;
-
-    // Add spaces between list items (assuming it's an unordered list)
-    const listItems = Array.from(div.querySelectorAll('li'));
-    listItems.forEach((li, index) => {
-        const textContent = li.textContent || li.innerText || '';
-
-        // Check for empty list items and add a space if necessary
-        if (textContent.trim() === '') {
-            li.textContent = ' ';
-        } else {
-            const withSpaces = textContent.replace(/•/g, '• ');
-            li.textContent = index === 0 ? withSpaces : ` ${withSpaces}`;
-        }
-    });
-
-    return div.textContent || div.innerText || '';
-};
-
-const renderDifferences = (oldText: any, newText: any) => {
-
-    // Perform the text diff on stripped text
-    const diffResult = diffWords(oldText, newText);
-
-    return (
-        <Box sx={{ my: 2 }}>
-            <Box component="div">
-                {diffResult.map((part, index) => {
-                    const added = part.added ? { backgroundColor: '#ddffdd', display: 'inline' } : {};
-                    const removed = part.removed ? { backgroundColor: '#ffdddd', display: 'inline', textDecoration: 'line-through' } : {};
-
-                    return (
-                        <span key={index} style={{ ...added, ...removed }}>
-                            {stripHtmlTags(part.value)}
-                        </span>
-                    );
-                })}
-            </Box>
-        </Box>
-    );
 };
 
 
@@ -248,29 +205,29 @@ const ListPrPage = () => {
         const parser = new DOMParser();
         const doc = parser.parseFromString(quillHtml, 'text/html');
         const elements = Array.from(doc.body.querySelectorAll('*'));
-      
+
         elements.forEach(el => {
-          Array.from(el.childNodes).forEach(node => {
-            if (node.nodeType === Node.TEXT_NODE && node.textContent) {
-              const span = document.createElement('span');
-              span.textContent = node.textContent;
-              
-              const html = span.innerHTML.replace(/((https?:\/\/|www\.)[^\s]+)(?![^<]*>|[^<>]*<\/a>)/g, (url) => {
-                // Prepend 'http://' if the URL starts with 'www.'
-                const href = url.startsWith('www.') ? `http://${url}` : url;
-                return `<a href="${href}" target="_blank">${url}</a>`;
-              });
-      
-              span.innerHTML = html;
-              if (node.parentNode) {
-                node.parentNode.replaceChild(span, node);
-              }
-            }
-          });
+            Array.from(el.childNodes).forEach(node => {
+                if (node.nodeType === Node.TEXT_NODE && node.textContent) {
+                    const span = document.createElement('span');
+                    span.textContent = node.textContent;
+
+                    const html = span.innerHTML.replace(/((https?:\/\/|www\.)[^\s]+)(?![^<]*>|[^<>]*<\/a>)/g, (url) => {
+                        // Prepend 'http://' if the URL starts with 'www.'
+                        const href = url.startsWith('www.') ? `http://${url}` : url;
+                        return `<a href="${href}" target="_blank">${url}</a>`;
+                    });
+
+                    span.innerHTML = html;
+                    if (node.parentNode) {
+                        node.parentNode.replaceChild(span, node);
+                    }
+                }
+            });
         });
-      
+
         return doc.body.innerHTML;
-      };
+    };
 
     const isValidListContent = (content: any) => {
         const div = document.createElement('div');
@@ -280,16 +237,30 @@ const ListPrPage = () => {
     };
 
     const appendLists = (oldText: string, newText: string) => {
-        // Check if the list is ordered (starts with <ol>)
-        const isOrdered = /^\s*<ol>/.test(oldText);
+        // Parse old and new HTML strings into DOM elements
+        const oldDOM = new DOMParser().parseFromString(oldText, 'text/html');
+        const newDOM = new DOMParser().parseFromString(newText, 'text/html');
 
-        // Apply the appropriate regex based on the list type
-        const modifiedContent = isOrdered
-            ? oldText.replace(/<\/ol><br><\/ol>$/, '') + newText.replace(/<ol>/, '')
-            : oldText.replace(/<\/ul><br><\/ul>$/, '') + newText.replace(/<ul>/, '');
-        return convertQuillContentToHtml(modifiedContent);
-    }
+        // Find the lists in the DOM
+        const oldList = oldDOM.querySelector('ol, ul');
+        const newList = newDOM.querySelector('ol, ul');
 
+        if (oldList && newList) {
+            // Append new list items to the old list
+            Array.from(newList.children).forEach((newItem) => {
+                oldList.appendChild(newItem.cloneNode(true));
+            });
+
+            // Return only the modified list HTML
+            const serializer = new XMLSerializer();
+            const modifiedListHtml = serializer.serializeToString(oldList);
+
+            return convertQuillContentToHtml(modifiedListHtml);
+        }
+
+        // Return the original content if lists are not found
+        return oldText;
+    };
 
     const handleNewSuggestionSubmit = async () => {
         setError(null);
@@ -311,6 +282,17 @@ const ListPrPage = () => {
         // Validate content
         if (!isValidListContent(updatedContent)) {
             setError('Content must be in bullet or numbered list format.');
+            return;
+        }
+
+        // Check for duplicate items
+        const existingItems = extractWordsFromHTML(listData.list.content);
+        const newItems = extractWordsFromHTML(newSuggestionText);
+
+        const duplicateItems = newItems.filter((item: any) => existingItems.includes(item));
+
+        if (duplicateItems.length > 0) {
+            setError(`Duplicate items found: ${duplicateItems.join(', ')}`);
             return;
         }
 
@@ -465,33 +447,24 @@ const ListPrPage = () => {
                     </Box>
 
                     <Box sx={{ my: 4 }}>
-                        <Grid container spacing={3}>
+                        <Grid container spacing={3} justifyContent="center" alignItems="center">
                             <Grid item xs={12} md={6}>
                                 <Typography variant="h6" gutterBottom>
-                                    Old List
+                                    Proposed List (additions in yellow)
                                 </Typography>
                                 <Paper elevation={3} sx={{ p: 2, minHeight: '150px' }}>
-                                    <Typography style={{ whiteSpace: 'pre-wrap' }} dangerouslySetInnerHTML={{ __html: listData.list.content }} />
-                                </Paper>
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <Typography variant="h6" gutterBottom>
-                                    New List
-                                </Typography>
-                                <Paper elevation={3} sx={{ p: 2, minHeight: '150px' }}>
-                                    <Typography style={{ whiteSpace: 'pre-wrap' }} dangerouslySetInnerHTML={{ __html: suggestion.suggestion_text }} />
+                                    <Typography
+                                        style={{ whiteSpace: 'pre-wrap' }}
+                                        dangerouslySetInnerHTML={{
+                                            __html: highlightWordsInHtml(
+                                                suggestion.suggestion_text,
+                                                extractAddedWords(listData.list.content, suggestion.suggestion_text)
+                                            ),
+                                        }}
+                                    />
                                 </Paper>
                             </Grid>
                         </Grid>
-
-                        <Box sx={{ my: 2 }}>
-                            <Typography variant="h6" gutterBottom>
-                                Differences
-                            </Typography>
-                            <Paper elevation={3} sx={{ p: 2 }}>
-                                {renderDifferences(listData.list.content, suggestion.suggestion_text)}
-                            </Paper>
-                        </Box>
 
                         <Box sx={{ display: 'flex', justifyContent: 'space-around', mt: 2 }}>
                             <Button variant="contained" color="primary" onClick={() => handleAcceptSuggestion(suggestion.id)}>

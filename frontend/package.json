@@ -14,7 +14,6 @@
     "@fontsource/roboto": "^5.0.8",
     "@mui/icons-material": "^5.14.19",
     "@mui/material": "^5.14.20",
-    "diff": "^5.1.0",
     "gapi-script": "^1.2.0",
     "next": "14.0.4",
     "react": "^18",
@@ -23,7 +22,6 @@
     "react-responsive-carousel": "^3.2.23"
   },
   "devDependencies": {
-    "@types/diff": "^5.0.9",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
