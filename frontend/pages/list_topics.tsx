@@ -78,7 +78,7 @@ export default function ListTopics() {
                 {topics && (
                   <List>
                   <ListItem button>
-                    <Link href={`/rank_home`} passHref>
+                    <Link href={`/list_home`} passHref>
                       <ListItemText primary={"All " + topics.all_list_count} />
                     </Link>
                   </ListItem>

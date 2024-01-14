@@ -19,6 +19,8 @@ import Link from 'next/link';
 import Chip from '@mui/material/Chip';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
+import { useRouter } from 'next/router';
+
 
 import AppLayout from "@/components/AppLayout";
 // import DBSetup from "@/components/DBSetup";
@@ -33,6 +35,7 @@ export default function RankHome() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('latest');
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
 
   const fetchData = async (extraParams = '') => {
     try {
@@ -59,7 +62,7 @@ export default function RankHome() {
     } else {
       fetchData();
     }
-  }, []);
+  }, [router.query.q]);
 
   const handleSearchChange = (event: any) => {
     setSearchTerm(event.target.value);
@@ -97,6 +100,11 @@ export default function RankHome() {
                 </Typography>
                 {home && home.topic_counts && (
                   <List>
+                    <Link href={`/rank_home`} passHref>
+                        <ListItem>
+                          <ListItemText primary={"All"} />
+                        </ListItem>
+                      </Link>
                     {home.topic_counts.map((topic, index) => (
                       <Link key={index} href={`/rank_home?q=${topic[0]}`} passHref>
                         <ListItem key={index}>

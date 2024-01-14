@@ -128,7 +128,7 @@ export default function ListHome() {
     } else {
       fetchData();
     }
-  }, []);
+  }, [router.query.q]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTab, setSelectedTab] = useState('latest');
@@ -180,6 +180,11 @@ export default function ListHome() {
                 </Typography>
                 {home && home.topic_counts && (
                   <List>
+                    <Link href={`/list_home`} passHref>
+                        <ListItem>
+                          <ListItemText primary={"All"} />
+                        </ListItem>
+                      </Link>
                     {home.topic_counts.map((topic, index) => (
                       <Link key={index} href={`/list_home?q=${topic[0]}`} passHref>
                         <ListItem>
