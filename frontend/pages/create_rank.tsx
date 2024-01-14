@@ -263,6 +263,12 @@ const CreateRankForm = () => {
                 onChange={setCurrentElement}
                 onKeyDown={handleQuillKeyDown}
                 theme="snow"
+                modules={{
+                  toolbar: [
+                      ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                      ['link'],
+                  ],
+              }}
               />
             </Box>
             <IconButton onClick={addElement} color="primary" aria-label="add" sx={{ flexShrink: 0 }}> {/* flexShrink ensures the button doesn't shrink */}
@@ -276,19 +282,29 @@ const CreateRankForm = () => {
               <Box key={index} sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
                 {editingElementIndex === index ? (
                   <>
+                  <Box sx={{ flexGrow: 1, mr: 1 }}>
                     <ReactQuill
                       value={currentEditedElement}
                       onChange={(value) => setCurrentEditedElement(value)}
                       onKeyDown={(event) => handleEditQuillKeyDown(event, index)}
                       theme="snow"
+                      modules={{
+                        toolbar: [
+                            ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+                            ['link'],
+                        ],
+                    }}
                     />
+                    </Box>
                     <IconButton onClick={() => saveEditedElement(index)} color="primary">
                       <CheckIcon />
                     </IconButton>
-                  </>
+                    </>
                 ) : (
                   <>
+                  <Box sx={{ flexGrow: 1, mr: 1 }}>
                     <Typography dangerouslySetInnerHTML={{ __html: element }} />
+                    </Box>
                     <IconButton onClick={() => {
                       setCurrentEditedElement(element);
                       setEditingElementIndex(index);

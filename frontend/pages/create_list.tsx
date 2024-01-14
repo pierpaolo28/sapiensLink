@@ -20,6 +20,7 @@ import AppLayout from "@/components/AppLayout";
 import { getUserIdFromAccessToken, isUserLoggedIn } from "@/utils/auth";
 import { ListForm } from "@/utils/types";
 import ImportList from '@/components/ImportList';
+import {isValidListContent, convertQuillContentToHtml, convertPlainTextToHtml } from "@/utils/html";
 
 export default function CreateListPage() {
   const [listDetails, setListDetails] = useState<ListForm>({
@@ -38,16 +39,16 @@ export default function CreateListPage() {
   const handleImportListChange = (content: string) => {
     // Initialize a local variable to store the updated content
     let updatedContent = '';
-  
+
     updatedContent = convertPlainTextToHtml(content);
-  
+
     // Update the content in listDetails with the local variable
     setListDetails((prevDetails) => ({
       ...prevDetails,
       content: updatedContent,
     }));
   };
-  
+
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -96,96 +97,6 @@ export default function CreateListPage() {
     }
   };
 
-  const convertPlainTextToHtml = (plainText: string) => {
-    const lines = plainText.split(/\r?\n/);
-    let html = '';
-  
-    let isNumbered = false;
-  
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-  
-      if (line.match(/^\d+\./)) {
-        // Detect numbered list item
-        if (!isNumbered) {
-          // Start a numbered list
-          html += '<ol>';
-          isNumbered = true;
-        }
-  
-        // Remove the numbering (e.g., 1.)
-        const textWithoutNumbering = line.replace(/^\d+\.\s*/, '');
-  
-        // Extract the text and link from the line
-        const parts = textWithoutNumbering.split(' ');
-        const text = parts.slice(0, parts.length - 1).join(' ');
-        const link = parts[parts.length - 1];
-  
-        if (link.startsWith('http') || link.startsWith('www.')) {
-          // Create an HTML link within a list item if the link is present
-          const href = link.startsWith('http') ? link : `http://${link}`;
-          html += `<li><a href="${href}" target="_blank">${text}</a></li>`;
-        } else {
-          // Create a list item without an href if there is no link
-          html += `<li>${textWithoutNumbering}</li>`;
-        }
-      } else {
-        if (isNumbered) {
-          // Close the numbered list
-          html += '</ol>';
-          isNumbered = false;
-        }
-  
-        if (line.startsWith('•')) {
-          // Detect bulleted list item
-          if (!html.includes('<ul>')) {
-            // Start a bulleted list if not already started
-            html += '<ul>';
-          }
-  
-          // Remove the bullet character (•)
-          const textWithoutBullet = line.replace(/^•\s*/, '');
-  
-          // Extract the text and link from the line
-          const parts = textWithoutBullet.split(' ');
-          const text = parts.slice(0, parts.length - 1).join(' ');
-          const link = parts[parts.length - 1];
-  
-          if (link.startsWith('http') || link.startsWith('www.')) {
-            // Create an HTML link within a list item if the link is present
-            const href = link.startsWith('http') ? link : `http://${link}`;
-            html += `<li><a href="${href}" target="_blank">${text}</a></li>`;
-          } else {
-            // Create a list item without an href if there is no link
-            html += `<li>${textWithoutBullet}</li>`;
-          }
-        } else {
-          // If the line doesn't start with '•' or numbering, treat it as plain text
-          if (html.includes('<ul>')) {
-            // Close the bulleted list if it's open
-            html += '</ul>';
-          } else if (isNumbered) {
-            // Close the numbered list if it's open
-            html += '</ol>';
-          }
-          html += `${line}<br>`;
-        }
-      }
-    }
-  
-    if (isNumbered) {
-      // Close the numbered list if it's still open
-      html += '</ol>';
-    }
-  
-    if (html.includes('<ul>')) {
-      // Close the bulleted list if it's open
-      html += '</ul>';
-    }
-  
-    return html;
-  };
-   
 
   const handleQuillChange = (value: string) => {
     setListDetails((prevDetails) => ({
@@ -220,41 +131,6 @@ export default function CreateListPage() {
       ...prevDetails,
       topic: typeof value === 'string' ? value.split(',') : value,
     }));
-  };
-
-  const convertQuillContentToHtml = (quillHtml: string) => {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(quillHtml, 'text/html');
-    const elements = Array.from(doc.body.querySelectorAll('*'));
-  
-    elements.forEach(el => {
-      Array.from(el.childNodes).forEach(node => {
-        if (node.nodeType === Node.TEXT_NODE && node.textContent) {
-          const span = document.createElement('span');
-          span.textContent = node.textContent;
-          
-          const html = span.innerHTML.replace(/((https?:\/\/|www\.)[^\s]+)(?![^<]*>|[^<>]*<\/a>)/g, (url) => {
-            // Prepend 'http://' if the URL starts with 'www.'
-            const href = url.startsWith('www.') ? `http://${url}` : url;
-            return `<a href="${href}" target="_blank">${url}</a>`;
-          });
-  
-          span.innerHTML = html;
-          if (node.parentNode) {
-            node.parentNode.replaceChild(span, node);
-          }
-        }
-      });
-    });
-  
-    return doc.body.innerHTML;
-  };
-  
-  const isValidListContent = (content: any) => {
-    const div = document.createElement('div');
-    div.innerHTML = content;
-    const items = div.querySelectorAll('ol, ul');
-    return div.childNodes.length === items.length; // Check if all child nodes are lists
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -446,7 +322,7 @@ export default function CreateListPage() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}> 
+            <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
               <Button variant="outlined" color="secondary" href="/list_home">
                 Cancel
               </Button>

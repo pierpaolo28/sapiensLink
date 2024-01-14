@@ -28,6 +28,7 @@ import Link from 'next/link';
 import AppLayout from "@/components/AppLayout";
 import { RankPageResponse } from "@/utils/types";
 import { getUserIdFromAccessToken, isUserLoggedIn } from "@/utils/auth";
+import { convertQuillContentToHtml } from "@/utils/html";
 
 // Dynamically import ReactQuill only on the client side
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
@@ -163,7 +164,7 @@ export default function RankPage() {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${accessToken}`,
                 },
-                body: JSON.stringify({ edit_element_index: elementIndex, edit_element: removeEmptyParagraphTags(editedElement) }),
+                body: JSON.stringify({ edit_element_index: elementIndex, edit_element: convertQuillContentToHtml(removeEmptyParagraphTags(editedElement)) }),
             });
 
             if (response.ok) {
@@ -195,7 +196,7 @@ export default function RankPage() {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${accessToken}`,
                     },
-                    body: JSON.stringify({ element: removeEmptyParagraphTags(newItemText) }),
+                    body: JSON.stringify({ element: convertQuillContentToHtml(removeEmptyParagraphTags(newItemText)) }),
                 });
 
                 if (response.ok) {
@@ -380,6 +381,7 @@ export default function RankPage() {
                                                     .map((sortedElement, index) => (
                                                         <ListItem key={index}>
                                                             {editingIndex === sortedElement.originalIndex ? (
+                                                                 <Box sx={{ flexGrow: 1, mr: 1 }}>
                                                                 <ReactQuill
                                                                     value={editedElement}
                                                                     onChange={(value) => setEditedElement(value)}
@@ -391,22 +393,15 @@ export default function RankPage() {
                                                                             setIsEditing(false);
                                                                         }
                                                                     }}
+                                                                    theme="snow"
                                                                     modules={{
                                                                         toolbar: [
-                                                                            [{ 'header': [1, 2, false] }],
                                                                             ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                                                                            [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
                                                                             ['link'],
-                                                                            ['clean'],
                                                                         ],
                                                                     }}
-                                                                    formats={[
-                                                                        'header',
-                                                                        'bold', 'italic', 'underline', 'strike', 'blockquote',
-                                                                        'list', 'bullet', 'indent',
-                                                                        'link',
-                                                                    ]}
                                                                 />
+                                                                </Box>
 
                                                             ) : (
                                                                 <Grid container alignItems="center">
@@ -432,26 +427,20 @@ export default function RankPage() {
                                                         </ListItem>
                                                     ))}
                                                 <ListItem>
+                                                <Box sx={{ flexGrow: 1, mr: 1 }}>
                                                     <ReactQuill
                                                         value={newItemText}
                                                         onChange={(value) => setNewItemText(value)}
                                                         onKeyDown={(e) => addItem(e)}
+                                                        theme="snow"
                                                         modules={{
                                                             toolbar: [
-                                                                [{ 'header': [1, 2, false] }],
                                                                 ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-                                                                [{ 'list': 'ordered' }, { 'list': 'bullet' }, { 'indent': '-1' }, { 'indent': '+1' }],
                                                                 ['link'],
-                                                                ['clean'],
                                                             ],
                                                         }}
-                                                        formats={[
-                                                            'header',
-                                                            'bold', 'italic', 'underline', 'strike', 'blockquote',
-                                                            'list', 'bullet', 'indent',
-                                                            'link',
-                                                        ]}
                                                     />
+                                                    </Box>
                                                 </ListItem>
                                             </List>
                                         </CardContent>

@@ -32,7 +32,7 @@ import 'react-quill/dist/quill.snow.css';
 import AppLayout from "@/components/AppLayout";
 import { EditCommentWithUserData, ListPrPageWithUserDataResponse } from '@/utils/types';
 import { getUserIdFromAccessToken } from "@/utils/auth";
-import {extractWordsFromHTML, extractAddedWords, highlightWordsInHtml } from "@/utils/html";
+import { appendLists, isValidListContent, extractWordsFromHTML, extractAddedWords, highlightWordsInHtml } from "@/utils/html";
 
 
 // Function to style the modal
@@ -199,67 +199,6 @@ const ListPrPage = () => {
         } catch (error) {
             console.error('Error rejecting suggestion:', error);
         }
-    };
-
-    const convertQuillContentToHtml = (quillHtml: string) => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(quillHtml, 'text/html');
-        const elements = Array.from(doc.body.querySelectorAll('*'));
-
-        elements.forEach(el => {
-            Array.from(el.childNodes).forEach(node => {
-                if (node.nodeType === Node.TEXT_NODE && node.textContent) {
-                    const span = document.createElement('span');
-                    span.textContent = node.textContent;
-
-                    const html = span.innerHTML.replace(/((https?:\/\/|www\.)[^\s]+)(?![^<]*>|[^<>]*<\/a>)/g, (url) => {
-                        // Prepend 'http://' if the URL starts with 'www.'
-                        const href = url.startsWith('www.') ? `http://${url}` : url;
-                        return `<a href="${href}" target="_blank">${url}</a>`;
-                    });
-
-                    span.innerHTML = html;
-                    if (node.parentNode) {
-                        node.parentNode.replaceChild(span, node);
-                    }
-                }
-            });
-        });
-
-        return doc.body.innerHTML;
-    };
-
-    const isValidListContent = (content: any) => {
-        const div = document.createElement('div');
-        div.innerHTML = content;
-        const items = div.querySelectorAll('ol, ul');
-        return div.childNodes.length === items.length; // Check if all child nodes are lists
-    };
-
-    const appendLists = (oldText: string, newText: string) => {
-        // Parse old and new HTML strings into DOM elements
-        const oldDOM = new DOMParser().parseFromString(oldText, 'text/html');
-        const newDOM = new DOMParser().parseFromString(newText, 'text/html');
-
-        // Find the lists in the DOM
-        const oldList = oldDOM.querySelector('ol, ul');
-        const newList = newDOM.querySelector('ol, ul');
-
-        if (oldList && newList) {
-            // Append new list items to the old list
-            Array.from(newList.children).forEach((newItem) => {
-                oldList.appendChild(newItem.cloneNode(true));
-            });
-
-            // Return only the modified list HTML
-            const serializer = new XMLSerializer();
-            const modifiedListHtml = serializer.serializeToString(oldList);
-
-            return convertQuillContentToHtml(modifiedListHtml);
-        }
-
-        // Return the original content if lists are not found
-        return oldText;
     };
 
     const handleNewSuggestionSubmit = async () => {
