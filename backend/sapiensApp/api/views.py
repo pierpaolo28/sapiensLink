@@ -56,6 +56,7 @@ def getRoutes(request):
         'GET /api/token/refresh/',
         'POST /api/password_reset/',
         'POST /api/password_reset_confirm/:uidb64/:token/',
+        'GET /api/get_user/:pk/',
         'GET-POST /api/user_profile_page/:pk/',
         'GET-PUT /api/update_user_page/',
         'POST /api/delete_user_page/',
@@ -157,28 +158,6 @@ def login_user(request):
         if user is not None:
             login(request, user)
 
-            # Retrieve the 'next' parameter from the query string
-            next_url = request.GET.get('next')
-
-            if next_url:
-                # If 'next' is provided, preserve existing query parameters
-                existing_params = request.GET.urlencode()
-                separator = '&' if existing_params else ''
-                
-                # Include the entire response_data and existing query parameters in the redirect URL
-                refresh = RefreshToken.for_user(user)
-                response_data = {
-                    'access_token': str(refresh.access_token),
-                    'refresh_token': str(refresh),
-                    'expiration_time': refresh.access_token['exp'] * 1000
-                }
-                query_params = urlencode(response_data)
-                redirect_url = f"{next_url}?{existing_params}{separator}{query_params}"
-
-                # Redirect to the specified URL after successful login
-                return redirect(redirect_url)
-            
-            # If 'next' is not provided, return your response as before
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
             
@@ -307,7 +286,7 @@ def register_user(request):
         user = User.objects.filter(email=google_data['email']).first()
         if not user:
             # User does not exist, create a new user
-            user = User.objects.create_user(email=google_data['email'])
+            user = User.objects.create_user(email=google_data['email'], name=request.data.get('name'))
         
         # Manually specify the backend
         user.backend = 'django.contrib.auth.backends.ModelBackend'
@@ -348,7 +327,7 @@ def register_user(request):
             return Response(data, status=status.HTTP_201_CREATED)
         else:
             # TODO: provide more descriptive explanation of error (e.g., password condition, duplicate email)
-            return Response({"message": "An error occurred during registration"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "An error occurred during registration", 'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(
@@ -375,8 +354,6 @@ def register_user(request):
     },
 )
 @api_view(['POST'])
-@authentication_classes([JWTAuthentication])  # Use JSONWebTokenAuthentication for secure authentication
-@permission_classes([IsAuthenticated])  # Ensure that the user is authenticated
 def password_reset(request):
     email = request.data.get('email', '')
     try:
@@ -705,7 +682,7 @@ def list_page(request, pk):
                                 'notification': f'A new comment was added on the list "{list_instance.name}".',
                                 'creator_id': user.id,
                                 'receiver_id': receiver.id,
-                                'url': request.path.split('/')[0] + '/list/' + str(list_instance.id)
+                                'url': request.path.split('/')[0] + '/list?id=' + str(list_instance.id),
                             }
                         )
 
@@ -806,7 +783,7 @@ def rank_page(request, pk):
     is_subscribed = False
 
     if user.is_authenticated:
-        has_reported = RankReport.objects.filter(user=user, list=rank).exists()
+        has_reported = RankReport.objects.filter(user=user, rank=rank).exists()
         saved_ranks_ids = RankSaved.objects.filter(user=user).values_list('rank_id', flat=True)
         is_subscribed = user in rank.subscribed_users.all()
 
@@ -835,7 +812,7 @@ def rank_page(request, pk):
                                 'notification': f'A new element was added on the rank "{rank.name}".',
                                 'creator_id': user.id,
                                 'receiver_id': receiver.id,
-                                'url': request.build_absolute_uri()
+                                'url': request.path.split('/')[0] + '/rank?id=' + str(rank.id)
                             }
                         )
 
@@ -900,6 +877,7 @@ def rank_page(request, pk):
                'has_reported': has_reported,
                'saved_ranks_ids': saved_ranks_ids,
                'is_subscribed': is_subscribed}
+
     return Response(context, status=status.HTTP_200_OK)
 
 
@@ -1005,6 +983,21 @@ def vote_rank(request, pk, content_index, action):
     else:
         rank_serializer = RankSerializer(rank)
         return Response({"message": "Element in Rank Not Found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+@swagger_auto_schema(method='get', operation_summary="Retrieve a single user's data", responses={200: UserSerializer})
+@api_view(['GET'])
+def get_user(request, pk):
+    """
+    Retrieve a single user's data.
+    """
+    try:
+        user = User.objects.get(pk=pk)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = UserSerializer(user)
+    return Response(serializer.data)
 
 
 @swagger_auto_schema(
@@ -1364,8 +1357,7 @@ def update_list_page(request, pk):
         list = List.objects.get(id=pk)
     except List.DoesNotExist:
         return Response({"message": "List Not Found"}, status=status.HTTP_404_NOT_FOUND)
-
-    if request.user != list.author or request.user.is_superuser == False:
+    if request.user != list.author and not request.user.is_superuser:
         return Response({"message": "Not authorized to proceed"}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == 'GET':
@@ -1447,13 +1439,20 @@ def update_user_page(request):
         return Response(serializer.data)
 
     elif request.method == 'PUT':
-        serializer = UserSerializer(request.data, instance=user)
+        # Separate the password from the other fields
         password = request.data.get('password')
+        other_fields = {k: v for k, v in request.data.items() if k != 'password'}
 
+        # If password is an empty string, remove it from the data
+        if password == '':
+            other_fields.pop('password', None)
+
+        serializer = UserSerializer(instance=user, data=other_fields, partial=True)
         if serializer.is_valid():
             serializer.save()
 
-            if password:
+            # Update the password if provided and not an empty string
+            if password and password != '':
                 user.set_password(password)
                 user.save()
 
@@ -1576,7 +1575,7 @@ def report_list_page(request, pk):
                 'notification': f'Your list "{list.name}" has been reported by an user.',
                 'creator_id': request.user.id,
                 'receiver_id': list.author.id,
-                'url': request.build_absolute_uri('/') + 'list/' + str(list.id) + '/',
+                'url': request.build_absolute_uri('/') + 'list?id=' + str(list.id),
             }
         )
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -1609,7 +1608,6 @@ def report_rank_page(request):
     request_body=openapi.Schema(
         type=openapi.TYPE_OBJECT,
         properties={
-            'password': openapi.Schema(type=openapi.TYPE_STRING),
             'confirm_delete': openapi.Schema(type=openapi.TYPE_STRING),
             'feedback': openapi.Schema(type=openapi.TYPE_STRING),
             'access_token': openapi.Schema(type=openapi.TYPE_STRING),
@@ -1625,13 +1623,12 @@ def report_rank_page(request):
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def delete_user_page(request):
-    password = request.data.get('password')
     confirm_delete = request.data.get('confirm_delete')
     feedback = request.data.get('feedback')
 
     Feedback.objects.create(feedback=feedback)
 
-    user = authenticate(request, email=request.user.email, password=password)
+    user = request.user
 
     if user is not None and confirm_delete == 'on':
         # Delete the user account
@@ -1716,7 +1713,7 @@ def list_pr_page(request, pk):
                             'notification': f'A new suggestion to edit your list "{list_instance.name}" has been created.',
                             'creator_id': request.user.id,
                             'receiver_id': list_instance.author.id,
-                            'url': request.build_absolute_uri('/') + 'list_pr/' + str(list_instance.id) + '/',
+                            'url': request.build_absolute_uri('/') + 'list_pr?id=' + str(list_instance.id),
                         }
                     )
                 return Response({'message': 'Edit suggestion created successfully'}, status=status.HTTP_201_CREATED)
@@ -1737,7 +1734,7 @@ def list_pr_page(request, pk):
                         'notification': f'A new comment has been added to a suggestion to edit your list "{list_instance.name}".',
                         'creator_id': request.user.id,
                         'receiver_id': list_instance.author.id,
-                        'url': request.build_absolute_uri('/') + 'list_pr/' + str(list_instance.id) + '/',
+                        'url': request.build_absolute_uri('/') + 'list_pr?id=' + str(list_instance.id),
                     }
                 )
                 return Response({'message': 'Comment added successfully'}, status=status.HTTP_201_CREATED)
@@ -1780,7 +1777,7 @@ def approve_suggestion_action(request, suggestion_id):
                 'notification': f'Your suggestion to edit the list "{list_instance.name}" has been approved!',
                 'creator_id': request.user.id,
                 'receiver_id': suggestion.suggested_by.id,
-                'url': request.build_absolute_uri('/') + 'list/' + str(list_instance.id) + '/',
+                'url': request.build_absolute_uri('/') + 'list?id=' + str(list_instance.id),
             }
         )
 
@@ -1818,7 +1815,7 @@ def decline_suggestion_action(request, suggestion_id):
                 'notification': f'Your suggestion to edit the list "{suggestion.list.name}" has been declined.',
                 'creator_id': request.user.id,
                 'receiver_id': suggestion.suggested_by.id,
-                'url': request.build_absolute_uri('/') + 'list/' + str(list_id) + '/',
+                'url': request.build_absolute_uri('/') + 'list?id=' + str(list_id),
             }
         )
 

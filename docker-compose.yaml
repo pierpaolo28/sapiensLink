@@ -1,11 +1,11 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgresdb:
     image: postgres:12
-    container_name: sapienslink_postgresdb_1
+    container_name: sapienslink_postgres
     environment:
-      POSTGRES_DB: "sapiensdb"
+      POSTGRES_DB: sapiensdb
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
@@ -16,7 +16,7 @@ services:
   # TODO: Hide PgAdmin credentials
   pgadmin:
     image: dpage/pgadmin4
-    container_name: sapienslink_pgadmin_1
+    container_name: sapienslink_pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: "admin@admin.com"
       PGADMIN_DEFAULT_PASSWORD: "root"
@@ -26,7 +26,7 @@ services:
       - postgresdb
 
   django:
-    container_name: sapienslink_django_1
+    container_name: sapienslink_django
     build: ./backend
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
@@ -39,13 +39,13 @@ services:
       - postgresdb
 
   redis:
-    container_name: sapienslink_redis_1
+    container_name: sapienslink_redis
     image: redis:alpine
     ports:
       - "6379:6379"
 
   celery_worker:
-    container_name: sapienslink_celery_worker_1
+    container_name: sapienslink_celery_worker
     build:
       context: ./backend
       dockerfile: Dockerfile.celery
@@ -60,7 +60,7 @@ services:
       - redis
 
   celery_beat:
-    container_name: sapienslink_celery_beat_1
+    container_name: sapienslink_celery_beat
     build:
       context: ./backend
       dockerfile: Dockerfile.celery
@@ -76,29 +76,24 @@ services:
 
   # Next.js frontend supporting SSR
   nextjs:
-    container_name: sapienslink_nextjs_1
-    image: node:lts
+    build: ./frontend
+    container_name: sapienslink_nextjs
     ports:
       - 3001:3000
     depends_on:
       - django
-    volumes:
-      - ./frontend:/frontend
-    working_dir: /frontend
-    # This will automatically build the frontend in production
-    # more and serve the application in development mode
-    command: sh -c 'npm install && npm run build_and_start'
 
   nginx:
-    container_name: sapienslink_nginx_1
     build:
       context: ./backend
       dockerfile: Dockerfile.nginx
+    container_name: sapienslink_nginx
     ports:
       - "80:80"
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/mediafiles
+      - ./backend/static/images:/app/staticfiles/images
     depends_on:
       - django
       - nextjs

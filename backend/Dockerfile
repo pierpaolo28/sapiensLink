@@ -18,11 +18,13 @@ RUN apt-get update \
 # Set work directory
 WORKDIR /app
 
-# Install dependencies
-COPY requirements-base.txt /app/
-COPY requirements-ml.txt /app/
-COPY requirements-all.txt /app/
-RUN pip install --no-cache-dir -r requirements-all.txt
+# Copy the requirements file into the container at /app
+COPY requirements/all.txt /app/
+COPY requirements/base.txt /app/
+COPY requirements/ml.txt /app/
+
+# Install any needed packages specified in requirements-all.txt
+RUN pip install --no-cache-dir -r all.txt
 
 # Copy project
 COPY . /app/

@@ -8,7 +8,9 @@
             {"name": "Tech"},
             {"name": "Education"}
         ],
+        "author": 1,
         "participants": [
+            1
         ]
     },
     {
@@ -21,7 +23,6 @@
             {"name": "Work"}
         ],
         "participants": [
-            1, 2
         ]
     },
     {
@@ -31,8 +32,9 @@
         "topic": [
             {"name": "Personal Finance"}
         ],
+        "author": 2,
         "participants": [
-            1
+            1, 2
         ]
     }
 ]
