@@ -286,7 +286,7 @@ export default function ListHome() {
                                 alignItems="center"
                                 sx={{ marginTop: 1 }}
                               >
-                                <Avatar sx={{ width: 32, height: 32 }} />
+                                <Avatar src={"http://localhost/static" + list.authorData.avatar} sx={{ width: 32, height: 32 }} />
                                 <Typography variant="subtitle2">{list.authorData.name}</Typography>
                               </Stack>
                             )}

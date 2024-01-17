@@ -32,10 +32,10 @@ export default function Footer(props: any) {
                             Product
                         </Typography>
                         <Link href="#" variant="subtitle1" color="textSecondary">
-                            Overview
+                            Vision
                         </Link><br />
                         <Link href="#" variant="subtitle1" color="textSecondary">
-                            Vision
+                            Tech Stack
                         </Link><br />
                     </Grid>
                     <Grid item xs={12} md={4} lg={3}>
@@ -46,7 +46,7 @@ export default function Footer(props: any) {
                             About us
                         </Link><br />
                         <Link href="#" variant="subtitle1" color="textSecondary">
-                            Support us
+                            Contacts
                         </Link><br />
                     </Grid>
                     <Grid item xs={12} md={4} lg={3}>

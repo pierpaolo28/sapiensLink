@@ -48,7 +48,7 @@ export const highlightWordsInHtml = (htmlString: string, addedWords: string[]) =
 
   const traverseAndHighlight = (node: any) => {
     if (node.nodeType === Node.TEXT_NODE) {
-      highlightWords(node, addedWords);
+      highlightWords(node, addedWords.map(word => word.toLowerCase()));
     } else if (node.nodeType === Node.ELEMENT_NODE) {
       if (node.childNodes.length > 0) {
         const childNodes = [...node.childNodes];

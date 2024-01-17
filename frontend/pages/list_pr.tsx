@@ -370,7 +370,7 @@ const ListPrPage = () => {
                             <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
                                 <Link href={`/user_profile?id=${listData.suggestions[currentSuggestionIndex].suggested_by}`} passHref>
                                     <ListItemAvatar>
-                                        <Avatar src={listData.suggestions[currentSuggestionIndex].suggestedByData.avatar} alt={listData.suggestions[currentSuggestionIndex].suggestedByData.name} sx={{ marginRight: 1 }} />
+                                        <Avatar src={"http://localhost/static" + listData.suggestions[currentSuggestionIndex].suggestedByData.avatar} alt={listData.suggestions[currentSuggestionIndex].suggestedByData.name} sx={{ marginRight: 1 }} />
                                     </ListItemAvatar>
                                 </Link>
                                 <Typography variant="h4" gutterBottom>
@@ -431,7 +431,7 @@ const ListPrPage = () => {
                                         {comment.commenterData && (
                                             <Link href={`/user_profile?id=${comment.commenter}`} passHref>
                                                 <ListItemAvatar>
-                                                    <Avatar src={comment.commenterData.avatar} alt={comment.commenterData.name} sx={{ marginRight: 1 }} />
+                                                    <Avatar src={"http://localhost/static" + comment.commenterData.avatar} alt={comment.commenterData.name} sx={{ marginRight: 1 }} />
                                                 </ListItemAvatar>
                                             </Link>
                                         )}
