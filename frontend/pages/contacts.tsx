@@ -1,12 +1,13 @@
 import { Box, Button, Container, TextField, Typography } from '@mui/material';
+import { useForm, ValidationError } from '@formspree/react';
 
 import AppLayout from "@/components/AppLayout";
 
 const ContactUsPage: React.FC = () => {
-    const handleSubmit = (event: React.FormEvent) => {
-        event.preventDefault();
-        // TODO Handle form submission logic here
-    };
+    const [state, handleSubmit] = useForm("meqyowed");
+    if (state.succeeded) {
+        window.location.href = '/';
+    }
 
     return (
         <AppLayout>
@@ -28,30 +29,35 @@ const ContactUsPage: React.FC = () => {
                         </Typography>
                         <form onSubmit={handleSubmit}>
                             <TextField
-                                label="Name"
-                                variant="outlined"
-                                fullWidth
-                                margin="normal"
-                                required
-                            />
-                            <TextField
                                 label="Email"
                                 variant="outlined"
+                                name="email"
                                 fullWidth
                                 margin="normal"
                                 required
                                 type="email"
                             />
+                            <ValidationError 
+                                prefix="Email" 
+                                field="email"
+                                errors={state.errors}
+                            />
                             <TextField
                                 label="Message"
                                 variant="outlined"
+                                name="message"
                                 fullWidth
                                 margin="normal"
                                 required
                                 multiline
                                 rows={4}
                             />
-                            <Button type="submit" variant="contained" color="primary" fullWidth>
+                            <ValidationError 
+                                prefix="Message" 
+                                field="message"
+                                errors={state.errors}
+                            />
+                            <Button type="submit" variant="contained" color="primary" disabled={state.submitting} fullWidth>
                                 Submit
                             </Button>
                         </form>
