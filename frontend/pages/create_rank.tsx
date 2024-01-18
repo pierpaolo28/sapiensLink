@@ -1,4 +1,5 @@
 import * as React from 'react';
+import DOMPurify from 'dompurify';
 import Container from '@mui/material/Container';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -227,7 +228,7 @@ const CreateRankForm = () => {
             variant="body1"
             color="error"
             gutterBottom
-            dangerouslySetInnerHTML={{ __html: error }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(error) }}
           />
         )}
         <Box component="form" noValidate autoComplete="off" onSubmit={handleSubmit}>
@@ -303,7 +304,7 @@ const CreateRankForm = () => {
                 ) : (
                   <>
                   <Box sx={{ flexGrow: 1, mr: 1 }}>
-                    <Typography dangerouslySetInnerHTML={{ __html: element }} />
+                    <Typography dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(element) }} />
                     </Box>
                     <IconButton onClick={() => {
                       setCurrentEditedElement(element);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
@@ -434,7 +435,7 @@ const ListPage = () => {
                 <Box sx={{ mb: 2 }}>
                   {/* Display HTML content safely */}
                   {list.list.description}
-                  <Typography dangerouslySetInnerHTML={{ __html: list.list.content }} />
+                  <Typography dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(list.list.content) }} />
                 </Box>
                 {list.list.source && (
                   <Typography variant="body2" sx={{ my: 1 }}>

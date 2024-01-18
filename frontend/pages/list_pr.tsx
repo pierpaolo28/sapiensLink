@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Avatar from '@mui/material/Avatar';
@@ -394,12 +395,11 @@ const ListPrPage = () => {
                                 <Paper elevation={3} sx={{ p: 2, minHeight: '150px' }}>
                                     <Typography
                                         style={{ whiteSpace: 'pre-wrap' }}
-                                        dangerouslySetInnerHTML={{
-                                            __html: highlightWordsInHtml(
-                                                suggestion.suggestion_text,
-                                                extractAddedWords(listData.list.content, suggestion.suggestion_text)
-                                            ),
-                                        }}
+                                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(highlightWordsInHtml(
+                                            suggestion.suggestion_text,
+                                            extractAddedWords(listData.list.content, suggestion.suggestion_text)
+                                        ))
+                                    }}
                                     />
                                 </Paper>
                             </Grid>
@@ -532,7 +532,7 @@ const ListPrPage = () => {
                                         <Typography variant="subtitle1" gutterBottom>
                                             Preview of your proposal:
                                         </Typography>
-                                        <div dangerouslySetInnerHTML={{ __html: appendLists(listData.list.content, newSuggestionText) }} />
+                                        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(appendLists(listData.list.content, newSuggestionText)) }} />
                                     </>
                                 ) : (
                                     <Typography>Loading...</Typography>

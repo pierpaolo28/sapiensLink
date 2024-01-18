@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import DOMPurify from 'dompurify';
 import React, { useState, useEffect } from 'react';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -409,7 +410,7 @@ export default function RankPage() {
                                                                 <Grid container alignItems="center">
                                                                     <Grid item xs>
                                                                         {/* Rendering HTML content correctly */}
-                                                                        <ListItemText primary={<div dangerouslySetInnerHTML={{ __html: sortedElement.element.element }} />} />
+                                                                        <ListItemText primary={<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(sortedElement.element.element) }} />} />
                                                                     </Grid>
                                                                     <Grid item>
                                                                         <IconButton onClick={() => handleVote(sortedElement.originalIndex, 'upvote')}><ArrowUpwardIcon /></IconButton>
