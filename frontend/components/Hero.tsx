@@ -59,7 +59,7 @@ const Hero = () => {
       display: 'flex', 
       flexDirection: 'column',
       justifyContent: isSmallScreen ? 'start' : 'center',
-      alignItems: 'center' 
+      alignItems: 'center',
     }}>
       <Container>
         <CustomBox>

@@ -7,8 +7,7 @@ import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import CustomButton from "./CustomButton";
 import ListIcon from '@mui/icons-material/List';
 import EditIcon from '@mui/icons-material/Edit';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 
 const Guide = () => {
   const theme = useTheme();
@@ -59,7 +58,7 @@ const Guide = () => {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        mt: 10
+        mt: -10
       }}
     >
       <div
@@ -156,10 +155,7 @@ const Guide = () => {
         </GuideBox>
 
         <GuideBox>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <ArrowUpwardIcon />
-            <ArrowDownwardIcon />
-          </div>
+            <TrendingUpIcon />
           <Typography
             variant="body2"
             sx={{

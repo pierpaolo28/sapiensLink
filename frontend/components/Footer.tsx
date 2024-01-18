@@ -31,10 +31,10 @@ export default function Footer(props: any) {
                         <Typography variant="h6" color="textPrimary" gutterBottom>
                             Product
                         </Typography>
-                        <Link href="#" variant="subtitle1" color="textSecondary">
+                        <Link href="vision" variant="subtitle1" color="textSecondary">
                             Vision
                         </Link><br />
-                        <Link href="#" variant="subtitle1" color="textSecondary">
+                        <Link href="tech_stack" variant="subtitle1" color="textSecondary">
                             Tech Stack
                         </Link><br />
                     </Grid>
@@ -42,10 +42,10 @@ export default function Footer(props: any) {
                         <Typography variant="h6" color="textPrimary" gutterBottom>
                             Company
                         </Typography>
-                        <Link href="#" variant="subtitle1" color="textSecondary">
+                        <Link href="about" variant="subtitle1" color="textSecondary">
                             About us
                         </Link><br />
-                        <Link href="#" variant="subtitle1" color="textSecondary">
+                        <Link href="contacts" variant="subtitle1" color="textSecondary">
                             Contacts
                         </Link><br />
                     </Grid>

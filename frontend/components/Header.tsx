@@ -18,11 +18,12 @@ import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import styled from "@mui/system/styled";
 import MenuIcon from "@mui/icons-material/Menu";
-import FeaturedPlayListIcon from "@mui/icons-material/FeaturedPlayList";
-import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
-import ListAltIcon from "@mui/icons-material/ListAlt";
 import HomeIcon from "@mui/icons-material/Home";
-import ContactsIcon from "@mui/icons-material/Contacts";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import InfoIcon from '@mui/icons-material/Info';
+import ContactMailIcon from '@mui/icons-material/ContactMail';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import ListIcon from '@mui/icons-material/List';
 import { useRouter } from 'next/router';
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
@@ -256,7 +257,7 @@ export default function Header() {
     setMobileMenu({ ...mobileMenu, [anchor]: open });
   };
 
-  const links = ["/", "/list_home", "/rank_home", "/", "/", "/"];
+  const links = ["/", "/list_home", "/rank_home", "/vision", "/about", "/contacts"];
   const list = (anchor: any) => (
     <Box
       sx={{ width: anchor === "top" || anchor === "bottom" ? "auto" : 250 }}
@@ -273,11 +274,11 @@ export default function Header() {
                 <ListItemButton>
                   <ListItemIcon>
                     {index === 0 && <HomeIcon />}
-                    {index === 1 && <FeaturedPlayListIcon />}
-                    {index === 2 && <MiscellaneousServicesIcon />}
-                    {index === 3 && <ListAltIcon />}
-                    {index === 4 && <ListAltIcon />}
-                    {index === 5 && <ContactsIcon />}
+                    {index === 1 && <ListIcon />}
+                    {index === 2 && <TrendingUpIcon />}
+                    {index === 3 && <VisibilityIcon />}
+                    {index === 4 && <InfoIcon />}
+                    {index === 5 && <ContactMailIcon />}
                   </ListItemIcon>
                   <ListItemText primary={text} />
                 </ListItemButton>
@@ -357,9 +358,15 @@ export default function Header() {
             <Link href="/rank_home" passHref>
               <NavLink variant="body2">Ranks</NavLink>
             </Link>
+            <Link href="/vision" passHref>
             <NavLink variant="body2">Vision</NavLink>
+            </Link>
+            <Link href="/about" passHref>
             <NavLink variant="body2">About Us</NavLink>
+            </Link>
+            <Link href="/contacts" passHref>
             <NavLink variant="body2">Contacts</NavLink>
+            </Link>
           </NavbarLinksBox>
         </Box>
         <Box sx={{ flexGrow: 1 }} />
