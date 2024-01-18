@@ -1,6 +1,6 @@
 import styled from "@mui/system/styled";
 import Typography from "@mui/material/Typography";
-import useTheme from "@mui/material/styles/useTheme";
+import { useTheme } from "@mui/material";
 import Link from "@mui/material/Link";
 import Box from "@mui/system/Box";
 import Container from "@mui/system/Container";

@@ -2,7 +2,7 @@ import React from "react";
 import Box from "@mui/material/Box";
 import styled from "@mui/system/styled";
 import Typography from "@mui/material/Typography";
-import useTheme from "@mui/material/styles/useTheme";
+import { useTheme } from "@mui/material";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import CustomButton from "./CustomButton";
 import ListIcon from '@mui/icons-material/List';

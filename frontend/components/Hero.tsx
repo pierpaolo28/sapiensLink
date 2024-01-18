@@ -1,4 +1,9 @@
-import { Box, styled, Typography, useTheme, useMediaQuery, Link } from "@mui/material";
+import Box from "@mui/material/Box";
+import styled from "@mui/system/styled";
+import Typography from "@mui/material/Typography";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import Link from "@mui/material/Link";
+import { useTheme } from "@mui/material";
 import { Container } from "@mui/system";
 import React from "react";
 import "slick-carousel/slick/slick.css"; 
