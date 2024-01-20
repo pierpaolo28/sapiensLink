@@ -24,6 +24,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import ContactMailIcon from '@mui/icons-material/ContactMail';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import ListIcon from '@mui/icons-material/List';
+import Divider from '@mui/material/Divider';
 import { useRouter } from 'next/router';
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
@@ -221,17 +222,12 @@ export default function Header() {
           }),
         });
 
-        if (response.ok) {
-          // Clear tokens from local storage
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          localStorage.removeItem('expiration_time');
+        // Clear tokens from local storage
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('expiration_time');
 
-          window.location.href = '/';
-        } else {
-          // Handle error cases
-          console.error('Logout failed:', response.statusText);
-        }
+        window.location.href = '/';
       }
     } catch (error) {
       console.error('An error occurred during logout:', error);
@@ -319,12 +315,25 @@ export default function Header() {
     },
   }));
 
-  const NavbarLogo = styled("img")(({ theme }) => ({
-    cursor: "pointer",
-    [theme.breakpoints.down("md")]: {
-      display: "none",
-    },
-  }));
+  // Add a state variable to track whether the screen size is below "md" breakpoint
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  // useEffect to update the isSmallScreen state based on screen width
+  useEffect(() => {
+    const handleResize = () => {
+      // Check if the screen width is below the "md" breakpoint
+      setIsSmallScreen(window.innerWidth < theme.breakpoints.values.md);
+    };
+
+    // Initial check and attach resize event listener
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    // Clean up the event listener when the component unmounts
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [theme.breakpoints]);
 
   return (
     <AppBar position="static" color="default" elevation={0}>
@@ -344,11 +353,54 @@ export default function Header() {
               open={mobileMenu["left"]}
               onClose={toggleDrawer("left", false)}
             >
-              {list("left")}
+              <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <div>
+                  {list("left")}
+                  {isSmallScreen && (
+                    <Box sx={{ marginTop: '1rem', padding: '1rem' }}>
+                      {!isLoggedIn && (
+                        <>
+                          <Button
+                            color="inherit"
+                            fullWidth
+                            href="signin"
+                          >
+                            Login
+                          </Button>
+                          <Button
+                            color="primary"
+                            variant="contained"
+                            fullWidth
+                            sx={{ marginTop: '1rem' }}
+                            href="signup"
+                          >
+                            Sign Up
+                          </Button>
+                        </>
+                      )}
+                    </Box>
+                  )}
+                </div>
+                <div style={{ marginTop: 'auto' }}>
+                  <Divider sx={{ marginY: '1rem' }} />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography>
+                      Toggle Theme
+                    </Typography>
+                    <ThemeToggleButton />
+                  </Box>
+                </div>
+              </div>
             </Drawer>
-            <Link href="/">
-              <NavbarLogo src={'logo.svg'} alt="logo" />
-            </Link>
+            {isSmallScreen ? (
+              // Move the logo to the right on small screens
+              <div style={{ flexGrow: 1 }} />
+            ) : (
+              // Display the logo on the left for larger screens
+              <Link href="/">
+                <img src={'logo.svg'} alt="logo" />
+              </Link>
+            )}
           </Box>
 
           <NavbarLinksBox>
@@ -359,13 +411,13 @@ export default function Header() {
               <NavLink variant="body2">Ranks</NavLink>
             </Link>
             <Link href="/vision" passHref>
-            <NavLink variant="body2">Vision</NavLink>
+              <NavLink variant="body2">Vision</NavLink>
             </Link>
             <Link href="/about" passHref>
-            <NavLink variant="body2">About Us</NavLink>
+              <NavLink variant="body2">About Us</NavLink>
             </Link>
             <Link href="/contacts" passHref>
-            <NavLink variant="body2">Contacts</NavLink>
+              <NavLink variant="body2">Contacts</NavLink>
             </Link>
           </NavbarLinksBox>
         </Box>
@@ -378,7 +430,11 @@ export default function Header() {
             gap: "1rem",
           }}
         >
-          <ThemeToggleButton />
+          {isSmallScreen ? (
+            <div style={{ flexGrow: 1 }} />
+          ) : (
+            <ThemeToggleButton />
+          )}
           {isLoggedIn ? (
             <>
               {/* Notification Icon */}
@@ -466,17 +522,26 @@ export default function Header() {
           ) : (
             // If not logged in, show Login and Sign Up buttons
             <>
-              <Button color="inherit" href="signin">
-                Login
-              </Button>
-              <Button
-                color="primary"
-                variant="contained"
-                sx={{ marginLeft: '1rem' }}
-                href="signup"
-              >
-                Sign Up
-              </Button>
+              {!isSmallScreen ? (
+                <>
+                  <Button color="inherit" href="signin">
+                    Login
+                  </Button>
+                  <Button
+                    color="primary"
+                    variant="contained"
+                    sx={{ marginLeft: '1rem' }}
+                    href="signup"
+                  >
+                    Sign Up
+                  </Button>
+                </>
+              ) :
+                (
+                  <Link href="/">
+                    <img src={'logo.svg'} alt="logo" />
+                  </Link>
+                )}
             </>
           )}
         </Box>

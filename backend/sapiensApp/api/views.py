@@ -1929,11 +1929,12 @@ def get_notifications(request):
 def mark_notification_as_read(request, notification_id):
     try:
         notification = Notification.objects.get(pk=notification_id)
-        if notification.receiver != request.user:
+        if int(notification.receiver) != int(request.user.id):
             return JsonResponse({'error': 'Unauthorized'}, status=401)
-        notification.read = True
-        notification.save()
-        return JsonResponse({'status': 'Notification marked as read.'})
+        else:
+            notification.read = True
+            notification.save()
+            return JsonResponse({'status': 'Notification marked as read.'})
     except Notification.DoesNotExist:
         return JsonResponse({'error': 'Notification not found.'}, status=404)
 
