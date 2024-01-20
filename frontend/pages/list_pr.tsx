@@ -85,6 +85,7 @@ const ListPrPage = () => {
             const userResponse = await fetch(`http://localhost/api/get_user/${userId}/`, {
                 method: 'GET',
                 headers: {
+                    'X-NextJS-Application': 'sapiensLink',
                     'Content-Type': 'application/json',
                 },
             });

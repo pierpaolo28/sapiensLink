@@ -991,6 +991,14 @@ def get_user(request, pk):
     """
     Retrieve a single user's data.
     """
+
+    # Check if the request contains a specific header or token
+    custom_header_value = request.headers.get('X-NextJS-Application')  # Replace with your custom header name
+
+    # TODO: Replace 'sapiensLink' with new secret token expected. Do same in frontend in hide values.
+    if custom_header_value != 'sapiensLink':
+        return Response({'error': 'Access denied. This view is only accessible from the NextJS application.'}, status=status.HTTP_403_FORBIDDEN)
+
     try:
         user = User.objects.get(pk=pk)
     except User.DoesNotExist:
@@ -1156,6 +1164,9 @@ def user_profile_page(request, pk):
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def private_lists_page(request, pk):
+    # Check if the authenticated user is the same as the user_instance
+    if request.user.id != int(pk):
+        return Response({"detail": "You are not authorized to view this content."}, status=status.HTTP_403_FORBIDDEN)
     user_instance = get_object_or_404(User, pk=pk)
     lists_count = List.objects.filter(author_id=pk, public=True).count()
     private_lists = user_instance.list_set.filter(public=False)
@@ -1918,6 +1929,8 @@ def get_notifications(request):
 def mark_notification_as_read(request, notification_id):
     try:
         notification = Notification.objects.get(pk=notification_id)
+        if notification.receiver != request.user:
+            return JsonResponse({'error': 'Unauthorized'}, status=401)
         notification.read = True
         notification.save()
         return JsonResponse({'status': 'Notification marked as read.'})
