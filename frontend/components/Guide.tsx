@@ -58,7 +58,7 @@ const Guide = () => {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        mt: -10
+        mt: 10
       }}
     >
       <div
