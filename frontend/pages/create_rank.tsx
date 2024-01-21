@@ -71,6 +71,25 @@ const CreateRankForm = () => {
     }
   };
 
+  const removeElement = (indexToRemove: number) => {
+    const newElements = elements.filter((_, index) => index !== indexToRemove);
+  
+    const newContent: { [key: string]: ContentItem } = {};
+    newElements.forEach((element, index) => {
+      // Skip adding elements with empty content
+      if (element.trim() !== '') {
+        const key = String.fromCharCode('a'.charCodeAt(0) + index);
+        newContent[key] = {
+          element: element,
+          user_id: getUserIdFromAccessToken(),
+        };
+      }
+    });
+  
+    setElements(newElements);
+    handleFormChange('content', newContent);
+  };
+  
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -120,23 +139,6 @@ const CreateRankForm = () => {
     } else {
       setError('Please fill in all mandatory fields (Name and Topic).');
     }
-  };
-
-
-  const removeElement = (indexToRemove: number) => {
-    const newElements = elements.filter((_, index) => index !== indexToRemove);
-    const newContent: { [key: string]: ContentItem } = {};
-
-    newElements.forEach((value, index) => {
-      const key = String.fromCharCode('a'.charCodeAt(0) + index);
-      newContent[key] = {
-        element: value,
-        user_id: getUserIdFromAccessToken(),
-      };
-    });
-
-    setElements(newElements);
-    handleFormChange('content', newContent);
   };
 
   const handleQuillKeyDown = (event: any) => {
