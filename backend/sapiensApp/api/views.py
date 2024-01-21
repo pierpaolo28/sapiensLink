@@ -690,7 +690,7 @@ def list_page(request, pk):
                 list_serializer = ListSerializer(list_instance)
                 return Response(list_serializer.data, status=status.HTTP_201_CREATED)
             else:
-                return Response({'error': 'Comment could not be added', 'details': comment_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Comment could not be added', 'details': str(comment_serializer.errors['body'][0])}, status=status.HTTP_400_BAD_REQUEST)
 
 
         elif 'save' in request.data:

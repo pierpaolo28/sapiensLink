@@ -30,6 +30,8 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import SendIcon from '@mui/icons-material/Send';
 import { Menu, MenuItem } from '@mui/material';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 import AppLayout from "@/components/AppLayout";
 import { ListPageResponse, User, UserComment } from "@/utils/types";
@@ -44,6 +46,9 @@ const ListPage = () => {
   const [listAuthor, setlistAuthor] = useState<User | null>(null);
   const [id, setId] = useState<string | null>(null);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+
 
   const handleMenuClick = (event: any) => {
     setAnchorEl(event.currentTarget);
@@ -163,11 +168,15 @@ const ListPage = () => {
           setNewComment('');
           fetchListData();
         } else {
-          console.error('Error submitting comment:', response, response.status, response.statusText);
+          const errorData = await response.json();
+          setSnackbarMessage(errorData.details || 'Error submitting comment');
+          setSnackbarOpen(true);
+          return;
         }
       } catch (error) {
         console.error('Error submitting comment:', error);
       }
+
     }
   };
 
@@ -529,26 +538,26 @@ const ListPage = () => {
                     ))}
                   </List>
                   <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-                                <TextField
-                                    fullWidth
-                                    variant="outlined"
-                                    label="Add a comment"
-                                    value={newComment}
-                                    onChange={(e) => setNewComment(e.target.value)}
-                                    onKeyPress={(e) => {
-                                        if (e.key === 'Enter' && newComment.trim()) {
-                                            handleCommentSubmit();
-                                            setNewComment('');
-                                        }
-                                    }}
-                                />
-                                <IconButton color="primary" onClick={() => {
-                                    handleCommentSubmit();
-                                    setNewComment('');
-                                }} disabled={!newComment.trim()}>
-                                    <SendIcon />
-                                </IconButton>
-                            </Box>
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      label="Add a comment"
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && newComment.trim()) {
+                          handleCommentSubmit();
+                          setNewComment('');
+                        }
+                      }}
+                    />
+                    <IconButton color="primary" onClick={() => {
+                      handleCommentSubmit();
+                      setNewComment('');
+                    }} disabled={!newComment.trim()}>
+                      <SendIcon />
+                    </IconButton>
+                  </Box>
                 </CardContent>
               )}
             </Card>
@@ -586,6 +595,17 @@ const ListPage = () => {
         </Grid>
       </Grid>
     </Container>
+    <Snackbar
+      open={snackbarOpen}
+      autoHideDuration={6000}
+      onClose={() => setSnackbarOpen(false)}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+    >
+      <Alert onClose={() => setSnackbarOpen(false)} severity="error" sx={{ width: '100%' }}>
+        {snackbarMessage}
+      </Alert>
+    </Snackbar>
+
   </AppLayout>
 };
 
