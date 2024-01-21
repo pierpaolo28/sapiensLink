@@ -28,6 +28,7 @@ import NextLink from 'next/link';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import SendIcon from '@mui/icons-material/Send';
 import { Menu, MenuItem } from '@mui/material';
 
 import AppLayout from "@/components/AppLayout";
@@ -162,7 +163,7 @@ const ListPage = () => {
           setNewComment('');
           fetchListData();
         } else {
-          console.error('Error submitting comment:', response.status, response.statusText);
+          console.error('Error submitting comment:', response, response.status, response.statusText);
         }
       } catch (error) {
         console.error('Error submitting comment:', error);
@@ -527,22 +528,27 @@ const ListPage = () => {
                       </ListItem>
                     ))}
                   </List>
-                  {/* Comment Input Section */}
-                  <Box sx={{ my: 2 }}>
-                    <TextField
-                      label="Add a comment"
-                      variant="outlined"
-                      fullWidth
-                      multiline
-                      rows={4}
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      margin="normal"
-                    />
-                    <Button variant="contained" color="primary" onClick={handleCommentSubmit}>
-                      Post Comment
-                    </Button>
-                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                                <TextField
+                                    fullWidth
+                                    variant="outlined"
+                                    label="Add a comment"
+                                    value={newComment}
+                                    onChange={(e) => setNewComment(e.target.value)}
+                                    onKeyPress={(e) => {
+                                        if (e.key === 'Enter' && newComment.trim()) {
+                                            handleCommentSubmit();
+                                            setNewComment('');
+                                        }
+                                    }}
+                                />
+                                <IconButton color="primary" onClick={() => {
+                                    handleCommentSubmit();
+                                    setNewComment('');
+                                }} disabled={!newComment.trim()}>
+                                    <SendIcon />
+                                </IconButton>
+                            </Box>
                 </CardContent>
               )}
             </Card>
