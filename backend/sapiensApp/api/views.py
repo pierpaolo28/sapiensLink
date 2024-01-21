@@ -926,9 +926,7 @@ def vote_action(request, pk, action):
 
     list_instance.save()
 
-    # Serialize the updated list data
-    list_serializer = ListSerializer(list_instance)
-    return Response(list_serializer.data, status=status.HTTP_200_OK)
+    return Response({'message': 'Successfully Voted'}, status=status.HTTP_200_OK)
 
 
 
@@ -956,9 +954,7 @@ def vote_rank(request, pk, content_index, action):
             vote = RankVote.objects.get(user=user, rank=rank, content_index=content_index)
 
             if vote.action == action:
-                # No change in action, return the current state
-                rank_serializer = RankSerializer(rank)
-                return Response(rank_serializer.data, status=status.HTTP_200_OK)
+                return Response({'message': 'Vote Matching Existing'}, status=status.HTTP_200_OK)
 
             elif vote.action in ['upvote', 'downvote']:
                 vote.action = 'neutral'
@@ -978,10 +974,8 @@ def vote_rank(request, pk, content_index, action):
 
         rank.save()
 
-        rank_serializer = RankSerializer(rank)
-        return Response(rank_serializer.data, status=status.HTTP_200_OK)
+        return Response({'message': 'Successfully Voted'}, status=status.HTTP_200_OK)
     else:
-        rank_serializer = RankSerializer(rank)
         return Response({"message": "Element in Rank Not Found"}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -1166,7 +1160,7 @@ def user_profile_page(request, pk):
 def private_lists_page(request, pk):
     # Check if the authenticated user is the same as the user_instance
     if request.user.id != int(pk):
-        return Response({"detail": "You are not authorized to view this content."}, status=status.HTTP_403_FORBIDDEN)
+        return Response({"error": "You are not authorized to view this content."}, status=status.HTTP_403_FORBIDDEN)
     user_instance = get_object_or_404(User, pk=pk)
     lists_count = List.objects.filter(author_id=pk, public=True).count()
     private_lists = user_instance.list_set.filter(public=False)
@@ -1381,7 +1375,7 @@ def update_list_page(request, pk):
         serializer = ListSerializer(list, data=request.data, many=False)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({"message": "List Updated"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
@@ -1467,7 +1461,7 @@ def update_user_page(request):
                 user.set_password(password)
                 user.save()
 
-            return Response(serializer.data)
+            return Response({"message": "User Updated"}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1589,8 +1583,8 @@ def report_list_page(request, pk):
                 'url': request.build_absolute_uri('/') + 'list?id=' + str(list.id),
             }
         )
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response({'error': 'List could not be reported', 'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "Report Created"}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(
@@ -1609,7 +1603,7 @@ def report_rank_page(request):
     serializer = ReportRankSerializer(data=request.data, many=False)
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response({"message": "Report Created"}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -2006,20 +2000,7 @@ def email_unsubscribe(request):
     # Save the changes to the EmailSubscription instance
     email_subscription.save()
 
-    # Extract access_token, refresh_token, and expiration_time from query parameters
-    access_token = request.query_params.get('access_token')
-    refresh_token = request.query_params.get('refresh_token')
-    expiration_time = request.query_params.get('expiration_time')
-
-    # Return the same response data as login_user view
-    response_data = {
-        'access_token': access_token,
-        'refresh_token': refresh_token,
-        'expiration_time': expiration_time,
-        'detail': 'Subscription preferences updated successfully.'
-    }
-
-    return Response(response_data, status=status.HTTP_200_OK)
+    return Response({'message': 'Subscription preferences updated successfully.'}, status=status.HTTP_200_OK)
 
 
 @swagger_auto_schema(

@@ -112,7 +112,6 @@ export default function RankPage() {
             });
 
             if (response.ok) {
-                console.log(`Vote successful for rank ${rankIds[contentIndex]}, action: ${action}`);
                 // Reload the page after a successful vote
                 fetchRankData();
             } else {
@@ -189,7 +188,6 @@ export default function RankPage() {
         try {
             // Prevent users to submit an empty element
             if (event.key === 'Enter' && newItemText != '<p><br></p><p><br></p>') {
-                console.log(newItemText)
                 const accessToken = localStorage.getItem('access_token');
                 const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
                     method: 'POST',
