@@ -309,22 +309,26 @@ def register_user(request):
         serializer = RegisterSerializer(data=request.data)
 
         if serializer.is_valid():
-            user = MyUserCreationForm(serializer.validated_data).save(commit=False)
-            user.email = user.email.lower()
-            user.save()
+            user = MyUserCreationForm(serializer.validated_data)
+            if user.is_valid():
+                user = user.save(commit=False)
+                user.email = user.email.lower()
+                user.save()
 
-            login(request, user)
+                login(request, user)
 
-            refresh = RefreshToken.for_user(user)
-            access_token = str(refresh.access_token)
+                refresh = RefreshToken.for_user(user)
+                access_token = str(refresh.access_token)
 
-            data = {
-                "access_token": access_token,
-                "refresh_token": str(refresh),
-                "expiration_time": refresh.access_token['exp'] * 1000  # Convert expiration time to milliseconds
-            }
+                data = {
+                    "access_token": access_token,
+                    "refresh_token": str(refresh),
+                    "expiration_time": refresh.access_token['exp'] * 1000  # Convert expiration time to milliseconds
+                }
 
-            return Response(data, status=status.HTTP_201_CREATED)
+                return Response(data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             # TODO: provide more descriptive explanation of error (e.g., password condition, duplicate email)
             return Response({"message": "An error occurred during registration", 'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

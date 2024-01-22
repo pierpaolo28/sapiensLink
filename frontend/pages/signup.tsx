@@ -43,21 +43,34 @@ export default function SignUp() {
         window.location.href = '/list_home';
       } else {
         const responseData = await response.json();
-        
+
         let errorMessage = '';
 
-          if (responseData.details.email) {
-            errorMessage += responseData.details.email + ' ';
-          }
+        if (responseData.email && responseData.email[0]) {
+          errorMessage += responseData.email[0] + ' ';
+        }
+        
+        if (responseData.password2 && responseData.password2[0]) {
+          errorMessage += responseData.password2[0] + ' ';
+        }
+        
+        if (responseData.details && responseData.details.email) {
+          errorMessage += responseData.details.email + ' ';
+        }
+        
+        if (responseData.details && responseData.details.non_field_errors) {
+          errorMessage += responseData.details.non_field_errors + ' ';
+        }
 
-          if (errorMessage) {
-            setError(errorMessage);
-          } else {
-            setError('Failed to sign up. Please check your information.');
-          }
+        if (errorMessage) {
+          setError(errorMessage);
+        } else {
+          setError('Failed to sign up. Please check your information.');
+        }
       }
     } catch (error) {
-      setError('Password not secure enough.');
+
+      setError('Account already exists or Password not secure enough.');
     }
   };
 
@@ -131,7 +144,7 @@ export default function SignUp() {
             >
               Sign Up
             </Button>
-            <GoogleSignIn/>
+            <GoogleSignIn />
             {error && (
               <Typography color="error" variant="body2" sx={{ mt: 1 }}>
                 {error}
