@@ -28,6 +28,8 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import dynamic from 'next/dynamic';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import 'react-quill/dist/quill.snow.css';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 
 import AppLayout from "@/components/AppLayout";
@@ -62,6 +64,8 @@ const ListPrPage = () => {
     const handleCloseModal = () => setModalOpen(false);
     const [commentText, setCommentText] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
 
     const handleOpenModal = () => {
         setModalOpen(true);
@@ -256,7 +260,9 @@ const ListPrPage = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                const errorData = await response.json();
+                setError(errorData.details.suggestion_text || 'Error submitting suggestion.')
+                return;
             }
 
             // Clear the form and reload the suggestions
@@ -289,7 +295,10 @@ const ListPrPage = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                const errorData = await response.json();
+                setSnackbarMessage(errorData.details || 'Error submitting comment');
+                setSnackbarOpen(true);
+                return;
             }
 
             // Clear the form and reload the comments
@@ -544,6 +553,16 @@ const ListPrPage = () => {
                 </Grid>
             </Box>
         </Modal>
+        <Snackbar
+      open={snackbarOpen}
+      autoHideDuration={6000}
+      onClose={() => setSnackbarOpen(false)}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+    >
+      <Alert onClose={() => setSnackbarOpen(false)} severity="error" sx={{ width: '100%' }}>
+        {snackbarMessage}
+      </Alert>
+    </Snackbar>
     </AppLayout>
     );
 };

@@ -171,7 +171,7 @@ def login_user(request):
         else:
             return Response({'message': 'Wrong Password'}, status=status.HTTP_401_UNAUTHORIZED)
     else:
-        return Response({'message': 'Both Email and Password are required'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 @swagger_auto_schema(
@@ -819,7 +819,7 @@ def rank_page(request, pk):
                 serializer = RankSerializer(rank)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                return Response({'error': 'Element could not be added', 'details': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Element could not be added', 'details': str(form.errors['element'][0])}, status=status.HTTP_400_BAD_REQUEST)
 
         elif 'save' in request.data:
             RankSaved.objects.get_or_create(user=request.user, rank=rank)
@@ -859,7 +859,7 @@ def rank_page(request, pk):
                 else:
                     return Response({'message': 'Not authorized'}, status=status.HTTP_401_UNAUTHORIZED)
             else:
-                return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Element could not be edited', 'details': str(form.errors['edit_element'][0])}, status=status.HTTP_400_BAD_REQUEST)
 
     serializer = RankSerializer(rank)
     content_scores = {}
@@ -1744,7 +1744,7 @@ def list_pr_page(request, pk):
                 )
                 return Response({'message': 'Comment added successfully'}, status=status.HTTP_201_CREATED)
             else:
-                return Response({'error': 'Comment could not be created', 'details': comment_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Comment could not be created', 'details': str(comment_serializer.errors['text'][0])}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response({'message': 'Invalid request'}, status=status.HTTP_400_BAD_REQUEST)
 

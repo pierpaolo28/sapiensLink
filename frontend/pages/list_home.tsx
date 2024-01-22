@@ -33,7 +33,6 @@ import AppLayout from "@/components/AppLayout";
 // import DBSetup from "@/components/DBSetup";
 import { getHome } from "@/utils/routes";
 import { HomeWithUserDataResponse } from "@/utils/types";
-import ListRankSwitcher from '@/components/ListRankSwitcher';
 import { isUserLoggedIn } from '@/utils/auth';
 
 
@@ -170,7 +169,6 @@ export default function ListHome() {
   return (
     <>
       <AppLayout>
-        <ListRankSwitcher />
         <Container maxWidth="lg" sx={{ mt: 4 }}>
           <Grid container spacing={3}>
             {/* Left side - Topics and More */}

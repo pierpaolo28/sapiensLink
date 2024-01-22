@@ -115,10 +115,7 @@ const CreateRankForm = () => {
           // Handle server-side errors
           const responseData = await response.json();
 
-          if (responseData.name) {
-            // Display error for the 'name' field
-            setError(`Name error: ${responseData.name.join(', ')}`);
-          } else if (responseData.error) {
+          if (responseData.error) {
             if (responseData.error === 'Similar ranks found') {
               // Display a user-friendly error message for similar ranks
               setError(`Similar ranks found. Please check the existing ranks: ${responseData.similar_ranks.map((rank: any) => (
@@ -128,8 +125,25 @@ const CreateRankForm = () => {
               setError(responseData.message || 'Failed to submit the form');
             }
           } else {
-            console.log(JSON.stringify(formData))
-            setError('An unexpected error occurred.');
+          let errorMessage = '';
+          
+          if (responseData.name) {
+            errorMessage += responseData.name + ' ';
+          }
+
+          if (responseData.description) {
+            errorMessage += responseData.description + ' ';
+          }
+
+          if (responseData.content) {
+            errorMessage += responseData.content + ' ';
+          }
+
+          if (errorMessage) {
+            setError(errorMessage);
+          } else {
+            setError('Failed to submit the form');
+          }
           }
         }
       } catch (error) {

@@ -25,6 +25,9 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import Link from 'next/link';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+
 
 import AppLayout from "@/components/AppLayout";
 import { RankPageResponse } from "@/utils/types";
@@ -44,6 +47,9 @@ export default function RankPage() {
     const [error, setError] = useState<string | null>(null);
     const [editedElement, setEditedElement] = useState<string>('');
     const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+
 
     // Fetch rank data based on the extracted id
     const fetchRankData = async () => {
@@ -167,8 +173,11 @@ export default function RankPage() {
             if (response.ok) {
                 fetchRankData();
             } else {
-                console.error('Error editing element:', response.status, response.statusText);
-                // Handle the error or provide feedback to the user
+                const errorData = await response.json();
+                    setSnackbarMessage(errorData.details || 'Error submitting comment');
+                    setSnackbarOpen(true);
+                    setEditedElement("");
+                    return;
             }
         }
         } catch (error) {
@@ -202,8 +211,12 @@ export default function RankPage() {
                     setNewItemText("");
                     fetchRankData();
                 } else {
-                    console.error('Error adding new item:', response.status, response.statusText);
-                    setError('Failed to add a new item. Please try again.');
+                    console.log('Error adding new item:', response.status, response.statusText);
+                    const errorData = await response.json();
+                    setSnackbarMessage(errorData.details || 'Error submitting comment');
+                    setSnackbarOpen(true);
+                    setNewItemText("");
+                    return;
                 }
             } else if (event.key === 'Enter') {
                 setNewItemText("");
@@ -493,6 +506,16 @@ export default function RankPage() {
                     </Grid>
                 </Box>
             </Container>
+            <Snackbar
+      open={snackbarOpen}
+      autoHideDuration={6000}
+      onClose={() => setSnackbarOpen(false)}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+    >
+      <Alert onClose={() => setSnackbarOpen(false)} severity="error" sx={{ width: '100%' }}>
+        {snackbarMessage}
+      </Alert>
+    </Snackbar>
         </AppLayout>
     );
 }

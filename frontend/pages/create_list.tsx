@@ -35,6 +35,8 @@ export default function CreateListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedEditor, setSelectedEditor] = useState('quill'); // Default to 'quill'
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   const handleImportListChange = (content: string) => {
     // Initialize a local variable to store the updated content
@@ -181,7 +183,26 @@ export default function CreateListPage() {
           window.location.href = '/list_home';
         } else {
           const responseData = await response.json();
-          setError(responseData.message || 'Failed to submit the form');
+
+          let errorMessage = '';
+
+          if (responseData.name) {
+            errorMessage += responseData.name + ' ';
+          }
+
+          if (responseData.description) {
+            errorMessage += responseData.description + ' ';
+          }
+
+          if (responseData.content) {
+            errorMessage += responseData.content + ' ';
+          }
+
+          if (errorMessage) {
+            setError(errorMessage);
+          } else {
+            setError('Failed to submit the form');
+          }
         }
       } catch (error) {
         console.error('Error creating/updating list:', error);

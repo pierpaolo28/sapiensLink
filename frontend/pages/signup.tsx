@@ -42,12 +42,22 @@ export default function SignUp() {
 
         window.location.href = '/list_home';
       } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to sign up. Please check your information.');
+        const responseData = await response.json();
+        
+        let errorMessage = '';
+
+          if (responseData.details.email) {
+            errorMessage += responseData.details.email + ' ';
+          }
+
+          if (errorMessage) {
+            setError(errorMessage);
+          } else {
+            setError('Failed to sign up. Please check your information.');
+          }
       }
     } catch (error) {
-      console.error('An error occurred during registration:', error);
-      setError('An unexpected error occurred. Please try again.');
+      setError('Password not secure enough.');
     }
   };
 
