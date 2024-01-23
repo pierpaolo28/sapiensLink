@@ -62,7 +62,7 @@ const GetStarted = () => {
         </Box>
 
         <img
-          src={'media/get_started.png'}
+          src={'images/get_started.png'}
           alt="illustration"
           style={{ maxWidth: "100%" }}
         />

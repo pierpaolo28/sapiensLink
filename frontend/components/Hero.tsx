@@ -84,9 +84,9 @@ const Hero = () => {
           {!isSmallScreen && (
             <Box sx={{ flex: 1, minWidth: "50%" }}>
               <Slider {...settings}>
-                <div><img src="media/hero1.jpeg" alt="Image 1" style={{ width: "100%", height: "auto" }} /></div>
-                <div><img src="media/hero2.jpeg" alt="Image 2" style={{ width: "100%", height: "auto" }} /></div>
-                <div><img src="media/hero3.jpeg" alt="Image 3" style={{ width: "100%", height: "auto" }} /></div>
+                <div><img src="images/hero1.jpeg" alt="Image 1" style={{ width: "100%", height: "auto" }} /></div>
+                <div><img src="images/hero2.jpeg" alt="Image 2" style={{ width: "100%", height: "auto" }} /></div>
+                <div><img src="images/hero3.jpeg" alt="Image 3" style={{ width: "100%", height: "auto" }} /></div>
               </Slider>
             </Box>
           )}

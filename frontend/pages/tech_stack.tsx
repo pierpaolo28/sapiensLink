@@ -16,7 +16,7 @@ const TechStackPage: React.FC = () => {
         SapiensLink was built using the following technologies: Django, Redis, Celery, NextJS, TypeScript, and Material UI.
       </Typography>
 
-      <img src={'media/architecture_system.png'} alt="architecture_system" style={{ maxWidth: "100%" }} />
+      <img src={'images/architecture_system.png'} alt="architecture_system" style={{ maxWidth: "100%" }} />
 
         </Container>
         </AppLayout>

@@ -20,7 +20,7 @@ const VisionPage: React.FC = () => {
         </Typography>
 
         <div style={{ textAlign: 'center' }}>
-          <img src={'media/sapiensnaut.png'} alt="architecture_system" style={{ maxWidth: "50%", display: "block", margin: "auto", marginBottom: "20px" }} />
+          <img src={'images/sapiensnaut.png'} alt="architecture_system" style={{ maxWidth: "50%", display: "block", margin: "auto", marginBottom: "20px" }} />
         </div>
 
         <Typography variant="body1" paragraph>

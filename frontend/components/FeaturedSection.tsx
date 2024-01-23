@@ -9,21 +9,21 @@ import Featured from "./Featured";
 export const featuredItems = [
   {
     id: "1",
-    img: 'media/personal_finance.png',
+    img: 'images/personal_finance.png',
     title: "Personal Finance",
     description: "Learning how to budget your finances and plan for retirement",
   },
 
   {
     id: "2",
-    img: 'media/tech_blogs.png',
+    img: 'images/tech_blogs.png',
     title: "Tech Blogs",
     description: "A collection of interesting tech blogs to learn something new everyday!",
   },
 
   {
     id: "3",
-    img: 'media/pitch.png',
+    img: 'images/pitch.png',
     title: "Pitch Decks",
     description: "Learn from some of the best tech companies how to make your pitch deck",
   },

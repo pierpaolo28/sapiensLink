@@ -68,7 +68,7 @@ const Details = () => {
       <Container>
         <CustomBox>
           <ImgContainer>
-            <img src={'media/list.png'} alt="list" style={{ maxWidth: "100%" }} />
+            <img src={'images/list.png'} alt="list" style={{ maxWidth: "100%" }} />
           </ImgContainer>
 
           <Box>
@@ -122,13 +122,13 @@ const Details = () => {
           </Box>
 
           <ImgContainer>
-            <img src={'media/suggest_edit.png'} alt="suggest_edit" style={{ maxWidth: "100%" }} />
+            <img src={'images/suggest_edit.png'} alt="suggest_edit" style={{ maxWidth: "100%" }} />
           </ImgContainer>
         </CustomBox>
 
         <CustomBox>
           <ImgContainer>
-            <img src={'media/rank.png'} alt="rank" style={{ maxWidth: "100%" }} />
+            <img src={'images/rank.png'} alt="rank" style={{ maxWidth: "100%" }} />
           </ImgContainer>
 
           <Box>
