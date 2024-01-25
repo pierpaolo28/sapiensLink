@@ -14,7 +14,6 @@ import Link from 'next/link';
 
 import AppLayout from "@/components/AppLayout";
 import { SavedPageResponse } from "@/utils/types";
-import ListRankSwitcher from '@/components/ListRankSwitcher';
 
 
 export default function SavedPage() {
@@ -59,7 +58,6 @@ export default function SavedPage() {
   return (
     <>
       <AppLayout>
-        <ListRankSwitcher />
 
 
 

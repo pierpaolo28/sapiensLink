@@ -71,7 +71,7 @@ const Details = () => {
             <img src={'images/list.png'} alt="list" style={{ maxWidth: "100%" }} />
           </ImgContainer>
 
-          <Box>
+          <Box id="lists">
             <Divider />
             <Typography
               sx={{
@@ -97,7 +97,7 @@ const Details = () => {
         </CustomBox>
 
         <CustomBox>
-          <Box>
+          <Box id="suggests">
             <Divider />
             <Typography
               sx={{
@@ -131,7 +131,7 @@ const Details = () => {
             <img src={'images/rank.png'} alt="rank" style={{ maxWidth: "100%" }} />
           </ImgContainer>
 
-          <Box>
+          <Box id="ranks">
             <Divider />
             <Typography
               sx={{

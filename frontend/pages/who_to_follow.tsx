@@ -17,7 +17,6 @@ import Link from 'next/link';
 import AppLayout from "@/components/AppLayout";
 import { getWhoToFollow } from "@/utils/routes";
 import { WhoToFollowResponse } from "@/utils/types";
-import ListRankSwitcher from '@/components/ListRankSwitcher';
 
 export default function WhoToFollowPage() {
 
@@ -49,9 +48,6 @@ export default function WhoToFollowPage() {
   return (
     <>
       <AppLayout>
-        <ListRankSwitcher />
-
-
 
         <Container maxWidth="lg" sx={{ mt: 4 }}>
         <Grid container spacing={3} justifyContent="center" alignItems="center">

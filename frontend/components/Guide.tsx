@@ -8,6 +8,8 @@ import CustomButton from "./CustomButton";
 import ListIcon from '@mui/icons-material/List';
 import EditIcon from '@mui/icons-material/Edit';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import Link from 'next/link';
+
 
 const Guide = () => {
   const theme = useTheme();
@@ -105,6 +107,7 @@ const Guide = () => {
           >
             Lists
           </Typography>
+          <Link href="#lists">
           <Box
             sx={{
               cursor: "pointer",
@@ -121,6 +124,7 @@ const Guide = () => {
             </Typography>
             <ArrowRightAltIcon style={{ color: "#0689FF" }} />
           </Box>
+          </Link>
         </GuideBox>
 
         <GuideBox>
@@ -136,6 +140,7 @@ const Guide = () => {
           >
             Suggest Edits
           </Typography>
+          <Link href="#suggests">
           <Box
             sx={{
               cursor: "pointer",
@@ -152,6 +157,7 @@ const Guide = () => {
             </Typography>
             <ArrowRightAltIcon style={{ color: "#0689FF" }} />
           </Box>
+          </Link>
         </GuideBox>
 
         <GuideBox>
@@ -167,6 +173,7 @@ const Guide = () => {
           >
             Ranks
           </Typography>
+          <Link href="#ranks">
           <Box
             sx={{
               cursor: "pointer",
@@ -183,6 +190,7 @@ const Guide = () => {
             </Typography>
             <ArrowRightAltIcon style={{ color: "#0689FF" }} />
           </Box>
+          </Link>
         </GuideBox>
       </GuidesBox>
 
