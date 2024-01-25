@@ -83,8 +83,8 @@ def send_inactive_user_notifications():
     # Get latest posts
     latest_lists = List.objects.order_by('-created')[:5]
     latest_ranks = Rank.objects.order_by('-created')[:5]
-    lists_html = "\n".join([f"<li><a href='{DOMAIN}/list?{post.id}'>{markdown.markdown(post.name)}</a></li>" for post in latest_lists])
-    ranks_html = "\n".join([f"<li><a href='{DOMAIN}/rank?{post.id}'>{markdown.markdown(post.name)}</a></li>" for post in latest_ranks])
+    lists_html = "\n".join([f"<li><a href='{DOMAIN}/list/{post.id}'>{markdown.markdown(post.name)}</a></li>" for post in latest_lists])
+    ranks_html = "\n".join([f"<li><a href='{DOMAIN}/rank/{post.id}'>{markdown.markdown(post.name)}</a></li>" for post in latest_ranks])
 
     # Send email to each inactive user
     for user in inactive_users:

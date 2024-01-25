@@ -335,6 +335,8 @@ export default function Header() {
     };
   }, [theme.breakpoints]);
 
+  const logoPath = `${router.basePath}/logo.svg`;
+
   return (
     <AppBar position="static" color="default" elevation={0}>
       <Toolbar>
@@ -398,7 +400,7 @@ export default function Header() {
             ) : (
               // Display the logo on the left for larger screens
               <Link href="/">
-                <img src={'logo.svg'} alt="logo" />
+                <img src={logoPath} alt="logo" />
               </Link>
             )}
           </Box>

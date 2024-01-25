@@ -153,7 +153,7 @@ export default function RankHome() {
                       <Card key={rank.id}>
                         <CardActionArea>
                           <CardContent>
-                            <Link href={`/rank?id=${rank.id}`} passHref>
+                            <Link href={`/rank/${rank.id}`} passHref>
                               <Typography gutterBottom variant="h5">
                                 {rank.name}
                               </Typography>

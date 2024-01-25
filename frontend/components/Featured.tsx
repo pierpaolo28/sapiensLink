@@ -26,7 +26,7 @@ const Featured = ({ id, img, title, description }: FeaturedProps) => {
 
   return (
     <FeaturedBox>
-      <Link href={`/list?id=${id}`}>
+      <Link href={`/list/${id}`}>
       <ImgContainer>
         <img src={img} alt="housePhoto" style={{ maxWidth: "100%" }} />
       </ImgContainer>

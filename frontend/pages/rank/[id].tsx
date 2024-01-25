@@ -1,6 +1,7 @@
 import dynamic from 'next/dynamic';
 import DOMPurify from 'dompurify';
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import List from '@mui/material/List';
@@ -40,9 +41,10 @@ import 'react-quill/dist/quill.snow.css'; // Import the styles for the react-qui
 
 
 export default function RankPage() {
+    const router = useRouter();
+    const { id } = router.query;
     const [rank, setRank] = useState<RankPageResponse | null>(null);
     const [newItemText, setNewItemText] = useState('');
-    const [id, setId] = useState<string | null>(null);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [editedElement, setEditedElement] = useState<string>('');
@@ -80,22 +82,12 @@ export default function RankPage() {
         }
     };
 
-
     useEffect(() => {
-        // Extract the id parameter from the current URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const extractedId = urlParams.get('id');
-
-        // Update the id state if it is different
-        if (extractedId !== id) {
-            setId(extractedId);
-        }
-
-        // Fetch data only if id is present
         if (id) {
             fetchRankData();
         }
     }, [id]);
+    
 
 
     const handleVote = async (contentIndex: number, action: string) => {

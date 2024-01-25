@@ -94,7 +94,7 @@ export default function SavedPage() {
                   <List>
                   {savedItems.saved_lists.map((list, index) => (
                     <ListItem button key={index}>
-                      <Link href={`/list?id=${list.list}`} passHref>
+                      <Link href={`/list/${list.list}`} passHref>
                         <ListItemText primary={list.list_name.name}/>
                       </Link>
                     </ListItem>
@@ -109,7 +109,7 @@ export default function SavedPage() {
                   <List>
                   {savedItems.saved_ranks.map((rank, index) => (
                     <ListItem button key={index}>
-                      <Link href={`/rank?id=${rank.rank}`} passHref>
+                      <Link href={`/rank/${rank.rank}`} passHref>
                         <ListItemText primary={rank.rank_name.name}/>
                         </Link>
                     </ListItem>

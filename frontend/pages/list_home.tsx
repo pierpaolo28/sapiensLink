@@ -273,7 +273,7 @@ export default function ListHome() {
                       <Card key={list.id}>
                         <CardActionArea>
                           <CardContent>
-                            <Link href={`/list?id=${list.id}`} passHref>
+                            <Link href={`/list/${list.id}`} passHref>
                               <Typography gutterBottom variant="h5">
                                 {list.name}
                               </Typography>

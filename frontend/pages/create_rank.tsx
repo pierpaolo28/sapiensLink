@@ -119,7 +119,7 @@ const CreateRankForm = () => {
             if (responseData.error === 'Similar ranks found') {
               // Display a user-friendly error message for similar ranks
               setError(`Similar ranks found. Please check the existing ranks: ${responseData.similar_ranks.map((rank: any) => (
-                '<a key=' + rank.id + ' href="/rank?id=' + rank.id + '">' + rank.name + '</a>'
+                '<a key=' + rank.id + ' href="/rank/' + rank.id + '">' + rank.name + '</a>'
               )).join(', ')}`);
             } else {
               setError(responseData.message || 'Failed to submit the form');
