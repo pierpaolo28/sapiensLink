@@ -2,9 +2,10 @@ import styled from "@mui/system/styled";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/system/Box";
 import Container from "@mui/system/Container";
-import React from "react";
+import React, { useState, useEffect } from 'react';
+import { useTheme } from "@mui/material";
 
-const Details = () => {
+const Features = () => {
   const CustomBox = styled(Box)(({ theme }) => ({
     display: "flex",
     gap: theme.spacing(10),
@@ -63,13 +64,36 @@ const Details = () => {
     },
   }));
 
+  const theme = useTheme();
+  // Add a state variable to track whether the screen size is below "md" breakpoint
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  // useEffect to update the isSmallScreen state based on screen width
+  useEffect(() => {
+    const handleResize = () => {
+      // Check if the screen width is below the "md" breakpoint
+      setIsSmallScreen(window.innerWidth < theme.breakpoints.values.md);
+    };
+
+    // Initial check and attach resize event listener
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    // Clean up the event listener when the component unmounts
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [theme.breakpoints]);
+
   return (
     <Box sx={{ py: 10 }}>
       <Container>
         <CustomBox>
+        {!isSmallScreen && (
           <ImgContainer>
             <img src={'images/list.png'} alt="list" style={{ maxWidth: "100%" }} />
           </ImgContainer>
+          )}
 
           <Box id="lists">
             <Divider />
@@ -94,9 +118,16 @@ const Details = () => {
               Share your expertise with your audience, retaining full ownership. Get advice and make your contributions memorable.
             </Typography>
           </Box>
+
+          {isSmallScreen && (
+          <ImgContainer>
+            <img src={'images/list.png'} alt="list" style={{ maxWidth: "100%" }} />
+          </ImgContainer>
+          )}
         </CustomBox>
 
         <CustomBox>
+
           <Box id="suggests">
             <Divider />
             <Typography
@@ -127,9 +158,11 @@ const Details = () => {
         </CustomBox>
 
         <CustomBox>
+        {!isSmallScreen && (
           <ImgContainer>
             <img src={'images/rank.png'} alt="rank" style={{ maxWidth: "100%" }} />
           </ImgContainer>
+        )}
 
           <Box id="ranks">
             <Divider />
@@ -154,6 +187,12 @@ const Details = () => {
               Ask for advice to the community and let the vox populi help you fostering new ideas. 
             </Typography>
           </Box>
+
+          {isSmallScreen && (
+          <ImgContainer>
+            <img src={'images/rank.png'} alt="rank" style={{ maxWidth: "100%" }} />
+          </ImgContainer>
+        )}
         </CustomBox>
 
          {/* TODO: To Add back after lunch with real statistics */}
@@ -196,4 +235,4 @@ const Details = () => {
   );
 };
 
-export default Details;
+export default Features;

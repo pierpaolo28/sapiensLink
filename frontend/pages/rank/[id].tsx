@@ -28,6 +28,7 @@ import BookmarkIcon from '@mui/icons-material/Bookmark';
 import Link from 'next/link';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import SendIcon from '@mui/icons-material/Send';
 
 
 import AppLayout from "@/components/AppLayout";
@@ -87,7 +88,7 @@ export default function RankPage() {
             fetchRankData();
         }
     }, [id]);
-    
+
 
 
     const handleVote = async (contentIndex: number, action: string) => {
@@ -139,7 +140,7 @@ export default function RankPage() {
             setEditingIndex(null);
             setIsEditing(false);
         }
-    };    
+    };
 
     const updateElement = async (index: number, editedElement: string) => {
         if (!isUserLoggedIn()) {
@@ -148,30 +149,30 @@ export default function RankPage() {
 
         try {
             if (editedElement != '<p><br></p><p><br></p>') {
-            // Extracting the rank IDs from the content object
-            const accessToken = localStorage.getItem('access_token');
-            const rankIds = Object.keys(rank!.rank.content);
-            // Using the extracted rank ID for the API call
-            const elementIndex = rankIds[index];
-            const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`,
-                },
-                body: JSON.stringify({ edit_element_index: elementIndex, edit_element: convertQuillContentToHtml(sanitizeContent(editedElement)) }),
-            });
+                // Extracting the rank IDs from the content object
+                const accessToken = localStorage.getItem('access_token');
+                const rankIds = Object.keys(rank!.rank.content);
+                // Using the extracted rank ID for the API call
+                const elementIndex = rankIds[index];
+                const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`,
+                    },
+                    body: JSON.stringify({ edit_element_index: elementIndex, edit_element: convertQuillContentToHtml(sanitizeContent(editedElement)) }),
+                });
 
-            if (response.ok) {
-                fetchRankData();
-            } else {
-                const errorData = await response.json();
+                if (response.ok) {
+                    fetchRankData();
+                } else {
+                    const errorData = await response.json();
                     setSnackbarMessage(errorData.details || 'Error submitting comment');
                     setSnackbarOpen(true);
                     setEditedElement("");
                     return;
+                }
             }
-        }
         } catch (error) {
             console.error('Error editing element:', error);
             // Handle the error or provide feedback to the user
@@ -181,37 +182,75 @@ export default function RankPage() {
     };
 
 
-    const addItem = async (event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleKeyboardEvent = async (event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         if (!isUserLoggedIn()) {
             window.location.href = '/signin';
         }
 
         try {
-            // Prevent users to submit an empty element
-            if (event.key === 'Enter' && newItemText != '<p><br></p><p><br></p>') {
+            // Prevent users from submitting an empty element
+            if (event.key === 'Enter' && newItemText !== '<p><br></p><p><br></p>') {
                 const accessToken = localStorage.getItem('access_token');
                 const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`,
+                        Authorization: `Bearer ${accessToken}`,
                     },
                     body: JSON.stringify({ element: convertQuillContentToHtml(sanitizeContent(newItemText)) }),
                 });
 
                 if (response.ok) {
-                    setNewItemText("");
+                    setNewItemText('');
                     fetchRankData();
                 } else {
                     console.log('Error adding new item:', response.status, response.statusText);
                     const errorData = await response.json();
                     setSnackbarMessage(errorData.details || 'Error submitting comment');
                     setSnackbarOpen(true);
-                    setNewItemText("");
+                    setNewItemText('');
                     return;
                 }
             } else if (event.key === 'Enter') {
-                setNewItemText("");
+                setNewItemText('');
+            }
+        } catch (error) {
+            console.error('Error adding new item:', error);
+            setError('An unexpected error occurred while adding a new item.');
+        }
+    };
+
+    const handleButtonClick = async () => {
+        if (!isUserLoggedIn()) {
+            window.location.href = '/signin';
+        }
+
+        try {
+            // Prevent users from submitting an empty element
+            if (newItemText.trim() !== '' && newItemText !== '<p><br></p>') {
+                const accessToken = localStorage.getItem('access_token');
+                const response = await fetch(`http://localhost/api/rank_page/${rank!.rank.id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                    body: JSON.stringify({ element: convertQuillContentToHtml(sanitizeContent(newItemText)) }),
+                });
+
+                if (response.ok) {
+                    setNewItemText('');
+                    fetchRankData();
+                } else {
+                    console.log('Error adding new item:', response.status, response.statusText);
+                    const errorData = await response.json();
+                    setSnackbarMessage(errorData.details || 'Error submitting comment');
+                    setSnackbarOpen(true);
+                    setNewItemText('');
+                    return;
+                }
+            } else {
+                setNewItemText('');
             }
         } catch (error) {
             console.error('Error adding new item:', error);
@@ -350,17 +389,13 @@ export default function RankPage() {
                                         <Typography variant="body1">
                                             Last Activity: {new Date(rank.rank.updated).toLocaleString()}
                                         </Typography>
-                                        {/* <FormControlLabel
-                                            control={<Switch checked={rank.is_subscribed} onChange={toggleWatchStatus} />}
-                                            label={rank.is_subscribed ? 'Unwatch Rank' : 'Watch Rank'}
-                                        /> */}
                                         <Box>
-                                        <IconButton aria-label="watch/unwatch list" onClick={toggleWatchStatus}>
-                                            {rank.is_subscribed ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                                        </IconButton>
-                                        <IconButton aria-label="save list" onClick={handleSaveUnsaveRank}>
-                                            {rank.saved_ranks_ids.includes(rank.rank.id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-                                        </IconButton>
+                                            <IconButton aria-label="watch/unwatch list" onClick={toggleWatchStatus}>
+                                                {rank.is_subscribed ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                            </IconButton>
+                                            <IconButton aria-label="save list" onClick={handleSaveUnsaveRank}>
+                                                {rank.saved_ranks_ids.includes(rank.rank.id) ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+                                            </IconButton>
                                         </Box>
                                     </Box>
 
@@ -387,28 +422,38 @@ export default function RankPage() {
                                                     .map((sortedElement, index) => (
                                                         <ListItem key={index}>
                                                             {editingIndex === sortedElement.originalIndex ? (
-                                                                 <Box sx={{ flexGrow: 1, mr: 1 }}>
-                                                                <ReactQuill
-                                                                    value={editedElement}
-                                                                    onChange={(value) => setEditedElement(value)}
-                                                                    onBlur={handleBlur}
-                                                                    onKeyDown={(e) => {
-                                                                        if (e.key === 'Enter') {
-                                                                            e.preventDefault(); // Prevent the default behavior of adding a new line
+                                                                <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, width: '100%' }}>
+                                                                    <Box sx={{ flexGrow: 1, mr: 1 }}>
+                                                                        <ReactQuill
+                                                                            value={editedElement}
+                                                                            onChange={(value) => setEditedElement(value)}
+                                                                            onBlur={handleBlur}
+                                                                            onKeyDown={(e) => {
+                                                                                if (e.key === 'Enter') {
+                                                                                    e.preventDefault(); // Prevent the default behavior of adding a new line
+                                                                                    updateElement(sortedElement.originalIndex, editedElement);
+                                                                                    setIsEditing(false);
+                                                                                }
+                                                                            }}
+                                                                            theme="snow"
+                                                                            modules={{
+                                                                                toolbar: [
+                                                                                    ['bold', 'italic', 'underline', 'strike'],
+                                                                                    ['link'],
+                                                                                ],
+                                                                            }}
+                                                                        />
+                                                                    </Box>
+                                                                    <IconButton
+                                                                        onClick={() => {
                                                                             updateElement(sortedElement.originalIndex, editedElement);
                                                                             setIsEditing(false);
-                                                                        }
-                                                                    }}
-                                                                    theme="snow"
-                                                                    modules={{
-                                                                        toolbar: [
-                                                                            ['bold', 'italic', 'underline', 'strike'],
-                                                                            ['link'],
-                                                                        ],
-                                                                    }}
-                                                                />
-                                                                </Box>
+                                                                        }}
+                                                                    >
+                                                                        <SendIcon />
+                                                                    </IconButton>
 
+                                                                </Box>
                                                             ) : (
                                                                 <Grid container alignItems="center">
                                                                     <Grid item xs>
@@ -433,19 +478,24 @@ export default function RankPage() {
                                                         </ListItem>
                                                     ))}
                                                 <ListItem>
-                                                <Box sx={{ flexGrow: 1, mr: 1 }}>
-                                                    <ReactQuill
-                                                        value={newItemText}
-                                                        onChange={(value) => setNewItemText(value)}
-                                                        onKeyDown={(e) => addItem(e)}
-                                                        theme="snow"
-                                                        modules={{
-                                                            toolbar: [
-                                                                ['bold', 'italic', 'underline', 'strike'],
-                                                                ['link'],
-                                                            ],
-                                                        }}
-                                                    />
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', mt: 2, width: '100%' }}>
+                                                        <Box sx={{ flexGrow: 1, mr: 1 }}>
+                                                            <ReactQuill
+                                                                value={newItemText}
+                                                                onChange={(value) => setNewItemText(value)}
+                                                                onKeyDown={(e) => handleKeyboardEvent(e)}
+                                                                theme="snow"
+                                                                modules={{
+                                                                    toolbar: [
+                                                                        ['bold', 'italic', 'underline', 'strike'],
+                                                                        ['link'],
+                                                                    ],
+                                                                }}
+                                                            />
+                                                        </Box>
+                                                        <IconButton onClick={handleButtonClick}>
+                                                        <SendIcon />
+                                                        </IconButton>
                                                     </Box>
                                                 </ListItem>
                                             </List>
@@ -457,7 +507,7 @@ export default function RankPage() {
                                             <IconButton onClick={handleCopyLink} color="primary">
                                                 <ShareIcon />
                                             </IconButton>
-                                            </Box>
+                                        </Box>
                                     </Card>
                                 </>
                             )}
@@ -499,15 +549,15 @@ export default function RankPage() {
                 </Box>
             </Container>
             <Snackbar
-      open={snackbarOpen}
-      autoHideDuration={6000}
-      onClose={() => setSnackbarOpen(false)}
-      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-    >
-      <Alert onClose={() => setSnackbarOpen(false)} severity="error" sx={{ width: '100%' }}>
-        {snackbarMessage}
-      </Alert>
-    </Snackbar>
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={() => setSnackbarOpen(false)}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert onClose={() => setSnackbarOpen(false)} severity="error" sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </AppLayout>
     );
 }
