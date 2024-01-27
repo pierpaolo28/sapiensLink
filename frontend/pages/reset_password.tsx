@@ -75,7 +75,7 @@ export default function ResetPassword() {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Get Instructions
+              Get Instructions by email
             </Button>
             {error && (
               <Typography color="error" variant="body2" sx={{ mt: 1 }}>

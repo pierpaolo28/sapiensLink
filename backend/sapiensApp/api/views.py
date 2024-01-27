@@ -171,7 +171,7 @@ def login_user(request):
         else:
             return Response({'message': 'Wrong Password'}, status=status.HTTP_401_UNAUTHORIZED)
     else:
-        return Response({'message': 'Both Email and Password are required'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
 @swagger_auto_schema(
@@ -309,22 +309,26 @@ def register_user(request):
         serializer = RegisterSerializer(data=request.data)
 
         if serializer.is_valid():
-            user = MyUserCreationForm(serializer.validated_data).save(commit=False)
-            user.email = user.email.lower()
-            user.save()
+            user = MyUserCreationForm(serializer.validated_data)
+            if user.is_valid():
+                user = user.save(commit=False)
+                user.email = user.email.lower()
+                user.save()
 
-            login(request, user)
+                login(request, user)
 
-            refresh = RefreshToken.for_user(user)
-            access_token = str(refresh.access_token)
+                refresh = RefreshToken.for_user(user)
+                access_token = str(refresh.access_token)
 
-            data = {
-                "access_token": access_token,
-                "refresh_token": str(refresh),
-                "expiration_time": refresh.access_token['exp'] * 1000  # Convert expiration time to milliseconds
-            }
+                data = {
+                    "access_token": access_token,
+                    "refresh_token": str(refresh),
+                    "expiration_time": refresh.access_token['exp'] * 1000  # Convert expiration time to milliseconds
+                }
 
-            return Response(data, status=status.HTTP_201_CREATED)
+                return Response(data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(user.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             # TODO: provide more descriptive explanation of error (e.g., password condition, duplicate email)
             return Response({"message": "An error occurred during registration", 'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
@@ -682,7 +686,7 @@ def list_page(request, pk):
                                 'notification': f'A new comment was added on the list "{list_instance.name}".',
                                 'creator_id': user.id,
                                 'receiver_id': receiver.id,
-                                'url': request.path.split('/')[0] + '/list?id=' + str(list_instance.id),
+                                'url': request.path.split('/')[0] + '/list/' + str(list_instance.id),
                             }
                         )
 
@@ -690,7 +694,7 @@ def list_page(request, pk):
                 list_serializer = ListSerializer(list_instance)
                 return Response(list_serializer.data, status=status.HTTP_201_CREATED)
             else:
-                return Response({'error': 'Comment could not be added', 'details': comment_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Comment could not be added', 'details': str(comment_serializer.errors['body'][0])}, status=status.HTTP_400_BAD_REQUEST)
 
 
         elif 'save' in request.data:
@@ -812,14 +816,14 @@ def rank_page(request, pk):
                                 'notification': f'A new element was added on the rank "{rank.name}".',
                                 'creator_id': user.id,
                                 'receiver_id': receiver.id,
-                                'url': request.path.split('/')[0] + '/rank?id=' + str(rank.id)
+                                'url': request.path.split('/')[0] + '/rank/' + str(rank.id)
                             }
                         )
 
                 serializer = RankSerializer(rank)
                 return Response(serializer.data, status=status.HTTP_200_OK)
             else:
-                return Response({'error': 'Element could not be added', 'details': form.errors}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Element could not be added', 'details': str(form.errors['element'][0])}, status=status.HTTP_400_BAD_REQUEST)
 
         elif 'save' in request.data:
             RankSaved.objects.get_or_create(user=request.user, rank=rank)
@@ -859,7 +863,7 @@ def rank_page(request, pk):
                 else:
                     return Response({'message': 'Not authorized'}, status=status.HTTP_401_UNAUTHORIZED)
             else:
-                return Response(form.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Element could not be edited', 'details': str(form.errors['edit_element'][0])}, status=status.HTTP_400_BAD_REQUEST)
 
     serializer = RankSerializer(rank)
     content_scores = {}
@@ -926,9 +930,7 @@ def vote_action(request, pk, action):
 
     list_instance.save()
 
-    # Serialize the updated list data
-    list_serializer = ListSerializer(list_instance)
-    return Response(list_serializer.data, status=status.HTTP_200_OK)
+    return Response({'message': 'Successfully Voted'}, status=status.HTTP_200_OK)
 
 
 
@@ -956,9 +958,7 @@ def vote_rank(request, pk, content_index, action):
             vote = RankVote.objects.get(user=user, rank=rank, content_index=content_index)
 
             if vote.action == action:
-                # No change in action, return the current state
-                rank_serializer = RankSerializer(rank)
-                return Response(rank_serializer.data, status=status.HTTP_200_OK)
+                return Response({'message': 'Vote Matching Existing'}, status=status.HTTP_200_OK)
 
             elif vote.action in ['upvote', 'downvote']:
                 vote.action = 'neutral'
@@ -978,10 +978,8 @@ def vote_rank(request, pk, content_index, action):
 
         rank.save()
 
-        rank_serializer = RankSerializer(rank)
-        return Response(rank_serializer.data, status=status.HTTP_200_OK)
+        return Response({'message': 'Successfully Voted'}, status=status.HTTP_200_OK)
     else:
-        rank_serializer = RankSerializer(rank)
         return Response({"message": "Element in Rank Not Found"}, status=status.HTTP_404_NOT_FOUND)
 
 
@@ -991,6 +989,14 @@ def get_user(request, pk):
     """
     Retrieve a single user's data.
     """
+
+    # Check if the request contains a specific header or token
+    custom_header_value = request.headers.get('X-NextJS-Application')  # Replace with your custom header name
+
+    # TODO: Replace 'sapiensLink' with new secret token expected. Do same in frontend in hide values.
+    if custom_header_value != 'sapiensLink':
+        return Response({'error': 'Access denied. This view is only accessible from the NextJS application.'}, status=status.HTTP_403_FORBIDDEN)
+
     try:
         user = User.objects.get(pk=pk)
     except User.DoesNotExist:
@@ -1156,6 +1162,9 @@ def user_profile_page(request, pk):
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def private_lists_page(request, pk):
+    # Check if the authenticated user is the same as the user_instance
+    if request.user.id != int(pk):
+        return Response({"error": "You are not authorized to view this content."}, status=status.HTTP_403_FORBIDDEN)
     user_instance = get_object_or_404(User, pk=pk)
     lists_count = List.objects.filter(author_id=pk, public=True).count()
     private_lists = user_instance.list_set.filter(public=False)
@@ -1370,7 +1379,7 @@ def update_list_page(request, pk):
         serializer = ListSerializer(list, data=request.data, many=False)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({"message": "List Updated"}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
@@ -1456,7 +1465,7 @@ def update_user_page(request):
                 user.set_password(password)
                 user.save()
 
-            return Response(serializer.data)
+            return Response({"message": "User Updated"}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1575,11 +1584,11 @@ def report_list_page(request, pk):
                 'notification': f'Your list "{list.name}" has been reported by an user.',
                 'creator_id': request.user.id,
                 'receiver_id': list.author.id,
-                'url': request.build_absolute_uri('/') + 'list?id=' + str(list.id),
+                'url': request.build_absolute_uri('/') + 'list/' + str(list.id),
             }
         )
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response({'error': 'List could not be reported', 'details': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "Report Created"}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @swagger_auto_schema(
@@ -1598,7 +1607,7 @@ def report_rank_page(request):
     serializer = ReportRankSerializer(data=request.data, many=False)
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response({"message": "Report Created"}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -1713,7 +1722,7 @@ def list_pr_page(request, pk):
                             'notification': f'A new suggestion to edit your list "{list_instance.name}" has been created.',
                             'creator_id': request.user.id,
                             'receiver_id': list_instance.author.id,
-                            'url': request.build_absolute_uri('/') + 'list_pr?id=' + str(list_instance.id),
+                            'url': request.build_absolute_uri('/') + 'list/suggestions/' + str(list_instance.id),
                         }
                     )
                 return Response({'message': 'Edit suggestion created successfully'}, status=status.HTTP_201_CREATED)
@@ -1734,12 +1743,12 @@ def list_pr_page(request, pk):
                         'notification': f'A new comment has been added to a suggestion to edit your list "{list_instance.name}".',
                         'creator_id': request.user.id,
                         'receiver_id': list_instance.author.id,
-                        'url': request.build_absolute_uri('/') + 'list_pr?id=' + str(list_instance.id),
+                        'url': request.build_absolute_uri('/') + 'list/suggestions/' + str(list_instance.id),
                     }
                 )
                 return Response({'message': 'Comment added successfully'}, status=status.HTTP_201_CREATED)
             else:
-                return Response({'error': 'Comment could not be created', 'details': comment_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error': 'Comment could not be created', 'details': str(comment_serializer.errors['text'][0])}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response({'message': 'Invalid request'}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -1777,7 +1786,7 @@ def approve_suggestion_action(request, suggestion_id):
                 'notification': f'Your suggestion to edit the list "{list_instance.name}" has been approved!',
                 'creator_id': request.user.id,
                 'receiver_id': suggestion.suggested_by.id,
-                'url': request.build_absolute_uri('/') + 'list?id=' + str(list_instance.id),
+                'url': request.build_absolute_uri('/') + 'list/' + str(list_instance.id),
             }
         )
 
@@ -1815,7 +1824,7 @@ def decline_suggestion_action(request, suggestion_id):
                 'notification': f'Your suggestion to edit the list "{suggestion.list.name}" has been declined.',
                 'creator_id': request.user.id,
                 'receiver_id': suggestion.suggested_by.id,
-                'url': request.build_absolute_uri('/') + 'list?id=' + str(list_id),
+                'url': request.build_absolute_uri('/') + 'list/' + str(list_id),
             }
         )
 
@@ -1918,9 +1927,12 @@ def get_notifications(request):
 def mark_notification_as_read(request, notification_id):
     try:
         notification = Notification.objects.get(pk=notification_id)
-        notification.read = True
-        notification.save()
-        return JsonResponse({'status': 'Notification marked as read.'})
+        if int(notification.receiver) != int(request.user.id):
+            return JsonResponse({'error': 'Unauthorized'}, status=401)
+        else:
+            notification.read = True
+            notification.save()
+            return JsonResponse({'status': 'Notification marked as read.'})
     except Notification.DoesNotExist:
         return JsonResponse({'error': 'Notification not found.'}, status=404)
 
@@ -1992,20 +2004,7 @@ def email_unsubscribe(request):
     # Save the changes to the EmailSubscription instance
     email_subscription.save()
 
-    # Extract access_token, refresh_token, and expiration_time from query parameters
-    access_token = request.query_params.get('access_token')
-    refresh_token = request.query_params.get('refresh_token')
-    expiration_time = request.query_params.get('expiration_time')
-
-    # Return the same response data as login_user view
-    response_data = {
-        'access_token': access_token,
-        'refresh_token': refresh_token,
-        'expiration_time': expiration_time,
-        'detail': 'Subscription preferences updated successfully.'
-    }
-
-    return Response(response_data, status=status.HTTP_200_OK)
+    return Response({'message': 'Subscription preferences updated successfully.'}, status=status.HTTP_200_OK)
 
 
 @swagger_auto_schema(

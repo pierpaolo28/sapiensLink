@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Avatar from '@mui/material/Avatar';
@@ -27,12 +28,14 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import dynamic from 'next/dynamic';
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import 'react-quill/dist/quill.snow.css';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 
-import AppLayout from "@/components/AppLayout";
-import { EditCommentWithUserData, ListPrPageWithUserDataResponse } from '@/utils/types';
-import { getUserIdFromAccessToken } from "@/utils/auth";
-import { appendLists, isValidListContent, extractWordsFromHTML, extractAddedWords, highlightWordsInHtml } from "@/utils/html";
+import AppLayout from "@/../../components/AppLayout";
+import { EditCommentWithUserData, ListPrPageWithUserDataResponse } from '@/../../utils/types';
+import { getUserIdFromAccessToken } from "@/../../utils/auth";
+import { appendLists, isValidListContent, extractWordsFromHTML, extractAddedWords, highlightWordsInHtml } from "@/../../utils/html";
 
 
 // Function to style the modal
@@ -61,6 +64,8 @@ const ListPrPage = () => {
     const handleCloseModal = () => setModalOpen(false);
     const [commentText, setCommentText] = useState('');
     const [error, setError] = useState<string | null>(null);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
 
     const handleOpenModal = () => {
         setModalOpen(true);
@@ -84,6 +89,7 @@ const ListPrPage = () => {
             const userResponse = await fetch(`http://localhost/api/get_user/${userId}/`, {
                 method: 'GET',
                 headers: {
+                    'X-NextJS-Application': 'sapiensLink',
                     'Content-Type': 'application/json',
                 },
             });
@@ -254,7 +260,9 @@ const ListPrPage = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                const errorData = await response.json();
+                setError(errorData.details.suggestion_text || 'Error submitting suggestion.')
+                return;
             }
 
             // Clear the form and reload the suggestions
@@ -287,7 +295,10 @@ const ListPrPage = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                const errorData = await response.json();
+                setSnackbarMessage(errorData.details || 'Error submitting comment');
+                setSnackbarOpen(true);
+                return;
             }
 
             // Clear the form and reload the comments
@@ -370,7 +381,7 @@ const ListPrPage = () => {
                             <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
                                 <Link href={`/user_profile?id=${listData.suggestions[currentSuggestionIndex].suggested_by}`} passHref>
                                     <ListItemAvatar>
-                                        <Avatar src={listData.suggestions[currentSuggestionIndex].suggestedByData.avatar} alt={listData.suggestions[currentSuggestionIndex].suggestedByData.name} sx={{ marginRight: 1 }} />
+                                        <Avatar src={"http://localhost/static" + listData.suggestions[currentSuggestionIndex].suggestedByData.avatar} alt={listData.suggestions[currentSuggestionIndex].suggestedByData.name} sx={{ marginRight: 1 }} />
                                     </ListItemAvatar>
                                 </Link>
                                 <Typography variant="h4" gutterBottom>
@@ -394,12 +405,11 @@ const ListPrPage = () => {
                                 <Paper elevation={3} sx={{ p: 2, minHeight: '150px' }}>
                                     <Typography
                                         style={{ whiteSpace: 'pre-wrap' }}
-                                        dangerouslySetInnerHTML={{
-                                            __html: highlightWordsInHtml(
-                                                suggestion.suggestion_text,
-                                                extractAddedWords(listData.list.content, suggestion.suggestion_text)
-                                            ),
-                                        }}
+                                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(highlightWordsInHtml(
+                                            suggestion.suggestion_text,
+                                            extractAddedWords(listData.list.content, suggestion.suggestion_text)
+                                        ))
+                                    }}
                                     />
                                 </Paper>
                             </Grid>
@@ -431,7 +441,7 @@ const ListPrPage = () => {
                                         {comment.commenterData && (
                                             <Link href={`/user_profile?id=${comment.commenter}`} passHref>
                                                 <ListItemAvatar>
-                                                    <Avatar src={comment.commenterData.avatar} alt={comment.commenterData.name} sx={{ marginRight: 1 }} />
+                                                    <Avatar src={"http://localhost/static" + comment.commenterData.avatar} alt={comment.commenterData.name} sx={{ marginRight: 1 }} />
                                                 </ListItemAvatar>
                                             </Link>
                                         )}
@@ -532,7 +542,7 @@ const ListPrPage = () => {
                                         <Typography variant="subtitle1" gutterBottom>
                                             Preview of your proposal:
                                         </Typography>
-                                        <div dangerouslySetInnerHTML={{ __html: appendLists(listData.list.content, newSuggestionText) }} />
+                                        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(appendLists(listData.list.content, newSuggestionText)) }} />
                                     </>
                                 ) : (
                                     <Typography>Loading...</Typography>
@@ -543,6 +553,16 @@ const ListPrPage = () => {
                 </Grid>
             </Box>
         </Modal>
+        <Snackbar
+      open={snackbarOpen}
+      autoHideDuration={6000}
+      onClose={() => setSnackbarOpen(false)}
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+    >
+      <Alert onClose={() => setSnackbarOpen(false)} severity="error" sx={{ width: '100%' }}>
+        {snackbarMessage}
+      </Alert>
+    </Snackbar>
     </AppLayout>
     );
 };

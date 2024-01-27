@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
-import Link from '@mui/material/Link';
+import Link from 'next/link';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
@@ -12,6 +12,19 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import { useTheme } from "@mui/material";
+import Drawer from "@mui/material/Drawer";
+import ListItemButton from "@mui/material/ListItemButton";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import styled from "@mui/system/styled";
+import MenuIcon from "@mui/icons-material/Menu";
+import HomeIcon from "@mui/icons-material/Home";
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import InfoIcon from '@mui/icons-material/Info';
+import ContactMailIcon from '@mui/icons-material/ContactMail';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import ListIcon from '@mui/icons-material/List';
+import Divider from '@mui/material/Divider';
 import { useRouter } from 'next/router';
 
 import AccountCircle from '@mui/icons-material/AccountCircle';
@@ -209,17 +222,12 @@ export default function Header() {
           }),
         });
 
-        if (response.ok) {
-          // Clear tokens from local storage
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          localStorage.removeItem('expiration_time');
+        // Clear tokens from local storage
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem('expiration_time');
 
-          window.location.href = '/';
-        } else {
-          // Handle error cases
-          console.error('Logout failed:', response.statusText);
-        }
+        window.location.href = '/';
       }
     } catch (error) {
       console.error('An error occurred during logout:', error);
@@ -229,116 +237,316 @@ export default function Header() {
   const profileOpen = Boolean(profileAnchorEl);
   const profileId = profileOpen ? 'profile-popover' : undefined;
 
+  const theme = useTheme();
+  const [mobileMenu, setMobileMenu] = useState({
+    left: false,
+  });
+
+  const toggleDrawer = (anchor: any, open: any) => (event: any) => {
+    if (
+      event.type === "keydown" &&
+      (event.type === "Tab" || event.type === "Shift")
+    ) {
+      return;
+    }
+
+    setMobileMenu({ ...mobileMenu, [anchor]: open });
+  };
+
+  const links = ["/", "/list_home", "/rank_home", "/vision", "/about", "/contacts"];
+  const list = (anchor: any) => (
+    <Box
+      sx={{ width: anchor === "top" || anchor === "bottom" ? "auto" : 250 }}
+      role="presentation"
+      onClick={toggleDrawer(anchor, false)}
+      onKeyDown={toggleDrawer(anchor, false)}
+    >
+
+      <List>
+        {["Home", "Lists", "Ranks", "Vision", "About Us", "Contact Us"].map(
+          (text, index) => (
+            <ListItem key={text} disablePadding>
+              <Link href={links[index]} passHref style={{ textDecoration: 'none', color: 'inherit' }}>
+                <ListItemButton>
+                  <ListItemIcon>
+                    {index === 0 && <HomeIcon />}
+                    {index === 1 && <ListIcon />}
+                    {index === 2 && <TrendingUpIcon />}
+                    {index === 3 && <VisibilityIcon />}
+                    {index === 4 && <InfoIcon />}
+                    {index === 5 && <ContactMailIcon />}
+                  </ListItemIcon>
+                  <ListItemText primary={text} />
+                </ListItemButton>
+              </Link>
+            </ListItem>
+          )
+        )}
+      </List>
+    </Box>
+  );
+
+  const NavLink = styled(Typography)(({ theme }) => ({
+    fontSize: "14px",
+    color: "#4F5361",
+    fontWeight: "bold",
+    cursor: "pointer",
+    "&:hover": {
+      color: "#0F1B4C",
+    },
+  }));
+
+  const NavbarLinksBox = styled(Box)(({ theme }) => ({
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing(3),
+    [theme.breakpoints.down("md")]: {
+      display: "none",
+    },
+  }));
+
+  const CustomMenuIcon = styled(MenuIcon)(({ theme }) => ({
+    cursor: "pointer",
+    display: "none",
+    marginRight: theme.spacing(2),
+    [theme.breakpoints.down("md")]: {
+      display: "block",
+    },
+  }));
+
+  // Add a state variable to track whether the screen size is below "md" breakpoint
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+  // useEffect to update the isSmallScreen state based on screen width
+  useEffect(() => {
+    const handleResize = () => {
+      // Check if the screen width is below the "md" breakpoint
+      setIsSmallScreen(window.innerWidth < theme.breakpoints.values.md);
+    };
+
+    // Initial check and attach resize event listener
+    handleResize();
+    window.addEventListener("resize", handleResize);
+
+    // Clean up the event listener when the component unmounts
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [theme.breakpoints]);
+
+  const logoPath = `${router.basePath}/logo.svg`;
 
   return (
     <AppBar position="static" color="default" elevation={0}>
       <Toolbar>
-        <Typography variant="h6" color="inherit" noWrap>
-          <Link href="/">
-            <img src="/logo.svg" alt="Sapiens Logo" width={120} />
-          </Link>
-        </Typography>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "2.5rem",
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <CustomMenuIcon onClick={toggleDrawer("left", true)} />
+            <Drawer
+              anchor="left"
+              open={mobileMenu["left"]}
+              onClose={toggleDrawer("left", false)}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <div>
+                  {list("left")}
+                  {isSmallScreen && (
+                    <Box sx={{ marginTop: '1rem', padding: '1rem' }}>
+                      {!isLoggedIn && (
+                        <>
+                          <Button
+                            color="inherit"
+                            fullWidth
+                            href="signin"
+                          >
+                            Login
+                          </Button>
+                          <Button
+                            color="primary"
+                            variant="contained"
+                            fullWidth
+                            sx={{ marginTop: '1rem' }}
+                            href="signup"
+                          >
+                            Sign Up
+                          </Button>
+                        </>
+                      )}
+                    </Box>
+                  )}
+                </div>
+                <div style={{ marginTop: 'auto' }}>
+                  <Divider sx={{ marginY: '1rem' }} />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Typography>
+                      Toggle Theme
+                    </Typography>
+                    <ThemeToggleButton />
+                  </Box>
+                </div>
+              </div>
+            </Drawer>
+            {isSmallScreen ? (
+              // Move the logo to the right on small screens
+              <div style={{ flexGrow: 1 }} />
+            ) : (
+              // Display the logo on the left for larger screens
+              <Link href="/">
+                <img src={logoPath} alt="logo" />
+              </Link>
+            )}
+          </Box>
+
+          <NavbarLinksBox>
+            <Link href="/list_home" passHref>
+              <NavLink variant="body2">Lists</NavLink>
+            </Link>
+            <Link href="/rank_home" passHref>
+              <NavLink variant="body2">Ranks</NavLink>
+            </Link>
+            <Link href="/vision" passHref>
+              <NavLink variant="body2">Vision</NavLink>
+            </Link>
+            <Link href="/about" passHref>
+              <NavLink variant="body2">About Us</NavLink>
+            </Link>
+            <Link href="/contacts" passHref>
+              <NavLink variant="body2">Contacts</NavLink>
+            </Link>
+          </NavbarLinksBox>
+        </Box>
         <Box sx={{ flexGrow: 1 }} />
-        <ThemeToggleButton/>
-        {isLoggedIn ? (
-          <>
-            {/* Notification Icon */}
-            <IconButton color="inherit" onClick={handleClick}>
-              <Badge badgeContent={notificationCount} color="secondary">
-                <NotificationsIcon />
-              </Badge>
-            </IconButton>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "1rem",
+          }}
+        >
+          {isSmallScreen ? (
+            <div style={{ flexGrow: 1 }} />
+          ) : (
+            <ThemeToggleButton />
+          )}
+          {isLoggedIn ? (
+            <>
+              {/* Notification Icon */}
+              <IconButton color="inherit" onClick={handleClick}>
+                <Badge badgeContent={notificationCount} color="secondary">
+                  <NotificationsIcon />
+                </Badge>
+              </IconButton>
 
-            {/* Popover with Notifications List */}
-            <Popover
-              id={id}
-              open={open}
-              anchorEl={anchorEl}
-              onClose={handleClose}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'center',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'center',
-              }}
-            >
-              <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
-                {/* Map through the updated notifications state */}
-                {notifications.map((notification) => (
-                  <ListItem
-                    key={notification.id}
-                    button
-                    onClick={() => {
-                      markNotificationAsRead(notification.id);
-                      window.location.href = notification.url; // Navigate to the URL
-                    }}
-                  >
-                    {/* Render notification text with styling based on read status */}
-                    <ListItemText
-                      primary={notification.message}
-                      primaryTypographyProps={{
-                        style: { fontWeight: notification.read ? 'normal' : 'bold' },
+              {/* Popover with Notifications List */}
+              <Popover
+                id={id}
+                open={open}
+                anchorEl={anchorEl}
+                onClose={handleClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'center',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'center',
+                }}
+              >
+                <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                  {/* Map through the updated notifications state */}
+                  {notifications.map((notification) => (
+                    <ListItem
+                      key={notification.id}
+                      button
+                      onClick={() => {
+                        markNotificationAsRead(notification.id);
+                        window.location.href = notification.url; // Navigate to the URL
                       }}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            </Popover>
-
-
-
-            {/* User Profile Icon */}
-            <IconButton color="inherit" onClick={handleProfileClick}>
-              <AccountCircle />
-            </IconButton>
-            <Popover
-              id={profileId}
-              open={profileOpen}
-              anchorEl={profileAnchorEl}
-              onClose={handleProfileClose}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'center',
-              }}
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'center',
-              }}
-            >
-              <Box sx={{ p: 2 }}>
-                <List component="nav" aria-label="user profile options">
-                  <ListItem button component="a" href={`/user_profile?id=${getUserIdFromAccessToken()}`}>
-                    <ListItemText primary="Profile Page" />
-                  </ListItem>
-
-                  <ListItem button component="a" href="/edit_profile">
-                    <ListItemText primary="Edit Profile" />
-                  </ListItem>
-                  <ListItem button onClick={handleLogout}>
-                    <ListItemText primary="Log Out" />
-                  </ListItem>
+                    >
+                      {/* Render notification text with styling based on read status */}
+                      <ListItemText
+                        primary={notification.message}
+                        primaryTypographyProps={{
+                          style: { fontWeight: notification.read ? 'normal' : 'bold' },
+                        }}
+                      />
+                    </ListItem>
+                  ))}
                 </List>
-              </Box>
-            </Popover>
-          </>
-        ) : (
-          // If not logged in, show Login and Sign Up buttons
-          <>
-            <Button color="inherit" href="signin">
-              Login
-            </Button>
-            <Button
-              color="primary"
-              variant="contained"
-              sx={{ marginLeft: '1rem' }}
-              href="signup"
-            >
-              Sign Up
-            </Button>
-          </>
-        )}
+              </Popover>
+
+
+
+              {/* User Profile Icon */}
+              <IconButton color="inherit" onClick={handleProfileClick}>
+                <AccountCircle />
+              </IconButton>
+              <Popover
+                id={profileId}
+                open={profileOpen}
+                anchorEl={profileAnchorEl}
+                onClose={handleProfileClose}
+                anchorOrigin={{
+                  vertical: 'bottom',
+                  horizontal: 'center',
+                }}
+                transformOrigin={{
+                  vertical: 'top',
+                  horizontal: 'center',
+                }}
+
+              >
+                <Box sx={{ p: 2 }}>
+                  <List component="nav" aria-label="user profile options">
+                    <ListItem button component="a" href={`/user_profile?id=${getUserIdFromAccessToken()}`}>
+                      <ListItemText primary="Profile Page" />
+                    </ListItem>
+
+                    <ListItem button component="a" href="/edit_profile">
+                      <ListItemText primary="Edit Profile" />
+                    </ListItem>
+                    <ListItem button onClick={handleLogout}>
+                      <ListItemText primary="Log Out" />
+                    </ListItem>
+                  </List>
+                </Box>
+              </Popover>
+            </>
+          ) : (
+            // If not logged in, show Login and Sign Up buttons
+            <>
+              {!isSmallScreen ? (
+                <>
+                  <Button color="inherit" href="signin">
+                    Login
+                  </Button>
+                  <Button
+                    color="primary"
+                    variant="contained"
+                    sx={{ marginLeft: '1rem' }}
+                    href="signup"
+                  >
+                    Sign Up
+                  </Button>
+                </>
+              ) :
+                (
+                  <Link href="/">
+                    <img src={'logo.svg'} alt="logo" />
+                  </Link>
+                )}
+            </>
+          )}
+        </Box>
       </Toolbar>
     </AppBar>
   );

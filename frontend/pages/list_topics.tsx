@@ -15,7 +15,6 @@ import Link from 'next/link';
 import AppLayout from "@/components/AppLayout";
 import { getListTopics } from "@/utils/routes";
 import { ListTopicsResponse } from "@/utils/types";
-import ListRankSwitcher from '@/components/ListRankSwitcher';
 
 export default function ListTopics() {
 
@@ -47,7 +46,6 @@ export default function ListTopics() {
   return (
     <>
       <AppLayout>
-      <ListRankSwitcher />
 
         <Container maxWidth="lg" sx={{ mt: 4 }}>
         <Grid container spacing={3} justifyContent="center" alignItems="center">

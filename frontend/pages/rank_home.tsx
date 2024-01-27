@@ -27,7 +27,6 @@ import AppLayout from "@/components/AppLayout";
 import { getRankHome } from "@/utils/routes";
 import { RankHomeResponse } from "@/utils/types";
 import Pagination from '@mui/material/Pagination';
-import ListRankSwitcher from '@/components/ListRankSwitcher';
 
 export default function RankHome() {
 
@@ -89,7 +88,6 @@ export default function RankHome() {
   return (
     <>
       <AppLayout>
-        <ListRankSwitcher />
         <Container maxWidth="lg" sx={{ mt: 4 }}>
           <Grid container spacing={3}>
             {/* Left side - Topics and More */}
@@ -136,7 +134,7 @@ export default function RankHome() {
                   <TextField
                     fullWidth
                     variant="outlined"
-                    placeholder="Search for lists"
+                    placeholder="Search for ranks"
                     value={searchTerm}
                     onChange={handleSearchChange}
                     InputProps={{
@@ -155,7 +153,7 @@ export default function RankHome() {
                       <Card key={rank.id}>
                         <CardActionArea>
                           <CardContent>
-                            <Link href={`/rank?id=${rank.id}`} passHref>
+                            <Link href={`/rank/${rank.id}`} passHref>
                               <Typography gutterBottom variant="h5">
                                 {rank.name}
                               </Typography>

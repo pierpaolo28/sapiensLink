@@ -15,7 +15,6 @@ import Link from 'next/link';
 import AppLayout from "@/components/AppLayout";
 import { getRankTopics } from "@/utils/routes";
 import { RankTopicsResponse } from "@/utils/types";
-import ListRankSwitcher from '@/components/ListRankSwitcher';
 
 export default function RankTopicsPage() {
 
@@ -47,7 +46,6 @@ export default function RankTopicsPage() {
   return (
     <>
       <AppLayout>
-        <ListRankSwitcher />
 
 
 

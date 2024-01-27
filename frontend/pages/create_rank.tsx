@@ -1,4 +1,5 @@
 import * as React from 'react';
+import DOMPurify from 'dompurify';
 import Container from '@mui/material/Container';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
@@ -70,6 +71,25 @@ const CreateRankForm = () => {
     }
   };
 
+  const removeElement = (indexToRemove: number) => {
+    const newElements = elements.filter((_, index) => index !== indexToRemove);
+  
+    const newContent: { [key: string]: ContentItem } = {};
+    newElements.forEach((element, index) => {
+      // Skip adding elements with empty content
+      if (element.trim() !== '') {
+        const key = String.fromCharCode('a'.charCodeAt(0) + index);
+        newContent[key] = {
+          element: element,
+          user_id: getUserIdFromAccessToken(),
+        };
+      }
+    });
+  
+    setElements(newElements);
+    handleFormChange('content', newContent);
+  };
+  
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -95,21 +115,35 @@ const CreateRankForm = () => {
           // Handle server-side errors
           const responseData = await response.json();
 
-          if (responseData.name) {
-            // Display error for the 'name' field
-            setError(`Name error: ${responseData.name.join(', ')}`);
-          } else if (responseData.error) {
+          if (responseData.error) {
             if (responseData.error === 'Similar ranks found') {
               // Display a user-friendly error message for similar ranks
               setError(`Similar ranks found. Please check the existing ranks: ${responseData.similar_ranks.map((rank: any) => (
-                '<a key=' + rank.id + ' href="/rank?id=' + rank.id + '">' + rank.name + '</a>'
+                '<a key=' + rank.id + ' href="/rank/' + rank.id + '">' + rank.name + '</a>'
               )).join(', ')}`);
             } else {
               setError(responseData.message || 'Failed to submit the form');
             }
           } else {
-            console.log(JSON.stringify(formData))
-            setError('An unexpected error occurred.');
+          let errorMessage = '';
+          
+          if (responseData.name) {
+            errorMessage += responseData.name + ' ';
+          }
+
+          if (responseData.description) {
+            errorMessage += responseData.description + ' ';
+          }
+
+          if (responseData.content) {
+            errorMessage += responseData.content + ' ';
+          }
+
+          if (errorMessage) {
+            setError(errorMessage);
+          } else {
+            setError('Failed to submit the form');
+          }
           }
         }
       } catch (error) {
@@ -119,23 +153,6 @@ const CreateRankForm = () => {
     } else {
       setError('Please fill in all mandatory fields (Name and Topic).');
     }
-  };
-
-
-  const removeElement = (indexToRemove: number) => {
-    const newElements = elements.filter((_, index) => index !== indexToRemove);
-    const newContent: { [key: string]: ContentItem } = {};
-
-    newElements.forEach((value, index) => {
-      const key = String.fromCharCode('a'.charCodeAt(0) + index);
-      newContent[key] = {
-        element: value,
-        user_id: getUserIdFromAccessToken(),
-      };
-    });
-
-    setElements(newElements);
-    handleFormChange('content', newContent);
   };
 
   const handleQuillKeyDown = (event: any) => {
@@ -227,7 +244,7 @@ const CreateRankForm = () => {
             variant="body1"
             color="error"
             gutterBottom
-            dangerouslySetInnerHTML={{ __html: error }}
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(error) }}
           />
         )}
         <Box component="form" noValidate autoComplete="off" onSubmit={handleSubmit}>
@@ -303,7 +320,7 @@ const CreateRankForm = () => {
                 ) : (
                   <>
                   <Box sx={{ flexGrow: 1, mr: 1 }}>
-                    <Typography dangerouslySetInnerHTML={{ __html: element }} />
+                    <Typography dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(element) }} />
                     </Box>
                     <IconButton onClick={() => {
                       setCurrentEditedElement(element);

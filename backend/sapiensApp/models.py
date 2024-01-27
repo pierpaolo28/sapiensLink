@@ -1,6 +1,10 @@
+import os
+import requests
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.utils.translation import gettext_lazy as _
 from django.db import models
+from django.core.files.base import ContentFile
+from django.conf import settings
 
 
 class UserManager(BaseUserManager):
@@ -44,7 +48,7 @@ class User(AbstractUser):
     name = models.CharField(max_length=200, null=True)
     email = models.EmailField(_('email address'), unique=True, null=False)
     bio = models.TextField(null=True, blank=True)
-    avatar = models.ImageField(null=True, default="profile_pic.png", blank=True)
+    avatar = models.ImageField(null=True, blank=True)
     social = models.CharField(max_length=300, null=True, blank=True)
     followers = models.ManyToManyField(
         "self", blank=True, related_name="following", symmetrical=False
@@ -54,6 +58,22 @@ class User(AbstractUser):
     REQUIRED_FIELDS = []
 
     objects = UserManager()
+
+    def save(self, *args, **kwargs):
+        # Set the default avatar if not provided
+        if not self.avatar:
+            default_avatar_url = "https://xsgames.co/randomusers/avatar.php?g=pixel"
+            response = requests.get(default_avatar_url)
+            if response.status_code == 200:
+                self.avatar.save("default_avatar.png", ContentFile(response.content), save=False)
+            else:
+                # If the response status code is not 200, use the default image
+                # Get the absolute path to the default image
+                default_image_path = os.path.join(settings.STATIC_ROOT, "images/profile_pic.png")
+                with open(default_image_path, 'rb') as default_image:
+                    self.avatar.save("profile_pic.png", ContentFile(default_image.read()), save=False)
+
+        super().save(*args, **kwargs)
 
 
 class Topic(models.Model):

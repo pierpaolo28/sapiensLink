@@ -130,7 +130,21 @@ export default function EditProfilePage() {
       } else {
         // Handle update failure
         const responseData = await response.json();
-        setError(responseData.message || 'Profile update failed');
+        let errorMessage = '';
+          
+          if (responseData.name) {
+            errorMessage += responseData.name + ' ';
+          }
+
+          if (responseData.bio) {
+            errorMessage += responseData.bio + ' ';
+          }
+
+          if (errorMessage) {
+            setError(errorMessage);
+          } else {
+            setError('Profile update failed');
+          }
       }
     } catch (error) {
       console.error('An error occurred during profile update:', error);

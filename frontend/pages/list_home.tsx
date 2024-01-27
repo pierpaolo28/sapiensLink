@@ -33,7 +33,6 @@ import AppLayout from "@/components/AppLayout";
 // import DBSetup from "@/components/DBSetup";
 import { getHome } from "@/utils/routes";
 import { HomeWithUserDataResponse } from "@/utils/types";
-import ListRankSwitcher from '@/components/ListRankSwitcher';
 import { isUserLoggedIn } from '@/utils/auth';
 
 
@@ -49,6 +48,7 @@ export default function ListHome() {
       const userResponse = await fetch(`http://localhost/api/get_user/${userId}/`, {
         method: 'GET',
         headers: {
+          'X-NextJS-Application': 'sapiensLink',
           'Content-Type': 'application/json',
         },
       });
@@ -169,7 +169,6 @@ export default function ListHome() {
   return (
     <>
       <AppLayout>
-        <ListRankSwitcher />
         <Container maxWidth="lg" sx={{ mt: 4 }}>
           <Grid container spacing={3}>
             {/* Left side - Topics and More */}
@@ -274,7 +273,7 @@ export default function ListHome() {
                       <Card key={list.id}>
                         <CardActionArea>
                           <CardContent>
-                            <Link href={`/list?id=${list.id}`} passHref>
+                            <Link href={`/list/${list.id}`} passHref>
                               <Typography gutterBottom variant="h5">
                                 {list.name}
                               </Typography>
@@ -286,7 +285,7 @@ export default function ListHome() {
                                 alignItems="center"
                                 sx={{ marginTop: 1 }}
                               >
-                                <Avatar sx={{ width: 32, height: 32 }} />
+                                <Avatar src={"http://localhost/static" + list.authorData.avatar} sx={{ width: 32, height: 32 }} />
                                 <Typography variant="subtitle2">{list.authorData.name}</Typography>
                               </Stack>
                             )}

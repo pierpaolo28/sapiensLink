@@ -42,12 +42,35 @@ export default function SignUp() {
 
         window.location.href = '/list_home';
       } else {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to sign up. Please check your information.');
+        const responseData = await response.json();
+
+        let errorMessage = '';
+
+        if (responseData.email && responseData.email[0]) {
+          errorMessage += responseData.email[0] + ' ';
+        }
+        
+        if (responseData.password2 && responseData.password2[0]) {
+          errorMessage += responseData.password2[0] + ' ';
+        }
+        
+        if (responseData.details && responseData.details.email) {
+          errorMessage += responseData.details.email + ' ';
+        }
+        
+        if (responseData.details && responseData.details.non_field_errors) {
+          errorMessage += responseData.details.non_field_errors + ' ';
+        }
+
+        if (errorMessage) {
+          setError(errorMessage);
+        } else {
+          setError('Failed to sign up. Please check your information.');
+        }
       }
     } catch (error) {
-      console.error('An error occurred during registration:', error);
-      setError('An unexpected error occurred. Please try again.');
+
+      setError('Account already exists or Password not secure enough.');
     }
   };
 
@@ -121,7 +144,7 @@ export default function SignUp() {
             >
               Sign Up
             </Button>
-            <GoogleSignIn/>
+            <GoogleSignIn />
             {error && (
               <Typography color="error" variant="body2" sx={{ mt: 1 }}>
                 {error}

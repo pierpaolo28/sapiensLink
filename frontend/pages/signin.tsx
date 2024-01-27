@@ -3,8 +3,6 @@ import { useRouter } from 'next/router';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
@@ -37,8 +35,23 @@ export default function SignIn() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        setError(errorData.message || 'Failed to sign in. Please check your credentials.');
+        const responseData = await response.json();
+        console.log(responseData);
+        let errorMessage = '';
+
+          if (responseData.email) {
+            errorMessage += responseData.email + ' ';
+          }
+
+          if (responseData.message) {
+            errorMessage += responseData.message + ' ';
+          }
+
+          if (errorMessage) {
+            setError(errorMessage);
+          } else {
+            setError('Failed to sign in. Please check your credentials.');
+          }
         return;
       }
 
@@ -134,10 +147,6 @@ export default function SignIn() {
               type="password"
               id="password"
               autoComplete="current-password"
-            />
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
             />
             <Button
               type="submit"

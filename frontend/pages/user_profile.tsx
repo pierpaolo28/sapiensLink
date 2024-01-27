@@ -236,7 +236,7 @@ export default function UserProfilePage() {
                                     <>
                                         <List>
                                             {userProfile.lists.map((list, index) => (
-                                                <NextLink key={index} href={`/list?id=${list.id}`} passHref>
+                                                <NextLink key={index} href={`/list/${list.id}`} passHref>
                                                     <ListItem key={index}>
                                                         <ListItemText primary={list.name} />
                                                     </ListItem>
@@ -263,14 +263,14 @@ export default function UserProfilePage() {
                                         {recentContributions > 0 ? (
                                             <List>
                                                 {userProfile?.lists_contributions.map((contribution, index) => (
-                                                    <NextLink key={index} href={`/list?id=${contribution.id}`} passHref>
+                                                    <NextLink key={index} href={`/list/${contribution.id}`} passHref>
                                                         <ListItem key={index}>
                                                             <ListItemText primary={contribution.name} />
                                                         </ListItem>
                                                     </NextLink>
                                                 ))}
                                                 {userProfile?.ranks_contributions.map((contribution, index) => (
-                                                    <NextLink key={index} href={`/rank?id=${contribution.id}`} passHref>
+                                                    <NextLink key={index} href={`/rank/${contribution.id}`} passHref>
                                                         <ListItem key={index}>
                                                             <ListItemText primary={contribution.name} />
                                                         </ListItem>
@@ -292,7 +292,7 @@ export default function UserProfilePage() {
                                 {userProfile && userProfile.saved_lists && (
                                     <List>
                                         {userProfile.saved_lists.map((list, index) => (
-                                            <NextLink key={index} href={`/list?id=${list.list}`} passHref>
+                                            <NextLink key={index} href={`/list/${list.list}`} passHref>
                                                 <ListItem key={index}>
                                                     <ListItemText primary={list.list_name.name} />
                                                 </ListItem>
@@ -308,7 +308,7 @@ export default function UserProfilePage() {
                                 {userProfile && userProfile.saved_ranks && (
                                     <List>
                                         {userProfile.saved_ranks.map((rank, index) => (
-                                            <NextLink key={index} href={`/rank?id=${rank.rank}`} passHref>
+                                            <NextLink key={index} href={`/rank/${rank.rank}`} passHref>
                                                 <ListItem key={index}>
                                                     <ListItemText primary={rank.rank_name.name} />
                                                 </ListItem>
