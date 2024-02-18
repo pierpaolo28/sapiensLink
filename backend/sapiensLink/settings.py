@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 import app_secrets
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -213,16 +214,20 @@ MEDIA_ROOT = BASE_DIR / 'static' / 'images'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #TODO: Change to allow just specific url
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 CORS_URLS_REGEX = r"/api/.*"
 CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",
     "http://127.0.0.1:3000",
     "http://127.0.0.1:5500",
     "http://localhost:3000",
-    "http://localhost:8000"
+    "http://localhost:8000",
+    "http://localhost:3001"
 ]
 
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'X-NextJS-Application',
+]
 
 ASGI_APPLICATION = 'sapiensLink.asgi.application'
 

@@ -89,7 +89,7 @@ def send_inactive_user_notifications():
     # Send email to each inactive user
     for user in inactive_users:
         if user.email_subscription.receive_inactive_user_notifications:
-            unsubscribe_url = f"{DOMAIN}/login/?next={reverse('email_unsubscribe')}?inactive=True"
+            unsubscribe_url = f"{DOMAIN}/signin?inactive=True"
 
             # Construct the email using SendGrid
             message = Mail(
@@ -142,7 +142,7 @@ def send_unread_notification_reminders():
     # Send email to each user with unread notifications
     for user in users_with_unread_notifications:
         if user.email_subscription.receive_unread_notification_reminders:
-            unsubscribe_url = f"{DOMAIN}/login/?next={reverse('email_unsubscribe')}?unread=True"
+            unsubscribe_url = f"{DOMAIN}/signin?unread=True"
 
             unread_notifications = Notification.objects.filter(
                 receiver=user.id,

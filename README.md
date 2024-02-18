@@ -15,16 +15,25 @@ Once installed Docker on your local machine, run the following command from the 
 Before running this command, make sure you have a `app_secrets.py` file in the backend directory and to have removed any pre-existing .next, node_modules folders from the frontend folder.
 
 ```
-SENDGRID_API_KEY = 'YOUR_SENDRY_API_KEY'
-POSTGRESQL_USERNAME = 'YOUR_USER_NAME'
-POSTGRESQL_PASSWORD = 'YOUR_USER_PASSWORD'
-FROM_EMAIL = 'YOUR_SENDGRID_FROM_EMAIL'
-GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID'
-GOOGLE_CLIENT_SECRET = 'YOUR_GOOGLE_CLIENT_SECRET'
-DJANGO_SECRET_KEY = 'YOUR_DJANGO_SECRET_KEY'
+SENDGRID_API_KEY = 'TODO'
+FROM_EMAIL = 'TODO'
+POSTGRESQL_USERNAME = 'TODO'
+POSTGRESQL_PASSWORD = 'TODO'
+GOOGLE_CLIENT_ID = 'TODO'
+GOOGLE_CLIENT_SECRET = 'TODO'
+DJANGO_SECRET_KEY = 'TODO'
 ```
 
-If you want to rebuild making sure to not cache anything use: `DB_USER='admin' DB_PASSWORD='password' docker-compose build --no-cache` first. Or if need to clear everything use `docker system prune --volumes`.
+In the frontend folder, make sure instead to have the `.env` file setup:
+
+```
+NEXT_PUBLIC_GOOGLE_CLIENT_ID = 'TODO'
+NEXT_PUBLIC_MAILCHIMP_API_KEY = 'TODO'
+NEXT_PUBLIC_FORMSPREE_API_KEY = 'TODO'
+NEXT_PUBLIC_X_NEXTJS_APPLICATION = 'TODO'
+```
+
+If you want to rebuild everything use: `DB_USER='admin' DB_PASSWORD='password' docker-compose up --build`. Or if need to clear everything use `docker system prune --volumes`.
 
 The Django frontend should be accessible from [localhost:8001](http://localhost:8001/), the Next.js frontend from [localhost:3001](http://localhost:3000/), the Nginx frontend from [localhost](http://localhost/) and pgAdmin to access the PostgreSQL DB at [localhost:5051](http://localhost:5051/). Whenever calling the Django REST APIs, make sure to do so from the Nginx interface and not NextJS.
 
@@ -57,7 +66,7 @@ Then every time you are developing make sure to first activate your virtualenv u
 
 After you install any Python package, use `pip freeze > requirements.txt`.
 
-If you need to install any missing package someone else might have added since your last contribution, then use: `pip install -r requirements.txt`.
+If you need to install any missing package someone else might have added since your last contribution, then use: `pip install -r requirements/all.txt`.
 
 Once finished developing use: `deactivate`.
 

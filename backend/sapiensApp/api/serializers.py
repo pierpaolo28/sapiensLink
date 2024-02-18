@@ -37,6 +37,7 @@ class ListSerializer(ModelSerializer):
             raise ValidationError("Unacceptable language detected in the description.")
         return data
 
+    # TODO: Improve profanity detection
     def validate_content(self, data):
         if profanity.contains_profanity(data):
             raise ValidationError("Unacceptable language detected in the content.")
@@ -77,6 +78,7 @@ class ListSerializer(ModelSerializer):
         instance.description = validated_data.get('description', instance.description)
         instance.content = validated_data.get('content', instance.content)
         instance.source = validated_data.get('source', instance.source)
+        instance.public = validated_data.get('public', instance.public)
 
         # Clear existing topics and add the updated ones if provided
         if topics_data is not None:
@@ -129,6 +131,7 @@ class RankSerializer(ModelSerializer):
             raise ValidationError("Unacceptable language detected in the description.")
         return value
 
+    # TODO: Improve profanity detection
     def validate_content(self, value):
         element_values = ''.join([content['element'] for content in value.values()])
         if profanity.contains_profanity(element_values):
@@ -285,6 +288,7 @@ class CommentSerializer(ModelSerializer):
 
 class EditSuggestionSerializer(ModelSerializer):
 
+    # TODO: Improve profanity detection
     def validate_suggestion_text(self, data):
         if profanity.contains_profanity(data):
             raise ValidationError("Unacceptable language detected in the suggested new list.")
@@ -294,17 +298,29 @@ class EditSuggestionSerializer(ModelSerializer):
         model = EditSuggestion
         fields = '__all__'
 
+class ListNameSerializer(ModelSerializer):
+    class Meta:
+        model = List
+        fields = ['name']
 
 class SavedListSerializer(ModelSerializer):
+    list_name = ListNameSerializer(source='list', read_only=True)
+
     class Meta:
         model = SavedList
-        fields = '__all__'
+        fields = ['id', 'list_name', 'saved_at', 'user', 'list']
 
+class RankNameSerializer(ModelSerializer):
+    class Meta:
+        model = Rank
+        fields = ['name']
 
 class RankSavedSerializer(ModelSerializer):
+    rank_name = RankNameSerializer(source='rank', read_only=True)
+
     class Meta:
         model = RankSaved
-        fields = '__all__'
+        fields = ['id', 'rank_name', 'saved_at', 'user', 'rank']
 
 
 class EditCommentSerializer(ModelSerializer):
