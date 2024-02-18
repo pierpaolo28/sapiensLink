@@ -20,7 +20,7 @@ export default function Footer(props: any) {
 
     const handleSubscribe = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const url = "https://gmail.us21.list-manage.com/subscribe/post?u=182c536e0f63ceaae1d7de0ea&amp;id=4f8a5ead0e&amp;f_id=00aef6e6f0";
+        const url = process.env.NEXT_PUBLIC_MAILCHIMP_API_KEY;
         jsonp(`${url}&EMAIL=${email}`, { param: 'c' }, (error: any, data: any) => {
         if (error) {
             console.error('Error:', error);

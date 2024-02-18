@@ -48,7 +48,7 @@ export default function ListHome() {
       const userResponse = await fetch(`http://localhost/api/get_user/${userId}/`, {
         method: 'GET',
         headers: {
-          'X-NextJS-Application': 'sapiensLink',
+          'X-NextJS-Application': process.env.NEXT_PUBLIC_X_NEXTJS_APPLICATION!,
           'Content-Type': 'application/json',
         },
       });

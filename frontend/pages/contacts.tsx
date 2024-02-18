@@ -4,7 +4,7 @@ import { useForm, ValidationError } from '@formspree/react';
 import AppLayout from "@/components/AppLayout";
 
 const ContactUsPage: React.FC = () => {
-    const [state, handleSubmit] = useForm("meqyowed");
+    const [state, handleSubmit] = useForm(process.env.NEXT_PUBLIC_FORMSPREE_API_KEY!);
     if (state.succeeded) {
         window.location.href = '/';
     }

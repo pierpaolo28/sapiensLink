@@ -15,13 +15,22 @@ Once installed Docker on your local machine, run the following command from the 
 Before running this command, make sure you have a `app_secrets.py` file in the backend directory and to have removed any pre-existing .next, node_modules folders from the frontend folder.
 
 ```
-SENDGRID_API_KEY = 'YOUR_SENDRY_API_KEY'
-POSTGRESQL_USERNAME = 'YOUR_USER_NAME'
-POSTGRESQL_PASSWORD = 'YOUR_USER_PASSWORD'
-FROM_EMAIL = 'YOUR_SENDGRID_FROM_EMAIL'
-GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID'
-GOOGLE_CLIENT_SECRET = 'YOUR_GOOGLE_CLIENT_SECRET'
-DJANGO_SECRET_KEY = 'YOUR_DJANGO_SECRET_KEY'
+SENDGRID_API_KEY = 'TODO'
+FROM_EMAIL = 'TODO'
+POSTGRESQL_USERNAME = 'TODO'
+POSTGRESQL_PASSWORD = 'TODO'
+GOOGLE_CLIENT_ID = 'TODO'
+GOOGLE_CLIENT_SECRET = 'TODO'
+DJANGO_SECRET_KEY = 'TODO'
+```
+
+In the frontend folder, make sure instead to have the `.env` file setup:
+
+```
+NEXT_PUBLIC_GOOGLE_CLIENT_ID = 'TODO'
+NEXT_PUBLIC_MAILCHIMP_API_KEY = 'TODO'
+NEXT_PUBLIC_FORMSPREE_API_KEY = 'TODO'
+NEXT_PUBLIC_X_NEXTJS_APPLICATION = 'TODO'
 ```
 
 If you want to rebuild everything use: `DB_USER='admin' DB_PASSWORD='password' docker-compose up --build`. Or if need to clear everything use `docker system prune --volumes`.
