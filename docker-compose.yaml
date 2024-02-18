@@ -19,7 +19,7 @@ services:
     container_name: sapienslink_pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: "admin@admin.com"
-      PGADMIN_DEFAULT_PASSWORD: "root"
+      PGADMIN_DEFAULT_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5051:80"
     depends_on:

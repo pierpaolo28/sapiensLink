@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 
 const GoogleSignIn = () => {
   // Google API client ID
-  const clientId = '129396249351-h8ei4nfegplvq2k29dkvhn3vheenf9a0.apps.googleusercontent.com';
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
   // Function to handle the Google Sign-In response
   const handleCredentialResponse = async (response: any) => {
