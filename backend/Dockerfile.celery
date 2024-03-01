@@ -13,5 +13,3 @@ COPY requirements-celery.txt /app/
 RUN pip install --no-cache-dir -r requirements-celery.txt
 
 COPY . /app/
-
-CMD ["celery", "-A", "sapiensLink", "beat", "--loglevel=info"]

@@ -25,12 +25,24 @@ services:
     depends_on:
       - postgresdb
 
+  # django:
+  #   container_name: sapienslink_django
+  #   build: ./backend
+  #   command: python manage.py runserver 0.0.0.0:8000
+  #   volumes:
+  #     # - ./backend:/app
+  #     - static_volume:/app/staticfiles
+  #     - media_volume:/app/mediafiles
+  #   ports:
+  #     - "8001:8000"
+  #   depends_on:
+  #     - postgresdb
   django:
-    container_name: sapienslink_django
-    build: ./backend
+    container_name: sapienslink_danilo_django
+    image: danilocacace/dani966:django
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
-      - ./backend:/app
+      # - ./backend:/app
       - static_volume:/app/staticfiles
       - media_volume:/app/mediafiles
     ports:
@@ -38,63 +50,108 @@ services:
     depends_on:
       - postgresdb
 
+
   redis:
     container_name: sapienslink_redis
     image: redis:alpine
     ports:
       - "6379:6379"
 
+  # celery_worker:
+  #   container_name: sapienslink_celery_worker
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile.celery
+  #   command: celery -A sapiensLink worker --loglevel=info
+  #   # volumes:
+  #   #   - ./backend:/app
+  #   environment:
+  #     - CELERY_BROKER_URL=redis://redis:6379/0
+  #     - CELERY_RESULT_BACKEND=redis://redis:6379/0
+  #   depends_on:
+  #     - django
+  #     - redis
   celery_worker:
-    container_name: sapienslink_celery_worker
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.celery
+    container_name: sapienslink_danilo_celery_worker
+    image: danilocacace/dani966:celery
     command: celery -A sapiensLink worker --loglevel=info
-    volumes:
-      - ./backend:/app
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    # volumes:
+    #   - ./backend:/app
+    # environment:
+    #   - CELERY_BROKER_URL=redis://redis:6379/0
+    #   - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       - django
       - redis
 
+  # celery_beat:
+  #   container_name: sapienslink_celery_beat
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile.celery
+  #   command: celery -A sapiensLink beat --loglevel=info
+  #   # volumes:
+  #   #   - ./backend:/app
+  #   environment:
+  #     - CELERY_BROKER_URL=redis://redis:6379/0
+  #     - CELERY_RESULT_BACKEND=redis://redis:6379/0
+  #   depends_on:
+  #     - django
+  #     - redis
   celery_beat:
-    container_name: sapienslink_celery_beat
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.celery
+    container_name: sapienslink_danilo_celery_beat
+    image: danilocacace/dani966:celery
     command: celery -A sapiensLink beat --loglevel=info
-    volumes:
-      - ./backend:/app
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    # volumes:
+    #   - ./backend:/app
+    # environment:
+    #   - CELERY_BROKER_URL=redis://redis:6379/0
+    #   - CELERY_RESULT_BACKEND=redis://redis:6379/0
     depends_on:
       - django
       - redis
 
   # Next.js frontend supporting SSR
+  # nextjs:
+  #   build: ./frontend
+  #   container_name: sapienslink_nextjs
+  #   ports:
+  #     - 3001:3000
+  #   depends_on:
+  #     - django
   nextjs:
-    build: ./frontend
-    container_name: sapienslink_nextjs
+    image: danilocacace/dani966:nextjs
+    container_name: sapienslink_danilo_nextjs
     ports:
       - 3001:3000
     depends_on:
       - django
 
+  # nginx:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.nginx
+  #   container_name: sapienslink_nginx
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - static_volume:/app/staticfiles
+  #     - media_volume:/app/mediafiles
+  #     # - ./backend/static/images:/app/staticfiles/images
+  #     # - ./frontend/public:/app/nextjs/public
+  #   depends_on:
+  #     - django
+  #     - nextjs
   nginx:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.nginx
-    container_name: sapienslink_nginx
+    image: danilocacace/dani966:nginx
+    container_name: sapienslink_danilo_nginx
     ports:
       - "80:80"
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/mediafiles
-      - ./backend/static/images:/app/staticfiles/images
-      - ./frontend/public:/app/nextjs/public
+      # - ./backend/static/images:/app/staticfiles/images
+      # - ./frontend/public:/app/nextjs/public
     depends_on:
       - django
       - nextjs
