@@ -127,24 +127,11 @@ services:
   #   depends_on:
   #     - django
 
-  # nginx:
-  #   build:
-  #     context: .
-  #     dockerfile: Dockerfile.nginx
-  #   container_name: sapienslink_nginx
-  #   ports:
-  #     - "80:80"
-  #   volumes:
-  #     - static_volume:/app/staticfiles
-  #     - media_volume:/app/mediafiles
-  #     # - ./backend/static/images:/app/staticfiles/images
-  #     # - ./frontend/public:/app/nextjs/public
-  #   depends_on:
-  #     - django
-  #     - nextjs
   nginx:
-    image: danilocacace/dani966:nginx
-    container_name: sapienslink_danilo_nginx
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    container_name: sapienslink_nginx
     ports:
       - "80:80"
     volumes:
@@ -155,6 +142,19 @@ services:
     depends_on:
       - django
       - nextjs
+  # nginx:
+  #   image: danilocacace/dani966:nginx
+  #   container_name: sapienslink_danilo_nginx
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - static_volume:/app/staticfiles
+  #     - media_volume:/app/mediafiles
+  #     # - ./backend/static/images:/app/staticfiles/images
+  #     # - ./frontend/public:/app/nextjs/public
+  #   depends_on:
+  #     - django
+  #     - nextjs
 
 volumes:
   postgres_data:
