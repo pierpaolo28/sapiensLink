@@ -14,7 +14,7 @@ function App() {
       <FeaturedSection />
       <Features />
       <GetStarted />
-      </AppLayout>
+    </AppLayout>
   );
 }
 

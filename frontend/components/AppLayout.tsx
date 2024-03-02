@@ -1,19 +1,19 @@
-import React from 'react';
-import { createContext } from 'react';
-import { useState } from 'react';
-import { useEffect } from 'react';
-import { useMemo } from 'react';
-import { useCallback } from 'react';
-import { ThemeProvider } from '@mui/material/styles';
-import { createTheme } from '@mui/material/styles';
-import Container from '@mui/material/Container';
-import CssBaseline from '@mui/material/CssBaseline';
-import { CircularProgress } from '@mui/material';
+import React from "react";
+import { createContext } from "react";
+import { useState } from "react";
+import { useEffect } from "react";
+import { useMemo } from "react";
+import { useCallback } from "react";
+import { ThemeProvider } from "@mui/material/styles";
+import { createTheme } from "@mui/material/styles";
+import Container from "@mui/material/Container";
+import CssBaseline from "@mui/material/CssBaseline";
+import { CircularProgress } from "@mui/material";
 
-import Header from './Header';
-import Footer from './Footer';
-import ErrorBoundary from './ErrorBoundary';
-import FallbackErrorComponent from './FallbackErrorComponent';
+import Header from "./Header";
+import Footer from "./Footer";
+import ErrorBoundary from "./ErrorBoundary";
+import FallbackErrorComponent from "./FallbackErrorComponent";
 
 interface AppLayoutProps {
   children?: React.ReactNode;
@@ -21,71 +21,66 @@ interface AppLayoutProps {
 
 // Creating a context for the theme mode
 export const ThemeModeContext = createContext<{
-  mode: 'light' | 'dark';
+  mode: "light" | "dark";
   toggleMode: () => void;
 }>({
-  mode: 'light',
+  mode: "light",
   toggleMode: () => {},
 });
 
-function getDesignTokens(mode: 'light' | 'dark') {
+function getDesignTokens(mode: "light" | "dark") {
   return createTheme({
     palette: {
       mode,
       primary: {
-        light: '#7986cb',
-        main: mode === 'dark' ? '#90caf9' : '#556cd6',
-        dark: '#303f9f',
-        contrastText: '#fff',
+        main: "#7F56D9",
       },
       secondary: {
-        light: '#ff4081',
-        main: mode === 'dark' ? '#f48fb1' : '#19857b',
-        dark: '#c51162',
-        contrastText: '#000',
+        main: mode === "dark" ? "#ffebee" : "#f44336",
+        contrastText: mode === "dark" ? "#f44336" : "#ffebee",
       },
       background: {
-        default: mode === 'dark' ? '#121212' : '#eaeaea',
-        paper: mode === 'dark' ? '#1d1d1d' : '#fff',
+        default: mode === "dark" ? "#121212" : "#FCFCFC",
+        paper: mode === "dark" ? "#121212" : "#FCFCFC",
       },
       text: {
-        primary: mode === 'dark' ? '#fff' : '#2c2c2c',
-        secondary: mode === 'dark' ? '#a7a7a7' : '#6c6c6c',
+        primary: mode === "dark" ? "#fff" : "#101828",
+        secondary: mode === "dark" ? "#E5E5E5" : "#667085", // #FCFCFC
       },
       // Additional colors like error, warning, info, success
       error: {
-        main: '#f44336',
+        main: "#f44336",
       },
       warning: {
-        main: '#ff9800',
+        main: "#ff9800",
       },
       info: {
-        main: '#2196f3',
+        main: "#2196f3",
       },
       success: {
-        main: '#4caf50',
+        main: "#4caf50",
       },
     },
     typography: {
       fontFamily: "'Roboto', 'Arial', sans-serif",
       h1: {
-        fontSize: '2.5rem',
+        fontSize: "2.5rem",
         fontWeight: 600,
         lineHeight: 1.2,
       },
       h2: {
-        fontSize: '2.0rem',
+        fontSize: "2.0rem",
         fontWeight: 500,
         lineHeight: 1.3,
       },
       h3: {
-        fontSize: '1.75rem',
+        fontSize: "1.75rem",
         fontWeight: 500,
         lineHeight: 1.4,
       },
       // Additional typography settings
       body1: {
-        fontSize: '1rem',
+        fontSize: "1rem",
         lineHeight: 1.5,
       },
       button: {
@@ -97,29 +92,35 @@ function getDesignTokens(mode: 'light' | 'dark') {
         styleOverrides: {
           root: {
             borderRadius: 8,
-            padding: '8px 20px',
-            textTransform: 'none',
-            '&:hover': {
-              boxShadow: '0px 3px 1px -2px rgba(0,0,0,0.2), 0px 2px 2px 0px rgba(0,0,0,0.14), 0px 1px 5px 0px rgba(0,0,0,0.12)',
-            },
+            textTransform: "none",
           },
         },
       },
       MuiPaper: {
         styleOverrides: {
           root: {
-            padding: '20px',
-            textAlign: 'left',
+            padding: "12px",
+            textAlign: "left",
             borderRadius: 8,
-            boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
+            boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
           },
         },
       },
       MuiAppBar: {
         styleOverrides: {
           root: {
-            backgroundColor: mode === 'dark' ? '#333' : '#fff',
-            color: mode === 'dark' ? '#fff' : '#333',
+            backgroundColor: "#fff",
+            // color: mode === "dark" ? "#fff" : "#333",
+          },
+        },
+      },
+      MuiDrawer: {
+        styleOverrides: {
+          paper: {
+            backgroundColor: "default",
+            backgroundImage: "none",
+            borderTopLeftRadius: "0",
+            borderBottomLeftRadius: "0",
           },
         },
       },
@@ -127,10 +128,10 @@ function getDesignTokens(mode: 'light' | 'dark') {
     },
     transitions: {
       easing: {
-        easeInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
-        easeOut: 'cubic-bezier(0.0, 0, 0.2, 1)',
-        easeIn: 'cubic-bezier(0.4, 0, 1, 1)',
-        sharp: 'cubic-bezier(0.4, 0, 0.6, 1)',
+        easeInOut: "cubic-bezier(0.4, 0, 0.2, 1)",
+        easeOut: "cubic-bezier(0.0, 0, 0.2, 1)",
+        easeIn: "cubic-bezier(0.4, 0, 1, 1)",
+        sharp: "cubic-bezier(0.4, 0, 0.6, 1)",
       },
       duration: {
         shortest: 150,
@@ -149,17 +150,16 @@ function getDesignTokens(mode: 'light' | 'dark') {
   });
 }
 
-
 const AppLayout = ({ children }: AppLayoutProps) => {
-  const [mode, setMode] = useState<'light' | 'dark'>('light');
+  const [mode, setMode] = useState<"light" | "dark">("light");
   const [loading, setLoading] = useState<boolean>(true);
 
   // Function to read theme mode from localStorage
-  const readThemeFromLocalStorage = useCallback((): 'light' | 'dark' => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('themeMode') as 'light' | 'dark') || 'light';
+  const readThemeFromLocalStorage = useCallback((): "light" | "dark" => {
+    if (typeof window !== "undefined") {
+      return (localStorage.getItem("themeMode") as "light" | "dark") || "light";
     }
-    return 'light';
+    return "light";
   }, []);
 
   useEffect(() => {
@@ -169,13 +169,13 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   }, [readThemeFromLocalStorage]);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('themeMode', mode);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("themeMode", mode);
     }
   }, [mode]);
 
   const toggleMode = () => {
-    setMode(prevMode => prevMode === 'light' ? 'dark' : 'light');
+    setMode((prevMode) => (prevMode === "light" ? "dark" : "light"));
   };
 
   const theme = useMemo(() => getDesignTokens(mode), [mode]);
@@ -199,3 +199,24 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 };
 
 export default AppLayout;
+
+// #0F1B4C
+// #000339
+// #101828
+// #667085
+// #6B3ED0
+// #7F56D9
+// #AC8DF0
+// #F0E4FE
+// #F9F5FF
+// #FDB022
+
+// light: "#AC8DF0",
+// main: mode === "dark" ? "#90caf9" : "#556cd6",
+// dark: "#6B3ED0",
+// contrastText: "#fff",
+
+// light: "#ff4081",
+// main: mode === "dark" ? "#f48fb1" : "#19857b",
+// dark: "#c51162",
+// contrastText: "#000",

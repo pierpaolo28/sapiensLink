@@ -9,34 +9,36 @@ import Featured from "./Featured";
 export const featuredItems = [
   {
     id: "1",
-    img: 'images/personal_finance.png',
+    img: "images/personal_finance.png",
     title: "Personal Finance",
     description: "Learning how to budget your finances and plan for retirement",
   },
 
   {
     id: "2",
-    img: 'images/tech_blogs.png',
+    img: "images/tech_blogs.png",
     title: "Tech Blogs",
-    description: "A collection of interesting tech blogs to learn something new everyday!",
+    description:
+      "A collection of interesting tech blogs to learn something new everyday!",
   },
 
   {
     id: "3",
-    img: 'images/pitch.png',
+    img: "images/pitch.png",
     title: "Pitch Decks",
-    description: "Learn from some of the best tech companies how to make your pitch deck",
+    description:
+      "Learn from some of the best tech companies how to make your pitch deck",
   },
 ];
 
 const FeaturedSection = () => {
   const FeaturedSectionBox = styled(Box)(({ theme }) => ({
     display: "flex",
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-around',
-    alignItems: 'stretch',
-    gap: '1rem',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-around",
+    alignItems: "stretch",
+    gap: "1rem",
     marginTop: theme.spacing(5),
     [theme.breakpoints.down("md")]: {
       flexDirection: "column",
@@ -50,20 +52,31 @@ const FeaturedSection = () => {
     },
   }));
 
+  const Divider = styled(Box)(({ theme }) => ({
+    width: "8%",
+    height: "5px",
+    backgroundColor: theme.palette.mode === "dark" ? "#fff" : "#121212",
+    [theme.breakpoints.down("md")]: {
+      width: "13%",
+      marginLeft: "auto",
+      marginRight: "auto",
+    },
+  }));
+
   return (
-    <Box sx={{
-      mt: 5,
-      // backgroundColor: "#F5FAFE", 
-      py: 10
-    }}>
+    <Box
+      sx={{
+        mt: 5,
+        py: 10,
+      }}
+    >
       <Container>
         <FeaturedSectionTextBox>
-          <Typography
-            sx={{ color: "#000339", fontSize: "35px", fontWeight: "bold" }}
-          >
+          <Divider />
+          <Typography sx={{ fontSize: "35px", fontWeight: "bold", mt: 3 }}>
             Featured Lists & Ranks
           </Typography>
-          <Typography sx={{ color: "#5A6473", fontSize: "16px", mt: 1 }}>
+          <Typography color={"text.secondary"} sx={{ fontSize: "16px", mt: 1 }}>
             Top content from SapiensLink
           </Typography>
         </FeaturedSectionTextBox>
