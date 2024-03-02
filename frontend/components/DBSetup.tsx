@@ -160,7 +160,8 @@ export const DBSetup = () => {
                 {Object.entries(rank.content).map(([key, value]) => (
                   <div key={key}>
                     <p>
-                      {(value as any).element} (User ID: {(value as any).user_id})
+                      {(value as any).element} (User ID:{" "}
+                      {(value as any).user_id})
                     </p>
                   </div>
                 ))}

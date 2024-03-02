@@ -1,17 +1,13 @@
-import React from 'react';
-import { useContext } from 'react';
-import { Switch } from '@mui/material';
-import { ThemeModeContext } from './AppLayout';
+import React from "react";
+import { useContext } from "react";
+import { Switch } from "@mui/material";
+import { ThemeModeContext } from "./AppLayout";
 
 const ThemeToggleButton = () => {
   const { mode, toggleMode } = useContext(ThemeModeContext);
 
   return (
-    <Switch
-      checked={mode === 'dark'}
-      onChange={toggleMode}
-      color="default"
-    />
+    <Switch checked={mode === "dark"} onChange={toggleMode} color="primary" />
   );
 };
 

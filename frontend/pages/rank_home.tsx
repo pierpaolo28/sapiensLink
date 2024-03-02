@@ -1,42 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
-import Button from '@mui/material/Button';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import Paper from '@mui/material/Paper';
-import Avatar from '@mui/material/Avatar';
-import TextField from '@mui/material/TextField';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
-import ToggleButton from '@mui/material/ToggleButton';
-import Card from '@mui/material/Card';
-import Stack from '@mui/material/Stack';
-import SearchIcon from '@mui/icons-material/Search';
-import Link from 'next/link';
-import Chip from '@mui/material/Chip';
-import CardActionArea from '@mui/material/CardActionArea';
-import CardContent from '@mui/material/CardContent';
-import { useRouter } from 'next/router';
-
+import React, { useState, useEffect } from "react";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid";
+import Button from "@mui/material/Button";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
+import Paper from "@mui/material/Paper";
+import Avatar from "@mui/material/Avatar";
+import TextField from "@mui/material/TextField";
+import ListItemAvatar from "@mui/material/ListItemAvatar";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
+import ToggleButton from "@mui/material/ToggleButton";
+import Card from "@mui/material/Card";
+import Stack from "@mui/material/Stack";
+import MuiLink from "@mui/material/Link";
+import SearchIcon from "@mui/icons-material/Search";
+import Chip from "@mui/material/Chip";
+import CardActionArea from "@mui/material/CardActionArea";
+import CardContent from "@mui/material/CardContent";
+import { useRouter } from "next/router";
 
 import AppLayout from "@/components/AppLayout";
 // import DBSetup from "@/components/DBSetup";
 import { getRankHome } from "@/utils/routes";
 import { RankHomeResponse } from "@/utils/types";
-import Pagination from '@mui/material/Pagination';
+import Pagination from "@mui/material/Pagination";
 
 export default function RankHome() {
-
   const [home, setHome] = React.useState<RankHomeResponse | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedTab, setSelectedTab] = useState('latest');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTab, setSelectedTab] = useState("latest");
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
 
-  const fetchData = async (extraParams = '') => {
+  const fetchData = async (extraParams = "") => {
     try {
       // Use the updated currentPage state to fetch the corresponding page
       const updatedParams = `page=${currentPage}&${extraParams}`;
@@ -48,11 +46,10 @@ export default function RankHome() {
     }
   };
 
-
   useEffect(() => {
     // Parse the query parameter from the URL
     const urlParams = new URLSearchParams(window.location.search);
-    const queryParam = urlParams.get('q');
+    const queryParam = urlParams.get("q");
 
     // Set the search term if it exists
     if (queryParam) {
@@ -69,26 +66,26 @@ export default function RankHome() {
 
   const handleSearchSubmit = async (event: any) => {
     event.preventDefault();
-    fetchData(`q=${searchTerm}`)
+    fetchData(`q=${searchTerm}`);
   };
-
 
   const handleTabChange = (event: any, newValue: any) => {
     setSelectedTab(newValue);
-    fetchData(newValue === 'popular' ? 'top_voted=top_voted_true' : '');
+    fetchData(newValue === "popular" ? "top_voted=top_voted_true" : "");
   };
 
-
-  const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
+  const handleChangePage = (
+    event: React.ChangeEvent<unknown>,
+    newPage: number
+  ) => {
     setCurrentPage(newPage);
     fetchData(`q=${searchTerm}&page=${newPage}`);
   };
 
-
   return (
     <>
       <AppLayout>
-        <Container maxWidth="lg" sx={{ mt: 4 }}>
+        <Container maxWidth="lg" sx={{ mt: 4, px: 0 }}>
           <Grid container spacing={3}>
             {/* Left side - Topics and More */}
             <Grid item xs={12} md={3}>
@@ -98,19 +95,64 @@ export default function RankHome() {
                 </Typography>
                 {home && home.topic_counts && (
                   <List>
-                    <Link href={`/rank_home`} passHref>
-                        <ListItem>
-                          <ListItemText primary={"All"} />
-                        </ListItem>
-                      </Link>
+                    <MuiLink
+                      href={`/rank_home`}
+                      color={"text.secondary"}
+                      sx={{
+                        transition: ".2s",
+                        "&:hover": {
+                          color: "text.primary",
+                        },
+                      }}
+                    >
+                      <ListItem
+                        sx={(theme) => ({
+                          transition: ".2s",
+                          borderRadius: 1,
+                          "&:hover": {
+                            bgcolor:
+                              theme.palette.mode === "dark"
+                                ? "rgba(255, 255, 255, 0.03)"
+                                : "rgba(0, 0, 0, 0.05)",
+                          },
+                        })}
+                      >
+                        <ListItemText primary={"All"} />
+                      </ListItem>
+                    </MuiLink>
                     {home.topic_counts.map((topic, index) => (
-                      <Link key={index} href={`/rank_home?q=${topic[0]}`} passHref>
-                        <ListItem key={index}>
+                      <MuiLink
+                        key={index}
+                        href={`/rank_home?q=${topic[0]}`}
+                        color={"text.secondary"}
+                        underline={"hover"}
+                        sx={{
+                          transition: ".2s",
+                          "&:hover": {
+                            color: "text.primary",
+                          },
+                        }}
+                      >
+                        <ListItem
+                          sx={(theme) => ({
+                            transition: ".2s",
+                            borderRadius: 1,
+                            "&:hover": {
+                              bgcolor:
+                                theme.palette.mode === "dark"
+                                  ? "rgba(255, 255, 255, 0.03)"
+                                  : "rgba(0, 0, 0, 0.05)",
+                            },
+                          })}
+                          key={index}
+                        >
                           <ListItemText primary={topic[0] + " " + topic[1]} />
                         </ListItem>
-                      </Link>
+                      </MuiLink>
                     ))}
-                    <Button href="/rank_topics">More</Button>
+                    <Button variant={"outlined"} href="/rank_topics">
+                      More
+                    </Button>
                   </List>
                 )}
               </Paper>
@@ -130,7 +172,10 @@ export default function RankHome() {
                   <ToggleButton value="popular">Popular</ToggleButton>
                 </ToggleButtonGroup>
 
-                <form onSubmit={handleSearchSubmit} style={{ marginTop: '16px', marginBottom: '16px' }}>
+                <form
+                  onSubmit={handleSearchSubmit}
+                  style={{ marginTop: "16px", marginBottom: "16px" }}
+                >
                   <TextField
                     fullWidth
                     variant="outlined"
@@ -139,7 +184,11 @@ export default function RankHome() {
                     onChange={handleSearchChange}
                     InputProps={{
                       endAdornment: (
-                        <Button variant="contained" color="primary" onClick={handleSearchSubmit}>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={handleSearchSubmit}
+                        >
                           <SearchIcon />
                         </Button>
                       ),
@@ -147,17 +196,29 @@ export default function RankHome() {
                   />
                 </form>
                 <Stack spacing={2}>
-                  <Button href='create_rank'>Create Rank</Button>
+                  <Button variant={"outlined"} href="create_rank">
+                    Create Rank
+                  </Button>
                   {home && home.ranks ? (
                     home.ranks.map((rank, i) => (
                       <Card key={rank.id}>
                         <CardActionArea>
                           <CardContent>
-                            <Link href={`/rank/${rank.id}`} passHref>
+                            <MuiLink
+                              href={`/rank/${rank.id}`}
+                              color={"text.secondary"}
+                              underline={"hover"}
+                              sx={{
+                                transition: ".2s",
+                                "&:hover": {
+                                  color: "text.primary",
+                                },
+                              }}
+                            >
                               <Typography gutterBottom variant="h5">
                                 {rank.name}
                               </Typography>
-                            </Link>
+                            </MuiLink>
                             <Typography paragraph color="text.secondary">
                               {rank.description}
                             </Typography>
@@ -171,8 +232,13 @@ export default function RankHome() {
                               </Grid>
                               <Grid item>
                                 {/* Display the score as text with plus/minus sign */}
-                                <Typography variant="subtitle1" color={rank.score >= 0 ? 'primary' : 'error'}>
-                                  {rank.score >= 0 ? `+${rank.score}` : rank.score}
+                                <Typography
+                                  variant="subtitle1"
+                                  color={rank.score >= 0 ? "primary" : "error"}
+                                >
+                                  {rank.score >= 0
+                                    ? `+${rank.score}`
+                                    : rank.score}
                                 </Typography>
                               </Grid>
                             </Grid>
@@ -182,7 +248,12 @@ export default function RankHome() {
                     ))
                   ) : (
                     // Render loading state or an error message
-                    <Typography>Loading...</Typography>
+                    <Typography
+                      sx={{ textAlign: "center", py: 2 }}
+                      color={"text.secondary"}
+                    >
+                      Loading...
+                    </Typography>
                   )}
                 </Stack>
                 {/* Pagination component */}
@@ -206,19 +277,39 @@ export default function RankHome() {
                 </Typography>
                 {home && home.users && (
                   <List>
-                    {home.users.map((user, index) => (
-                      <ListItem key={user.id}>
+                    {home.users.map((user) => (
+                      <ListItem
+                        key={user.id}
+                        sx={(theme) => ({
+                          [theme.breakpoints.down("sm")]: { px: 0 },
+                        })}
+                      >
                         <ListItemAvatar>
-                          <Avatar src={"http://localhost/static/" + user.avatar} alt={user.name} />
+                          <Avatar
+                            src={"http://localhost/static/" + user.avatar}
+                            alt={user.name}
+                          />
                         </ListItemAvatar>
-                        <Link href={`/user_profile?id=${user.id}`} passHref>
+                        <MuiLink
+                          href={`/user_profile?id=${user.id}`}
+                          color={"text.secondary"}
+                          underline={"hover"}
+                          sx={{
+                            transition: ".2s",
+                            "&:hover": {
+                              color: "text.primary",
+                            },
+                          }}
+                        >
                           <ListItemText primary={user.name} />
-                        </Link>
+                        </MuiLink>
                       </ListItem>
                     ))}
                   </List>
                 )}
-                <Button href="/who_to_follow">More</Button>
+                <Button variant={"outlined"} href="/who_to_follow">
+                  More
+                </Button>
               </Paper>
             </Grid>
           </Grid>

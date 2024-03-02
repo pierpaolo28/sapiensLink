@@ -1,5 +1,5 @@
-import React from 'react';
-import { Button, Paper, Typography, Box } from '@mui/material';
+import React from "react";
+import { Button, Paper, Typography, Box } from "@mui/material";
 
 const FallbackErrorComponent = () => {
   const handleReload = () => {
@@ -7,7 +7,10 @@ const FallbackErrorComponent = () => {
   };
 
   return (
-    <Paper elevation={3} style={{ padding: '20px', margin: '20px', textAlign: 'center' }}>
+    <Paper
+      elevation={3}
+      style={{ padding: "20px", margin: "20px", textAlign: "center" }}
+    >
       <Typography variant="h5" color="error" gutterBottom>
         Oops! Something went wrong.
       </Typography>

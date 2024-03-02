@@ -1,0 +1,4 @@
+.dots li button::before {
+  color: #7f56d9;
+  opacity: 0.8;
+}

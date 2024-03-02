@@ -1,17 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
-import AppBar from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import Link from 'next/link';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
-import IconButton from '@mui/material/IconButton';
-import Badge from '@mui/material/Badge';
-import Popover from '@mui/material/Popover';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import NotificationsIcon from '@mui/icons-material/Notifications';
+import React, { useState, useEffect, useRef } from "react";
+import AppBar from "@mui/material/AppBar";
+import Toolbar from "@mui/material/Toolbar";
+import Link from "next/link";
+import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
+import IconButton from "@mui/material/IconButton";
+import Badge from "@mui/material/Badge";
+import Popover from "@mui/material/Popover";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useTheme } from "@mui/material";
 import Drawer from "@mui/material/Drawer";
 import ListItemButton from "@mui/material/ListItemButton";
@@ -19,19 +19,25 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import styled from "@mui/system/styled";
 import MenuIcon from "@mui/icons-material/Menu";
 import HomeIcon from "@mui/icons-material/Home";
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import InfoIcon from '@mui/icons-material/Info';
-import ContactMailIcon from '@mui/icons-material/ContactMail';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import ListIcon from '@mui/icons-material/List';
-import Divider from '@mui/material/Divider';
-import { useRouter } from 'next/router';
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import InfoIcon from "@mui/icons-material/Info";
+import ContactMailIcon from "@mui/icons-material/ContactMail";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import ListIcon from "@mui/icons-material/List";
+import Divider from "@mui/material/Divider";
+import { useRouter } from "next/router";
+import Logo from "@/public/logo.svg";
 
-import AccountCircle from '@mui/icons-material/AccountCircle';
-import { isUserLoggedIn, getUserIdFromAccessToken, isAccessTokenExpired, refreshAccessToken } from '@/utils/auth';
+import AccountCircle from "@mui/icons-material/AccountCircle";
+import {
+  isUserLoggedIn,
+  getUserIdFromAccessToken,
+  isAccessTokenExpired,
+  refreshAccessToken,
+} from "@/utils/auth";
 import { Notification } from "@/utils/types";
-import ThemeToggleButton from './ThemeToggleButton';
-
+import ThemeToggleButton from "./ThemeToggleButton";
+import Image from "next/image";
 
 export default function Header() {
   const router = useRouter();
@@ -49,27 +55,30 @@ export default function Header() {
   const fetchNotifications = async () => {
     try {
       if (isAccessTokenExpired()) {
-        const refreshToken = localStorage.getItem('refresh_token');
+        const refreshToken = localStorage.getItem("refresh_token");
         if (refreshToken) {
           await refreshAccessToken(refreshToken);
         } else {
-          console.error('Refresh token not available.');
+          console.error("Refresh token not available.");
           // Would get infinite refresh using window.location
-          router.push('/signin');
+          router.push("/signin");
         }
       }
-      if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-        const accessToken = localStorage.getItem('access_token');
-        const response = await fetch('http://localhost/api/notifications/', {
-          method: 'GET',
+      if (
+        socketRef.current &&
+        socketRef.current.readyState === WebSocket.OPEN
+      ) {
+        const accessToken = localStorage.getItem("access_token");
+        const response = await fetch("http://localhost/api/notifications/", {
+          method: "GET",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
           },
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch notifications');
+          throw new Error("Failed to fetch notifications");
         }
 
         const data = await response.json();
@@ -77,16 +86,16 @@ export default function Header() {
         setNotificationCount(data.notifications.length);
       }
     } catch (error) {
-      console.error('Error fetching notifications:', error);
+      console.error("Error fetching notifications:", error);
     }
   };
 
   const initWebSocket = () => {
     if (isLoggedIn && !socketRef.current) {
-      const newSocket = new WebSocket('ws://localhost/ws/notifications/');
+      const newSocket = new WebSocket("ws://localhost/ws/notifications/");
 
       newSocket.onopen = (event) => {
-        console.log('WebSocket is connected.');
+        console.log("WebSocket is connected.");
         fetchNotifications();
       };
 
@@ -100,17 +109,16 @@ export default function Header() {
       };
 
       newSocket.onclose = (event) => {
-        console.log('WebSocket is closed.');
+        console.log("WebSocket is closed.");
       };
 
       newSocket.onerror = (event) => {
-        console.error('WebSocket error:', event);
+        console.error("WebSocket error:", event);
       };
 
       socketRef.current = newSocket;
     }
   };
-
 
   function closeWebSocket() {
     if (socketRef.current !== null && socketRef.current !== undefined) {
@@ -119,16 +127,14 @@ export default function Header() {
     }
   }
 
-
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     window.onbeforeunload = function () {
       closeWebSocket(); // Close the WebSocket connection before the page is unloaded
     };
   }
 
-
   useEffect(() => {
-    if (typeof window !== 'undefined' && isLoggedIn) {
+    if (typeof window !== "undefined" && isLoggedIn) {
       initWebSocket();
       return () => {
         if (socketRef.current) {
@@ -140,13 +146,13 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && isLoggedIn) {
-      if (!window.location.href.includes('signin')) {
+    if (typeof window !== "undefined" && isLoggedIn) {
+      if (!window.location.href.includes("signin")) {
         if (!isAccessTokenExpired()) {
           initWebSocket();
           fetchNotifications();
         } else {
-          const refreshToken = localStorage.getItem('refresh_token');
+          const refreshToken = localStorage.getItem("refresh_token");
           if (refreshToken) {
             refreshAccessToken(refreshToken);
           } else {
@@ -166,19 +172,22 @@ export default function Header() {
   };
 
   const open = Boolean(anchorEl);
-  const id = open ? 'notification-popover' : undefined;
+  const id = open ? "notification-popover" : undefined;
 
   const markNotificationAsRead = async (notificationId: number) => {
     try {
-      const accessToken = localStorage.getItem('access_token');
+      const accessToken = localStorage.getItem("access_token");
       // Send a request to mark the notification as read
-      await fetch(`http://localhost/api/notifications/${notificationId}/mark_as_read/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`, // Include access token in the Authorization header
+      await fetch(
+        `http://localhost/api/notifications/${notificationId}/mark_as_read/`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`, // Include access token in the Authorization header
+          },
         }
-      });
+      );
 
       // Update the state to reflect the change in notifications
       setNotifications((prevNotifications) =>
@@ -192,7 +201,7 @@ export default function Header() {
       // Update the notification count
       setNotificationCount((prevCount) => Math.max(0, prevCount - 1));
     } catch (error) {
-      console.error('Error marking notification as read:', error);
+      console.error("Error marking notification as read:", error);
     }
   };
 
@@ -207,15 +216,15 @@ export default function Header() {
   const handleLogout = async () => {
     try {
       // Get the access token from local storage
-      const accessToken = localStorage.getItem('access_token');
+      const accessToken = localStorage.getItem("access_token");
 
       if (accessToken) {
         // Make a POST request to the logout API
-        const response = await fetch('http://localhost/api/logout_user/', {
-          method: 'POST',
+        const response = await fetch("http://localhost/api/logout_user/", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`, // Include access token in the Authorization header
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`, // Include access token in the Authorization header
           },
           body: JSON.stringify({
             access_token: accessToken,
@@ -223,19 +232,19 @@ export default function Header() {
         });
 
         // Clear tokens from local storage
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('expiration_time');
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("expiration_time");
 
-        window.location.href = '/';
+        window.location.href = "/";
       }
     } catch (error) {
-      console.error('An error occurred during logout:', error);
+      console.error("An error occurred during logout:", error);
     }
   };
 
   const profileOpen = Boolean(profileAnchorEl);
-  const profileId = profileOpen ? 'profile-popover' : undefined;
+  const profileId = profileOpen ? "profile-popover" : undefined;
 
   const theme = useTheme();
   const [mobileMenu, setMobileMenu] = useState({
@@ -253,7 +262,14 @@ export default function Header() {
     setMobileMenu({ ...mobileMenu, [anchor]: open });
   };
 
-  const links = ["/", "/list_home", "/rank_home", "/vision", "/about", "/contacts"];
+  const links = [
+    "/",
+    "/list_home",
+    "/rank_home",
+    "/vision",
+    "/about",
+    "/contacts",
+  ];
   const list = (anchor: any) => (
     <Box
       sx={{ width: anchor === "top" || anchor === "bottom" ? "auto" : 250 }}
@@ -261,12 +277,19 @@ export default function Header() {
       onClick={toggleDrawer(anchor, false)}
       onKeyDown={toggleDrawer(anchor, false)}
     >
-
       <List>
         {["Home", "Lists", "Ranks", "Vision", "About Us", "Contact Us"].map(
           (text, index) => (
             <ListItem key={text} disablePadding>
-              <Link href={links[index]} passHref style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Link
+                href={links[index]}
+                passHref
+                style={{
+                  textDecoration: "none",
+                  color: "inherit",
+                  width: "100%",
+                }}
+              >
                 <ListItemButton>
                   <ListItemIcon>
                     {index === 0 && <HomeIcon />}
@@ -287,12 +310,13 @@ export default function Header() {
   );
 
   const NavLink = styled(Typography)(({ theme }) => ({
-    fontSize: "14px",
-    color: "#4F5361",
+    fontSize: "15px",
+    color: "#667085",
     fontWeight: "bold",
     cursor: "pointer",
+    transition: ".2s",
     "&:hover": {
-      color: "#0F1B4C",
+      color: "#101828",
     },
   }));
 
@@ -309,6 +333,7 @@ export default function Header() {
   const CustomMenuIcon = styled(MenuIcon)(({ theme }) => ({
     cursor: "pointer",
     display: "none",
+    color: "#101828",
     marginRight: theme.spacing(2),
     [theme.breakpoints.down("md")]: {
       display: "block",
@@ -338,7 +363,12 @@ export default function Header() {
   const logoPath = `${router.basePath}/logo.svg`;
 
   return (
-    <AppBar position="static" color="default" elevation={0}>
+    <AppBar
+      sx={{ borderRadius: "0" }}
+      position="static"
+      color="default"
+      elevation={0}
+    >
       <Toolbar>
         <Box
           sx={{
@@ -351,29 +381,51 @@ export default function Header() {
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <CustomMenuIcon onClick={toggleDrawer("left", true)} />
             <Drawer
+              color={"inherit"}
               anchor="left"
               open={mobileMenu["left"]}
               onClose={toggleDrawer("left", false)}
             >
-              <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  height: "100%",
+                }}
+              >
                 <div>
                   {list("left")}
                   {isSmallScreen && (
-                    <Box sx={{ marginTop: '1rem', padding: '1rem' }}>
+                    <Box sx={{ marginTop: "1rem" }}>
                       {!isLoggedIn && (
                         <>
                           <Button
-                            color="inherit"
+                            sx={{
+                              textTransform: "uppercase",
+                              fontWeight: "bold",
+                            }}
+                            variant={"outlined"}
+                            color="primary"
+                            size={"large"}
                             fullWidth
                             href="signin"
                           >
                             Login
                           </Button>
                           <Button
+                            sx={{
+                              textTransform: "uppercase",
+                              fontWeight: "bold",
+                              marginTop: "6px",
+                              boxShadow: "none",
+                              ":hover": {
+                                boxShadow: "none",
+                              },
+                            }}
                             color="primary"
                             variant="contained"
+                            size={"large"}
                             fullWidth
-                            sx={{ marginTop: '1rem' }}
                             href="signup"
                           >
                             Sign Up
@@ -383,12 +435,16 @@ export default function Header() {
                     </Box>
                   )}
                 </div>
-                <div style={{ marginTop: 'auto' }}>
-                  <Divider sx={{ marginY: '1rem' }} />
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography>
-                      Toggle Theme
-                    </Typography>
+                <div style={{ marginTop: "auto" }}>
+                  <Divider sx={{ marginY: "1rem" }} />
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Typography>Toggle Theme</Typography>
                     <ThemeToggleButton />
                   </Box>
                 </div>
@@ -400,25 +456,32 @@ export default function Header() {
             ) : (
               // Display the logo on the left for larger screens
               <Link href="/">
-                <img src={logoPath} alt="logo" />
+                {/* <img src={logoPath} alt="logo" /> */}
+                <Image src={Logo} alt={"Logo"} />
               </Link>
             )}
           </Box>
 
           <NavbarLinksBox>
-            <Link href="/list_home" passHref>
+            <Link
+              href="/list_home"
+              passHref
+              style={{
+                textDecoration: "none",
+              }}
+            >
               <NavLink variant="body2">Lists</NavLink>
             </Link>
-            <Link href="/rank_home" passHref>
+            <Link href="/rank_home" passHref style={{ textDecoration: "none" }}>
               <NavLink variant="body2">Ranks</NavLink>
             </Link>
-            <Link href="/vision" passHref>
+            <Link href="/vision" passHref style={{ textDecoration: "none" }}>
               <NavLink variant="body2">Vision</NavLink>
             </Link>
-            <Link href="/about" passHref>
+            <Link href="/about" passHref style={{ textDecoration: "none" }}>
               <NavLink variant="body2">About Us</NavLink>
             </Link>
-            <Link href="/contacts" passHref>
+            <Link href="/contacts" passHref style={{ textDecoration: "none" }}>
               <NavLink variant="body2">Contacts</NavLink>
             </Link>
           </NavbarLinksBox>
@@ -441,8 +504,11 @@ export default function Header() {
             <>
               {/* Notification Icon */}
               <IconButton color="inherit" onClick={handleClick}>
-                <Badge badgeContent={notificationCount} color="secondary">
-                  <NotificationsIcon />
+                <Badge
+                  sx={{ color: "#101828" }}
+                  badgeContent={notificationCount}
+                >
+                  <NotificationsIcon color={"primary"} />
                 </Badge>
               </IconButton>
 
@@ -453,20 +519,41 @@ export default function Header() {
                 anchorEl={anchorEl}
                 onClose={handleClose}
                 anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'center',
+                  vertical: "bottom",
+                  horizontal: "center",
                 }}
                 transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'center',
+                  vertical: "top",
+                  horizontal: "center",
+                }}
+                slotProps={{
+                  paper: {
+                    sx: {
+                      backgroundColor: "#fff",
+                    },
+                  },
                 }}
               >
-                <List sx={{ width: '100%', maxWidth: 360, bgcolor: 'background.paper' }}>
+                <List
+                  sx={{
+                    width: "100%",
+                    maxWidth: 360,
+                    backgroundImage: "none",
+                    bgcolor: "#fff",
+                  }}
+                >
                   {/* Map through the updated notifications state */}
                   {notifications.map((notification) => (
                     <ListItem
                       key={notification.id}
                       button
+                      sx={{
+                        transition: ".3s",
+                        borderRadius: 1,
+                        "&:hover": {
+                          bgcolor: "#F5F5F5",
+                        },
+                      }}
                       onClick={() => {
                         markNotificationAsRead(notification.id);
                         window.location.href = notification.url; // Navigate to the URL
@@ -476,7 +563,12 @@ export default function Header() {
                       <ListItemText
                         primary={notification.message}
                         primaryTypographyProps={{
-                          style: { fontWeight: notification.read ? 'normal' : 'bold' },
+                          style: {
+                            fontWeight: notification.read ? "normal" : "bold",
+                          },
+                        }}
+                        sx={{
+                          color: "#121212",
                         }}
                       />
                     </ListItem>
@@ -484,11 +576,9 @@ export default function Header() {
                 </List>
               </Popover>
 
-
-
               {/* User Profile Icon */}
               <IconButton color="inherit" onClick={handleProfileClick}>
-                <AccountCircle />
+                <AccountCircle color={"primary"} />
               </IconButton>
               <Popover
                 id={profileId}
@@ -496,26 +586,77 @@ export default function Header() {
                 anchorEl={profileAnchorEl}
                 onClose={handleProfileClose}
                 anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'center',
+                  vertical: "bottom",
+                  horizontal: "center",
                 }}
                 transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'center',
+                  vertical: "top",
+                  horizontal: "center",
                 }}
-
+                slotProps={{
+                  paper: {
+                    sx: {
+                      backgroundColor: "#fff",
+                    },
+                  },
+                }}
               >
-                <Box sx={{ p: 2 }}>
+                <Box>
                   <List component="nav" aria-label="user profile options">
-                    <ListItem button component="a" href={`/user_profile?id=${getUserIdFromAccessToken()}`}>
-                      <ListItemText primary="Profile Page" />
+                    <ListItem
+                      button
+                      sx={{
+                        transition: ".3s",
+                        borderRadius: 1,
+                        "&:hover": {
+                          bgcolor: "#F5F5F5",
+                        },
+                      }}
+                      component="a"
+                      href={`/user_profile?id=${getUserIdFromAccessToken()}`}
+                    >
+                      <ListItemText
+                        sx={{
+                          color: "#121212",
+                        }}
+                        primary="Profile Page"
+                      />
                     </ListItem>
 
-                    <ListItem button component="a" href="/edit_profile">
-                      <ListItemText primary="Edit Profile" />
+                    <ListItem
+                      sx={{
+                        borderRadius: 1,
+                        "&:hover": {
+                          bgcolor: "#F5F5F5",
+                        },
+                      }}
+                      button
+                      component="a"
+                      href="/edit_profile"
+                    >
+                      <ListItemText
+                        sx={{
+                          color: "#121212",
+                        }}
+                        primary="Edit Profile"
+                      />
                     </ListItem>
-                    <ListItem button onClick={handleLogout}>
-                      <ListItemText primary="Log Out" />
+                    <ListItem
+                      sx={{
+                        borderRadius: 1,
+                        "&:hover": {
+                          bgcolor: "#F5F5F5",
+                        },
+                      }}
+                      button
+                      onClick={handleLogout}
+                    >
+                      <ListItemText
+                        sx={{
+                          color: "#121212",
+                        }}
+                        primary="Log Out"
+                      />
                     </ListItem>
                   </List>
                 </Box>
@@ -526,24 +667,31 @@ export default function Header() {
             <>
               {!isSmallScreen ? (
                 <>
-                  <Button color="inherit" href="signin">
+                  <Button
+                    sx={{ fontWeight: "bold", textTransform: "uppercase" }}
+                    variant="outlined"
+                    color="primary"
+                    size={"large"}
+                    href="signin"
+                  >
                     Login
                   </Button>
                   <Button
+                    sx={{ fontWeight: "bold", textTransform: "uppercase" }}
                     color="primary"
                     variant="contained"
-                    sx={{ marginLeft: '1rem' }}
+                    size={"large"}
                     href="signup"
                   >
                     Sign Up
                   </Button>
                 </>
-              ) :
-                (
-                  <Link href="/">
-                    <img src={'logo.svg'} alt="logo" />
-                  </Link>
-                )}
+              ) : (
+                <Link href="/">
+                  <Image src={Logo} alt={"Logo"} />
+                  {/* <img src={"logo.svg"} alt="logo" /> */}
+                </Link>
+              )}
             </>
           )}
         </Box>

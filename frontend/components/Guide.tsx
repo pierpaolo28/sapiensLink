@@ -2,17 +2,15 @@ import React from "react";
 import Box from "@mui/material/Box";
 import styled from "@mui/system/styled";
 import Typography from "@mui/material/Typography";
-import { useTheme } from "@mui/material";
+import { Button } from "@mui/material";
 import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
-import CustomButton from "./CustomButton";
-import ListIcon from '@mui/icons-material/List';
-import EditIcon from '@mui/icons-material/Edit';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import Link from 'next/link';
-
+import ListIcon from "@mui/icons-material/List";
+import EditIcon from "@mui/icons-material/Edit";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import Link from "next/link";
+import MuiLink from "@mui/material/Link";
 
 const Guide = () => {
-  const theme = useTheme();
   const CustomBox = styled(Box)(({ theme }) => ({
     width: "30%",
     [theme.breakpoints.down("md")]: {
@@ -45,13 +43,31 @@ const Guide = () => {
     },
   }));
 
-  const customButtonProps = {
-    backgroundColor: "#0F1B4C",
-    color: "#fff",
-    buttonText: "Our Vision",
-    guideBtn: true,
-    theme: theme,
+  const IconOutsideBoxProps = {
+    bgcolor: "#F9F5FF",
+    m: "0",
+    p: "6px",
+    lineHeight: "0",
+    borderRadius: "50%",
   };
+  const IconInsideBoxProps = {
+    bgcolor: "#F0E4FE",
+    m: "0",
+    p: "3px",
+    lineHeight: "0",
+    borderRadius: "50%",
+  };
+
+  const Divider = styled(Box)(({ theme }) => ({
+    width: "8%",
+    height: "5px",
+    backgroundColor: theme.palette.mode === "dark" ? "#fff" : "#121212",
+    [theme.breakpoints.down("md")]: {
+      width: "13%",
+      marginLeft: "auto",
+      marginRight: "auto",
+    },
+  }));
 
   return (
     <Box
@@ -60,21 +76,19 @@ const Guide = () => {
         flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
-        mt: 10
+        mt: 10,
       }}
     >
-      <div
-        style={{
-          width: "5%",
-          height: "5px",
-          backgroundColor: "#000339",
-          margin: "0 auto",
-        }}
-      ></div>
-
+      <Divider />
       <Typography
         variant="h3"
-        sx={{ fontSize: "35px", fontWeight: "bold", color: "#000339", my: 3 }}
+        color={"text.primary"}
+        sx={{
+          fontSize: "35px",
+          fontWeight: "bold",
+          my: 3,
+          textAlign: "center",
+        }}
       >
         Features in SapiensLink
       </Typography>
@@ -82,10 +96,10 @@ const Guide = () => {
       <CustomBox>
         <Typography
           variant="body2"
+          color={"text.secondary"}
           sx={{
             fontSize: "16px",
             fontWeight: "500",
-            color: "#5A6473",
             textAlign: "center",
           }}
         >
@@ -95,106 +109,156 @@ const Guide = () => {
 
       <GuidesBox>
         <GuideBox>
-          <ListIcon />
+          <Box sx={IconOutsideBoxProps}>
+            <Box sx={IconInsideBoxProps}>
+              <ListIcon color={"primary"} />
+            </Box>
+          </Box>
           <Typography
             variant="body2"
+            color={"text.primary"}
             sx={{
               fontWeight: "500",
               fontSize: "20px",
-              color: "#3B3c45",
               my: 1,
             }}
           >
             Lists
           </Typography>
-          <Link href="#lists">
-          <Box
+          <MuiLink
+            href="#lists"
+            underline={"hover"}
+            color={"text.secondary"}
             sx={{
-              cursor: "pointer",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              transition: ".2s",
+              "&:hover": {
+                color: "text.primary",
+              },
             }}
           >
-            <Typography
-              variant="body2"
-              sx={{ fontWeight: "bold", fontSize: "14px", color: "#0689FF" }}
+            <Box
+              sx={{
+                cursor: "pointer",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
             >
-              Guide
-            </Typography>
-            <ArrowRightAltIcon style={{ color: "#0689FF" }} />
-          </Box>
-          </Link>
+              <Typography
+                variant="body1"
+                sx={{
+                  fontWeight: "bold",
+                  fontSize: "14px",
+                }}
+              >
+                Guide
+              </Typography>
+              <ArrowRightAltIcon color={"primary"} />
+            </Box>
+          </MuiLink>
         </GuideBox>
 
         <GuideBox>
-          <EditIcon />
+          <Box sx={IconOutsideBoxProps}>
+            <Box sx={IconInsideBoxProps}>
+              <EditIcon color={"primary"} />
+            </Box>
+          </Box>
+
           <Typography
             variant="body2"
+            color={"text.primary"}
             sx={{
               fontWeight: "500",
               fontSize: "20px",
-              color: "#3B3c45",
               my: 1,
             }}
           >
             Suggest Edits
           </Typography>
-          <Link href="#suggests">
-          <Box
+          <MuiLink
+            href="#suggests"
+            underline={"hover"}
+            color={"text.secondary"}
             sx={{
-              cursor: "pointer",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              transition: ".2s",
+              "&:hover": {
+                color: "text.primary",
+              },
             }}
           >
-            <Typography
-              variant="body2"
-              sx={{ fontWeight: "bold", fontSize: "14px", color: "#0689FF" }}
+            <Box
+              sx={{
+                cursor: "pointer",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
             >
-              Guide
-            </Typography>
-            <ArrowRightAltIcon style={{ color: "#0689FF" }} />
-          </Box>
-          </Link>
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: "bold", fontSize: "14px" }}
+              >
+                Guide
+              </Typography>
+              <ArrowRightAltIcon color={"primary"} />
+            </Box>
+          </MuiLink>
         </GuideBox>
 
         <GuideBox>
-            <TrendingUpIcon />
+          <Box sx={IconOutsideBoxProps}>
+            <Box sx={IconInsideBoxProps}>
+              <TrendingUpIcon color={"primary"} />
+            </Box>
+          </Box>
+
           <Typography
             variant="body2"
+            color={"text.primary"}
             sx={{
               fontWeight: "500",
               fontSize: "20px",
-              color: "#3B3c45",
               my: 1,
             }}
           >
             Ranks
           </Typography>
-          <Link href="#ranks">
-          <Box
+          <MuiLink
+            href="#ranks"
+            underline={"hover"}
+            color={"text.secondary"}
             sx={{
-              cursor: "pointer",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
+              transition: ".2s",
+              "&:hover": {
+                color: "text.primary",
+              },
             }}
           >
-            <Typography
-              variant="body2"
-              sx={{ fontWeight: "bold", fontSize: "14px", color: "#0689FF" }}
+            <Box
+              sx={{
+                cursor: "pointer",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}
             >
-              Guide
-            </Typography>
-            <ArrowRightAltIcon style={{ color: "#0689FF" }} />
-          </Box>
-          </Link>
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: "bold", fontSize: "14px" }}
+              >
+                Guide
+              </Typography>
+              <ArrowRightAltIcon color={"primary"} />
+            </Box>
+          </MuiLink>
         </GuideBox>
       </GuidesBox>
 
-      <CustomButton {...customButtonProps} />
+      {/* <CustomButton {...customButtonProps} /> */}
+      <Button color={"primary"} variant={"contained"} size={"large"}>
+        Our vision
+      </Button>
     </Box>
   );
 };
