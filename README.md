@@ -48,6 +48,29 @@ Once created the admin user you can then access the admin panel from [this addre
 
 To clear resources after usage use: `docker-compose down -v`.
 
+## Initial PGAdmin Setup
+
+To register the PostgreSQL server on the PGAdmin page, follow these steps:
+
+Open your web browser and navigate to [localhost:5051](http://localhost:5051) (assuming you're running PGAdmin on your local machine).
+
+Log in using the email and password set in the docker-compose.yml. In this case, admin@admin.com and the password is ${DB_PASSWORD}.
+
+Once logged in, you should see the PGAdmin dashboard.
+
+To register the PostgreSQL server, follow these steps:
+- Click on the "Add New Server" button (usually found on the left-hand side, under the "Servers" section).
+- In the "General" tab, enter a name for the server (e.g., "PostgreSQL Server").
+- In the "Connection" tab:
+    1. Hostname/address: Enter postgresdb, which is the service name defined in the docker-compose.yml.
+    2. Port: Enter 5432, which is the default port for PostgreSQL.
+    3. Maintenance database: Enter sapiensdb, which is the database specified in the docker-compose.yml.
+    4. Username: Enter ${DB_USER}. This is an environment variable, ensure it's defined and contains the correct username.
+    5. Password: Enter ${DB_PASSWORD}. This is also an environment variable, ensure it's defined and contains the correct password.
+    6. Click on the "Save" button.
+- Once saved, you should see your PostgreSQL server listed under the "Servers" section in PGAdmin.
+- Click on your server's name to expand it and access the databases, schemas, tables, etc., within it.
+
 # Local Setup Option
 
 ## Django Backend

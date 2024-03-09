@@ -14,10 +14,12 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckIcon from "@mui/icons-material/Check";
 import Select from "@mui/material/Select";
+import Grid from "@mui/material/Grid";
 import { SelectChangeEvent } from "@mui/material/Select";
 
 import AppLayout from "@/components/AppLayout";
 import { CreateRankFormData, ContentItem } from "@/utils/types";
+import { topics } from "@/utils/topics";
 import { getUserIdFromAccessToken, isUserLoggedIn } from "@/utils/auth";
 
 import dynamic from "next/dynamic";
@@ -395,26 +397,34 @@ const CreateRankForm = () => {
                 </Box>
               )
           )}
-          <FormControl
-            required
-            fullWidth
-            margin="normal"
-            variant="outlined"
-            sx={{ mt: 2 }}
-          >
-            <InputLabel id="topic-label">Topic</InputLabel>
-            <Select
-              labelId="topic-label"
-              id="topic"
-              multiple
-              value={selectedTopics}
-              onChange={handleTopicChange}
-            >
-              <MenuItem value="topic1">Topic 1</MenuItem>
-              <MenuItem value="topic2">Topic 2</MenuItem>
-              {/* ... other topics */}
-            </Select>
-          </FormControl>
+          <Grid item xs={12} sx={{ mt: 2 }}>
+              <FormControl fullWidth>
+                <InputLabel id="topic-label">Topic</InputLabel>
+                <Select
+                  labelId="topic-label"
+                  id="topic"
+                  multiple
+                  value={selectedTopics}
+                  onChange={handleTopicChange}
+                  name="topic"
+                  renderValue={(selected) => selected.join(", ")}
+                  MenuProps={{
+                    PaperProps: {
+                      style: {
+                        maxHeight: 224,
+                        width: 250,
+                      },
+                    },
+                  }}
+                >
+                  {topics.map((topic) => (
+                    <MenuItem key={topic.value} value={topic.value}>
+                      {topic.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
           <Box sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}>
             <Button variant="outlined" color="error" href="/rank_home">
               Cancel

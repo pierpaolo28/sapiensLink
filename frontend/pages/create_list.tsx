@@ -19,6 +19,7 @@ import "react-quill/dist/quill.snow.css";
 import AppLayout from "@/components/AppLayout";
 import { getUserIdFromAccessToken, isUserLoggedIn } from "@/utils/auth";
 import { ListForm } from "@/utils/types";
+import { topics } from "@/utils/topics";
 import ImportList from "@/components/ImportList";
 import {
   isValidListContent,
@@ -227,13 +228,6 @@ export default function CreateListPage() {
     // Render a loading screen while fetching data
     return <div>Loading...</div>;
   }
-
-  const topics = [
-    { label: "Finance", value: "finance" },
-    { label: "Technology", value: "technology" },
-    { label: "Health", value: "health" },
-    // TODO: Add more topics as needed
-  ];
 
   const style = {
     "& .ql-snow .ql-stroke": { stroke: "white" },
