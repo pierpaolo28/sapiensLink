@@ -87,11 +87,25 @@ const ReportForm = () => {
   return (
     <AppLayout>
       <Container maxWidth="sm" sx={{ px: 0, pt: 3 }}>
-        <Typography variant="h5" component="h1" gutterBottom>
-          Report form for: TODO
+      <Typography variant="h5" component="h1" gutterBottom>
+          Report {itemType === 'rank' ? 'Rank' : 'List'}
         </Typography>
         <Typography variant="subtitle1" gutterBottom>
-          TODO: Write Community conditions for valid report
+          Community Guidelines for Reporting Inappropriate Content:
+          <ol>
+            <li>Respectful Conduct: Treat others with respect and kindness.</li>
+            <li>No Hate Speech: Content promoting hatred or violence is prohibited.</li>
+            <li>Accurate Information: Share only reliable and accurate resources.</li>
+            <li>Intellectual Property: Respect copyright laws and intellectual property rights.</li>
+            <li>Appropriate Content: Ensure shared resources are relevant and appropriate.</li>
+            <li>Safe Environment: Report any sexually explicit or graphic content.</li>
+            <li>Spam and Scams: Report any spam, scams, or fraudulent content.</li>
+            <li>Responsible Behavior: Users are responsible for their actions and content.</li>
+            <li>Confidentiality: Respect the privacy of others and do not share personal information.</li>
+            <li>Reporting Process: Use the designated reporting feature to report inappropriate content.</li>
+            <li>False Reporting: Misuse of the reporting system is prohibited.</li>
+            <li>Moderation and Enforcement: Platform administrators will review reported content.</li>
+          </ol>
         </Typography>
         <Box component="form" noValidate autoComplete="off">
           <TextField
