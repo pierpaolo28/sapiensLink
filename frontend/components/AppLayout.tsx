@@ -9,6 +9,7 @@ import { createTheme } from "@mui/material/styles";
 import Container from "@mui/material/Container";
 import CssBaseline from "@mui/material/CssBaseline";
 import { CircularProgress } from "@mui/material";
+import Head from 'next/head';
 
 import Header from "./Header";
 import Footer from "./Footer";
@@ -253,6 +254,10 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <ErrorBoundary fallback={<FallbackErrorComponent />}>
+          <Head>
+            <title>SapiensLink</title>
+            <link rel="icon" href="logo.svg"/>
+          </Head>
           <Header />
           <Container maxWidth="lg">{children}</Container>
           <Footer />

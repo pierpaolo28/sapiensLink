@@ -1,6 +1,5 @@
 // pages/about.tsx
 import React from "react";
-import Head from "next/head";
 import {
   Container,
   Typography,
@@ -55,13 +54,6 @@ const AboutPage: React.FC = () => {
   return (
     <AppLayout>
       <Container component="main" sx={{ flexGrow: 1, p: 3, mt: 3 }}>
-        <Head>
-          <title>About Us</title>
-          <meta
-            name="description"
-            content="Learn more about our team and company."
-          />
-        </Head>
 
         <Typography variant="h2" gutterBottom>
           About Us
