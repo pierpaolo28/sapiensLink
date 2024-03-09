@@ -29,8 +29,7 @@ const ReportForm = () => {
       extractedItemType = "unknown";
     }
 
-    const urlParams = new URLSearchParams(url.search);
-    const idParam = urlParams.get("id");
+    const idParam = url.pathname.split("/")[2];
 
     if (idParam) {
       extractedItemId = idParam;
@@ -63,7 +62,7 @@ const ReportForm = () => {
         window.location.href = "/rank_home";
       } else if (itemType == "list") {
         // Perform the API call directly in the component
-        await fetch(`http://localhost/api/report_list_page/`, {
+        await fetch(`http://localhost/api/report_list_page/${itemId}/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -71,7 +70,7 @@ const ReportForm = () => {
           },
           body: JSON.stringify({
             reason: reportDescription,
-            rank: itemId,
+            list: itemId,
             user: userId,
           }),
         });

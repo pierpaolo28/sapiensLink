@@ -150,7 +150,6 @@ const ListPage = () => {
           },
           body: JSON.stringify({ comment: { user: 1, body: newComment } }),
         });
-
         if (response.ok) {
           // Fetch updated list data and comments after submitting the comment
           setNewComment("");

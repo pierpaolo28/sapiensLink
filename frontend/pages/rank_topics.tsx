@@ -10,11 +10,11 @@ import Paper from "@mui/material/Paper";
 import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
 import SearchIcon from "@mui/icons-material/Search";
-import Link from "next/link";
 
 import AppLayout from "@/components/AppLayout";
 import { getRankTopics } from "@/utils/routes";
 import { RankTopicsResponse } from "@/utils/types";
+import { Link } from "@mui/material";
 
 export default function RankTopicsPage() {
   const [topics, setHome] = React.useState<RankTopicsResponse | null>(null);
@@ -92,7 +92,17 @@ export default function RankTopicsPage() {
                   {topics && (
                     <List>
                       <ListItem button>
-                        <Link href={`/rank_home`} passHref>
+                        <Link
+                          href={`/rank_home`}
+                          underline="hover"
+                          sx={{
+                            color: "text.secondary",
+                            transition: ".2s",
+                            "&:hover": {
+                              color: "text.primary",
+                            },
+                          }}
+                        >
                           <ListItemText
                             primary={"All " + topics.all_rank_count}
                           />
@@ -100,7 +110,17 @@ export default function RankTopicsPage() {
                       </ListItem>
                       {topics.topic_counts.map((topic, index) => (
                         <ListItem button key={index}>
-                          <Link href={`/rank_home?q=${topic[0]}`} passHref>
+                          <Link
+                            href={`/rank_home?q=${topic[0]}`}
+                            underline="hover"
+                            sx={{
+                              color: "text.secondary",
+                              transition: ".2s",
+                              "&:hover": {
+                                color: "text.primary",
+                              },
+                            }}
+                          >
                             <ListItemText primary={topic[0] + " " + topic[1]} />
                           </Link>
                         </ListItem>

@@ -1,7 +1,5 @@
 import json
-from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .models import Notification
 
 
 class NotificationConsumer(AsyncWebsocketConsumer):
@@ -22,15 +20,6 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         receiver = event['receiver_id']
         url = event['url']
 
-        # Convert synchronous database operations to asynchronous
-        await self.create_notification(notification_message, creator, receiver, url)
-
         await self.send(text_data=json.dumps({'message': notification_message, 'creator_id': creator, 
                                               'receiver_id': receiver, 'url': url}))
-
-    @sync_to_async
-    def create_notification(self, notification_message, creator, receiver, url):
-        Notification.objects.create(message=notification_message,
-                                    creator=creator, receiver=receiver, url=url)
-        
         

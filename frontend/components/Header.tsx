@@ -39,6 +39,14 @@ import { Notification } from "@/utils/types";
 import ThemeToggleButton from "./ThemeToggleButton";
 import Image from "next/image";
 
+import {
+  headerListItemHoverBgColor,
+  headerListItemTextColor,
+  headerLinkColor,
+  headerLinkHoverColor,
+  headerPopoverListBgColor,
+} from "./AppLayout";
+
 export default function Header() {
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -102,13 +110,11 @@ export default function Header() {
       newSocket.onmessage = (event) => {
         const message = JSON.parse(event.data);
         if (message.receiver_id === getUserIdFromAccessToken()) {
-          // setNotifications((prevNotifications) => [...prevNotifications, message]);
-          // setNotificationCount((prevCount) => prevCount + 1);
           fetchNotifications();
         }
       };
 
-      newSocket.onclose = (event) => {
+      newSocket.onclose = () => {
         console.log("WebSocket is closed.");
       };
 
@@ -311,12 +317,12 @@ export default function Header() {
 
   const NavLink = styled(Typography)(({ theme }) => ({
     fontSize: "15px",
-    color: "#667085",
+    color: headerLinkColor,
     fontWeight: "bold",
     cursor: "pointer",
     transition: ".2s",
     "&:hover": {
-      color: "#101828",
+      color: headerLinkHoverColor,
     },
   }));
 
@@ -333,7 +339,7 @@ export default function Header() {
   const CustomMenuIcon = styled(MenuIcon)(({ theme }) => ({
     cursor: "pointer",
     display: "none",
-    color: "#101828",
+    color: headerLinkHoverColor,
     marginRight: theme.spacing(2),
     [theme.breakpoints.down("md")]: {
       display: "block",
@@ -363,12 +369,7 @@ export default function Header() {
   const logoPath = `${router.basePath}/logo.svg`;
 
   return (
-    <AppBar
-      sx={{ borderRadius: "0" }}
-      position="static"
-      color="default"
-      elevation={0}
-    >
+    <AppBar sx={{ borderRadius: "0" }} position="static" elevation={0}>
       <Toolbar>
         <Box
           sx={{
@@ -505,7 +506,7 @@ export default function Header() {
               {/* Notification Icon */}
               <IconButton color="inherit" onClick={handleClick}>
                 <Badge
-                  sx={{ color: "#101828" }}
+                  sx={{ color: headerLinkHoverColor }}
                   badgeContent={notificationCount}
                 >
                   <NotificationsIcon color={"primary"} />
@@ -529,7 +530,7 @@ export default function Header() {
                 slotProps={{
                   paper: {
                     sx: {
-                      backgroundColor: "#fff",
+                      backgroundColor: headerPopoverListBgColor,
                     },
                   },
                 }}
@@ -539,7 +540,7 @@ export default function Header() {
                     width: "100%",
                     maxWidth: 360,
                     backgroundImage: "none",
-                    bgcolor: "#fff",
+                    bgcolor: headerPopoverListBgColor,
                   }}
                 >
                   {/* Map through the updated notifications state */}
@@ -551,7 +552,7 @@ export default function Header() {
                         transition: ".3s",
                         borderRadius: 1,
                         "&:hover": {
-                          bgcolor: "#F5F5F5",
+                          bgcolor: headerListItemHoverBgColor,
                         },
                       }}
                       onClick={() => {
@@ -568,7 +569,7 @@ export default function Header() {
                           },
                         }}
                         sx={{
-                          color: "#121212",
+                          color: headerListItemTextColor,
                         }}
                       />
                     </ListItem>
@@ -596,7 +597,7 @@ export default function Header() {
                 slotProps={{
                   paper: {
                     sx: {
-                      backgroundColor: "#fff",
+                      backgroundColor: headerPopoverListBgColor,
                     },
                   },
                 }}
@@ -609,7 +610,7 @@ export default function Header() {
                         transition: ".3s",
                         borderRadius: 1,
                         "&:hover": {
-                          bgcolor: "#F5F5F5",
+                          bgcolor: headerListItemHoverBgColor,
                         },
                       }}
                       component="a"
@@ -617,7 +618,7 @@ export default function Header() {
                     >
                       <ListItemText
                         sx={{
-                          color: "#121212",
+                          color: headerListItemTextColor,
                         }}
                         primary="Profile Page"
                       />
@@ -627,7 +628,7 @@ export default function Header() {
                       sx={{
                         borderRadius: 1,
                         "&:hover": {
-                          bgcolor: "#F5F5F5",
+                          bgcolor: headerListItemHoverBgColor,
                         },
                       }}
                       button
@@ -636,7 +637,7 @@ export default function Header() {
                     >
                       <ListItemText
                         sx={{
-                          color: "#121212",
+                          color: headerListItemTextColor,
                         }}
                         primary="Edit Profile"
                       />
@@ -645,7 +646,7 @@ export default function Header() {
                       sx={{
                         borderRadius: 1,
                         "&:hover": {
-                          bgcolor: "#F5F5F5",
+                          bgcolor: headerListItemHoverBgColor,
                         },
                       }}
                       button
@@ -653,7 +654,7 @@ export default function Header() {
                     >
                       <ListItemText
                         sx={{
-                          color: "#121212",
+                          color: headerListItemTextColor,
                         }}
                         primary="Log Out"
                       />

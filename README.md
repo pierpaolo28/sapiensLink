@@ -128,7 +128,6 @@ need to have the celery worker (executing tasks) and beat (scheduling periodic t
 - `celery -A sapiensLink worker --loglevel=info`
 - `celery -A sapiensLink beat --loglevel=info`
 
-
 ## Accessing the API Documentation
 
 The SapiensLink API documentation is available through [Django default interface](http://localhost:8000/api/), [Swagger UI](http://localhost:8000/api/swagger/) and [Redoc](http://localhost:8000/api/redoc/).
@@ -146,3 +145,7 @@ If you need to fetch data from the Django server, you will need to:
 
 - run NextJS with `npm start` from the _frontend_ folder
 - run Django with `python manage.py runserver` from the sapiensLink folder. You might also need to create your local DB as reported above.
+
+## Theme configuration
+
+All theme settings and instructions are available in the AppLayout component.

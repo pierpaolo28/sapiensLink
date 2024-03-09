@@ -10,11 +10,11 @@ import Paper from "@mui/material/Paper";
 import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
 import SearchIcon from "@mui/icons-material/Search";
-import Link from "next/link";
 
 import AppLayout from "@/components/AppLayout";
 import { getListTopics } from "@/utils/routes";
 import { ListTopicsResponse } from "@/utils/types";
+import { Link } from "@mui/material";
 
 export default function ListTopics() {
   const [topics, setHome] = React.useState<ListTopicsResponse | null>(null);
@@ -92,7 +92,17 @@ export default function ListTopics() {
                   {topics && (
                     <List>
                       <ListItem button>
-                        <Link href={`/list_home`} passHref>
+                        <Link
+                          href={`/list_home`}
+                          underline="hover"
+                          sx={{
+                            color: "text.secondary",
+                            transition: ".2s",
+                            "&:hover": {
+                              color: "text.primary",
+                            },
+                          }}
+                        >
                           <ListItemText
                             primary={"All " + topics.all_list_count}
                           />
@@ -100,7 +110,17 @@ export default function ListTopics() {
                       </ListItem>
                       {topics.topic_counts.map((topic, index) => (
                         <ListItem button key={index}>
-                          <Link href={`/list_home?q=${topic[0]}`} passHref>
+                          <Link
+                            underline="hover"
+                            sx={{
+                              color: "text.secondary",
+                              transition: ".2s",
+                              "&:hover": {
+                                color: "text.primary",
+                              },
+                            }}
+                            href={`/list_home?q=${topic[0]}`}
+                          >
                             <ListItemText primary={topic[0] + " " + topic[1]} />
                           </Link>
                         </ListItem>

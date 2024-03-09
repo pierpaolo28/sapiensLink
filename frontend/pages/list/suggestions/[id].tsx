@@ -60,9 +60,9 @@ const modalStyle = {
   borderRadius: 2,
 };
 
-const ListPrPage = () => {
+const ListSuggestionsPage = () => {
   const router = useRouter();
-  const { id } = router.query;
+  const { id, num } = router.query;
   const [listData, setListData] =
     useState<ListPrPageWithUserDataResponse | null>(null);
   const [newSuggestionText, setNewSuggestionText] = useState("");
@@ -76,6 +76,15 @@ const ListPrPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    if (listData && !initialized && num) { // Only execute if listData is available and not initialized
+      const numValue = typeof num === 'string' ? num : Array.isArray(num) ? num[0] : "0";
+      setCurrentSuggestionIndex(listData.suggestions.findIndex(suggestion => suggestion.id === parseInt(numValue)) || 0);
+      setInitialized(true); // Mark initialization as complete
+    }
+  }, [num, listData, initialized]);
 
   const handleOpenModal = () => {
     setModalOpen(true);
@@ -396,7 +405,7 @@ const ListPrPage = () => {
       </Typography>
     );
   }
-
+  
   const suggestion = listData.suggestions[currentSuggestionIndex];
   const showPrev = currentSuggestionIndex > 0;
   const showNext = currentSuggestionIndex < listData.suggestions.length - 1;
@@ -518,7 +527,9 @@ const ListPrPage = () => {
                   </Paper>
                 </Grid>
               </Grid>
-
+              {listData &&
+                listData.list.author == getUserIdFromAccessToken() && (
+              <>
               <Box
                 sx={{ display: "flex", justifyContent: "space-around", mt: 2 }}
               >
@@ -537,6 +548,8 @@ const ListPrPage = () => {
                   Reject
                 </Button>
               </Box>
+              </>
+              )}
 
               <Box sx={{ my: 2 }}>
                 <Typography variant="h6" gutterBottom>
@@ -771,4 +784,4 @@ const ListPrPage = () => {
   );
 };
 
-export default ListPrPage;
+export default ListSuggestionsPage;

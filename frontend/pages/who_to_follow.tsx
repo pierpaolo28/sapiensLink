@@ -12,11 +12,11 @@ import Stack from "@mui/material/Stack";
 import SearchIcon from "@mui/icons-material/Search";
 import Avatar from "@mui/material/Avatar";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
-import Link from "next/link";
 
 import AppLayout from "@/components/AppLayout";
 import { getWhoToFollow } from "@/utils/routes";
 import { WhoToFollowResponse } from "@/utils/types";
+import { Link } from "@mui/material";
 
 export default function WhoToFollowPage() {
   const [whoToFollow, setHome] = React.useState<WhoToFollowResponse | null>(
@@ -103,7 +103,17 @@ export default function WhoToFollowPage() {
                               alt={user.name}
                             />
                           </ListItemAvatar>
-                          <Link href={`/user_profile?id=${user.id}`} passHref>
+                          <Link
+                            href={`/user_profile?id=${user.id}`}
+                            underline="hover"
+                            sx={{
+                              color: "text.secondary",
+                              transition: ".2s",
+                              "&:hover": {
+                                color: "text.primary",
+                              },
+                            }}
+                          >
                             <ListItemText primary={user.name} />
                           </Link>
                         </ListItem>

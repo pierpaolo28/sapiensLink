@@ -28,37 +28,95 @@ export const ThemeModeContext = createContext<{
   toggleMode: () => {},
 });
 
+// You can paste colors in any code formats. For example HEX (#ffffff) or RGB (rgb(255, 255, 255)).
+// The main color of the project, which does not change when changing the theme.
+export const mainColor = "#7F56D9";
+
+// Main text colors group for light and dark theme. It is preferable to change together with the group of text colors
+export const textMainLightThemeColor = "#101828";
+export const textMainDarkThemeColor = "#fff";
+
+// Secondary text colors group for light and dark theme. Used mainly on links.
+export const textSecondaryLightThemeColor = "#667085";
+export const textSecondaryDarkThemeColor = "#E5E5E5";
+
+// Main background colors group for light and dark theme. It is preferable to change together with the group of text colors
+export const bgMainLightThemeColor = "#FCFCFC";
+export const bgMainDarkThemeColor = "#121212";
+
+export const errorTextLightThemeColor = "#f44336";
+export const errorTextDarkThemeColor = "##ffebee";
+
+export const errorBgLightThemeColor = "#ffebee";
+export const errorBgDarkThemeColor = "#f44336";
+
+// Main unchangable color for errors.
+export const errorColor = "#f44336";
+// Main unchangable color for warnings.
+export const warningColor = "#ff9800";
+// Main unchangable color for info.
+export const infoColor = "#2196f3";
+// Main unchangable color for success.
+export const successColor = "#4caf50";
+
+// Constant headers colors
+// If you want to change this constant colors to changable colors depends on theme you need change them into Header coponent.
+// For example: headerLinkColor to "text.primary" or, if theme is available - headerPopoverListBgColor to theme.palette.secondary.contrastText;
+export const headerLinkColor = "#667085";
+export const headerLinkHoverColor = "#101828";
+export const headerPopoverListBgColor = "#fff";
+export const headerListItemHoverBgColor = "#F5F5F5";
+export const headerListItemTextColor = "#121212";
+
+//Colors from Figma Template
+// #0F1B4C
+// #000339
+// #101828
+// #667085
+// #6B3ED0
+// #7F56D9
+// #AC8DF0
+// #F0E4FE
+// #F9F5FF
+// #FDB022
+
 function getDesignTokens(mode: "light" | "dark") {
   return createTheme({
     palette: {
       mode,
       primary: {
-        main: "#7F56D9",
+        main: mainColor /* If you want to change the main color depending on the theme, replace "mainColor" with this construct: mode === "dark" ? anyColorForDarkTheme : anyColorForLightTheme */,
       },
       secondary: {
-        main: mode === "dark" ? "#ffebee" : "#f44336",
-        contrastText: mode === "dark" ? "#f44336" : "#ffebee",
+        main:
+          mode === "dark" ? errorTextDarkThemeColor : errorTextLightThemeColor,
+        contrastText:
+          mode === "dark" ? errorBgDarkThemeColor : errorBgLightThemeColor,
       },
       background: {
-        default: mode === "dark" ? "#121212" : "#FCFCFC",
-        paper: mode === "dark" ? "#121212" : "#FCFCFC",
+        default: mode === "dark" ? bgMainDarkThemeColor : bgMainLightThemeColor,
+        paper: mode === "dark" ? bgMainDarkThemeColor : bgMainLightThemeColor,
       },
       text: {
-        primary: mode === "dark" ? "#fff" : "#101828",
-        secondary: mode === "dark" ? "#E5E5E5" : "#667085", // #FCFCFC
+        primary:
+          mode === "dark" ? textMainDarkThemeColor : textMainLightThemeColor,
+        secondary:
+          mode === "dark"
+            ? textSecondaryDarkThemeColor
+            : textSecondaryLightThemeColor,
       },
       // Additional colors like error, warning, info, success
       error: {
-        main: "#f44336",
+        main: errorColor,
       },
       warning: {
-        main: "#ff9800",
+        main: warningColor,
       },
       info: {
-        main: "#2196f3",
+        main: infoColor,
       },
       success: {
-        main: "#4caf50",
+        main: successColor,
       },
     },
     typography: {
@@ -109,8 +167,7 @@ function getDesignTokens(mode: "light" | "dark") {
       MuiAppBar: {
         styleOverrides: {
           root: {
-            backgroundColor: "#fff",
-            // color: mode === "dark" ? "#fff" : "#333",
+            backgroundColor: headerPopoverListBgColor,
           },
         },
       },
@@ -181,7 +238,14 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   const theme = useMemo(() => getDesignTokens(mode), [mode]);
 
   if (loading) {
-    return <CircularProgress />; // Or any other loading indicator
+    return (
+      <ThemeProvider theme={theme}>
+        <CircularProgress
+          color={"primary"}
+          sx={{ mx: "auto", display: "block", py: 4 }}
+        />
+      </ThemeProvider>
+    ); // Or any other loading indicator
   }
 
   return (
@@ -199,24 +263,3 @@ const AppLayout = ({ children }: AppLayoutProps) => {
 };
 
 export default AppLayout;
-
-// #0F1B4C
-// #000339
-// #101828
-// #667085
-// #6B3ED0
-// #7F56D9
-// #AC8DF0
-// #F0E4FE
-// #F9F5FF
-// #FDB022
-
-// light: "#AC8DF0",
-// main: mode === "dark" ? "#90caf9" : "#556cd6",
-// dark: "#6B3ED0",
-// contrastText: "#fff",
-
-// light: "#ff4081",
-// main: mode === "dark" ? "#f48fb1" : "#19857b",
-// dark: "#c51162",
-// contrastText: "#000",
