@@ -33,12 +33,12 @@ from drf_yasg import openapi
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from django.shortcuts import redirect
-from urllib.parse import urlencode
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth.models import AnonymousUser
 import requests
 from functools import wraps
+from app_secrets import CUSTOM_HEADER_VALUE
+
 
 # TODO: Update Domain
 DOMAIN = 'http://127.0.0.1:8000'
@@ -679,14 +679,19 @@ def list_page(request, pk):
                 channel_layer = get_channel_layer()
                 for receiver in list_instance.subscribed_users.all():
                     if receiver != request.user:
+                        notification_message = f'A new comment was added on the list "{list_instance.name}".'
+                        creator = request.user
+                        url = request.path.split('/')[0] + '/list/' + str(list_instance.id)
+                        Notification.objects.create(message=notification_message, creator=creator.id, receiver=receiver.id, url=url)
+
                         async_to_sync(channel_layer.group_send)(
                             'notifications_group',
                             {
                                 'type': 'send_notification',
-                                'notification': f'A new comment was added on the list "{list_instance.name}".',
-                                'creator_id': user.id,
+                                'notification': notification_message,
+                                'creator_id': creator.id,
                                 'receiver_id': receiver.id,
-                                'url': request.path.split('/')[0] + '/list/' + str(list_instance.id),
+                                'url': url,
                             }
                         )
 
@@ -808,15 +813,20 @@ def rank_page(request, pk):
 
                 for receiver in rank.subscribed_users.all():
                     if receiver != request.user:
+                        notification_message = f'A new element was added on the rank "{rank.name}".'
+                        creator = request.user
+                        url = request.path.split('/')[0] + '/rank/' + str(rank.id)
+                        Notification.objects.create(message=notification_message, creator=creator.id, receiver=receiver.id, url=url)
+
                         channel_layer = get_channel_layer()
                         async_to_sync(channel_layer.group_send)(
                             "notifications_group",
                             {
                                 'type': 'send_notification',
-                                'notification': f'A new element was added on the rank "{rank.name}".',
-                                'creator_id': user.id,
+                                'notification': notification_message,
+                                'creator_id': creator.id,
                                 'receiver_id': receiver.id,
-                                'url': request.path.split('/')[0] + '/rank/' + str(rank.id)
+                                'url': url
                             }
                         )
 
@@ -993,8 +1003,7 @@ def get_user(request, pk):
     # Check if the request contains a specific header or token
     custom_header_value = request.headers.get('X-NextJS-Application')  # Replace with your custom header name
 
-    # TODO: Replace 'sapiensLink' with new secret token expected. Do same in frontend in hide values.
-    if custom_header_value != 'sapiensLink':
+    if custom_header_value != CUSTOM_HEADER_VALUE:
         return Response({'error': 'Access denied. This view is only accessible from the NextJS application.'}, status=status.HTTP_403_FORBIDDEN)
 
     try:
@@ -1576,15 +1585,20 @@ def report_list_page(request, pk):
     if serializer.is_valid():
         serializer.save()
         # Sending notification to the WebSocket group
+        notification_message = f'Your list "{list.name}" has been reported by an user.'
+        creator = request.user
+        url = request.build_absolute_uri('/') + 'list/' + str(list.id)
+        Notification.objects.create(message=notification_message, creator=creator.id, receiver=list.author.id, url=url)
+
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
             "notifications_group",
             {
                 'type': 'send_notification',
-                'notification': f'Your list "{list.name}" has been reported by an user.',
-                'creator_id': request.user.id,
+                'notification': notification_message,
+                'creator_id': creator.id,
                 'receiver_id': list.author.id,
-                'url': request.build_absolute_uri('/') + 'list/' + str(list.id),
+                'url': url,
             }
         )
         return Response({"message": "Report Created"}, status=status.HTTP_201_CREATED)
@@ -1714,15 +1728,20 @@ def list_pr_page(request, pk):
                 # Sending notification to the WebSocket group (sample code)
                 if list_instance.author:
                     # TODO: If a list has no author notify admin users instead of no notification
+                    notification_message = f'A new suggestion to edit your list "{list_instance.name}" has been created.'
+                    creator = request.user
+                    url = request.build_absolute_uri('/') + 'list/suggestions/' + str(list_instance.id) + '/?num=' + str(suggestion.id)
+                    Notification.objects.create(message=notification_message, creator=creator.id, receiver=list_instance.author.id, url=url)
+
                     channel_layer = get_channel_layer()
                     async_to_sync(channel_layer.group_send)(
                         "notifications_group",
                         {
                             'type': 'send_notification',
-                            'notification': f'A new suggestion to edit your list "{list_instance.name}" has been created.',
-                            'creator_id': request.user.id,
+                            'notification': notification_message,
+                            'creator_id': creator.id,
                             'receiver_id': list_instance.author.id,
-                            'url': request.build_absolute_uri('/') + 'list/suggestions/' + str(list_instance.id),
+                            'url': url,
                         }
                     )
                 return Response({'message': 'Edit suggestion created successfully'}, status=status.HTTP_201_CREATED)
@@ -1734,18 +1753,37 @@ def list_pr_page(request, pk):
             comment_serializer = EditCommentSerializer(data=request.data['comment'])
             if comment_serializer.is_valid():
                 comment = comment_serializer.save(commenter=request.user, edit_suggestion_id=request.data['comment']['edit_suggestion'])
+                suggestion = get_object_or_404(EditSuggestion, id=request.data['comment']['edit_suggestion'])
                 # Sending notification to the WebSocket group (sample code)
+                notification_message = f'A new comment has been added to a suggestion to edit for the list "{list_instance.name}".'
+                creator = request.user
+                url = request.build_absolute_uri('/') + 'list/suggestions/' + str(list_instance.id) + '/?num=' + str(suggestion.id)
+
                 channel_layer = get_channel_layer()
-                async_to_sync(channel_layer.group_send)(
-                    "notifications_group",
-                    {
-                        'type': 'send_notification',
-                        'notification': f'A new comment has been added to a suggestion to edit your list "{list_instance.name}".',
-                        'creator_id': request.user.id,
-                        'receiver_id': list_instance.author.id,
-                        'url': request.build_absolute_uri('/') + 'list/suggestions/' + str(list_instance.id),
-                    }
-                )
+                if list_instance.author.id == creator.id:
+                    Notification.objects.create(message=notification_message, creator=creator.id, receiver=suggestion.suggested_by.id, url=url)
+                    async_to_sync(channel_layer.group_send)(
+                        "notifications_group",
+                        {
+                            'type': 'send_notification',
+                            'notification': notification_message,
+                            'creator_id': creator.id,
+                            'receiver_id': suggestion.suggested_by.id,
+                            'url': url,
+                        }
+                    )
+                else:
+                    Notification.objects.create(message=notification_message, creator=creator.id, receiver=list_instance.author.id, url=url)
+                    async_to_sync(channel_layer.group_send)(
+                        "notifications_group",
+                        {
+                            'type': 'send_notification',
+                            'notification': notification_message,
+                            'creator_id': creator.id,
+                            'receiver_id': list_instance.author.id,
+                            'url': url,
+                        }
+                    )
                 return Response({'message': 'Comment added successfully'}, status=status.HTTP_201_CREATED)
             else:
                 return Response({'error': 'Comment could not be created', 'details': str(comment_serializer.errors['text'][0])}, status=status.HTTP_400_BAD_REQUEST)
@@ -1778,15 +1816,20 @@ def approve_suggestion_action(request, suggestion_id):
         list_instance.save()
 
         # Sending notification to the WebSocket group (sample code)
+        notification_message = f'Your suggestion to edit the list "{list_instance.name}" has been approved!'
+        creator = request.user
+        url = request.build_absolute_uri('/') + 'list/' + str(list_instance.id)
+        Notification.objects.create(message=notification_message, creator=creator.id, receiver=suggestion.suggested_by.id, url=url)
+
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
             "notifications_group",
             {
                 'type': 'send_notification',
-                'notification': f'Your suggestion to edit the list "{list_instance.name}" has been approved!',
-                'creator_id': request.user.id,
+                'notification': notification_message,
+                'creator_id': creator.id,
                 'receiver_id': suggestion.suggested_by.id,
-                'url': request.build_absolute_uri('/') + 'list/' + str(list_instance.id),
+                'url': url,
             }
         )
 
@@ -1816,15 +1859,20 @@ def decline_suggestion_action(request, suggestion_id):
         suggestion.delete()
 
         # Sending notification to the WebSocket group (sample code)
+        notification_message = f'Your suggestion to edit the list "{suggestion.list.name}" has been declined.'
+        creator = request.user
+        url = request.build_absolute_uri('/') + 'list/' + str(list_id)
+        Notification.objects.create(message=notification_message, creator=creator.id, receiver=suggestion.suggested_by.id, url=url)
+
         channel_layer = get_channel_layer()
         async_to_sync(channel_layer.group_send)(
             "notifications_group",
             {
                 'type': 'send_notification',
-                'notification': f'Your suggestion to edit the list "{suggestion.list.name}" has been declined.',
-                'creator_id': request.user.id,
+                'notification': notification_message,
+                'creator_id': creator.id,
                 'receiver_id': suggestion.suggested_by.id,
-                'url': request.build_absolute_uri('/') + 'list/' + str(list_id),
+                'url': url,
             }
         )
 

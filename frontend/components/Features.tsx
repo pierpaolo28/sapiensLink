@@ -2,7 +2,7 @@ import styled from "@mui/system/styled";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/system/Box";
 import Container from "@mui/system/Container";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import { useTheme } from "@mui/material";
 
 const Features = () => {
@@ -10,14 +10,20 @@ const Features = () => {
     display: "flex",
     gap: theme.spacing(10),
     alignItems: "center",
+    marginBottom: "5px",
     [theme.breakpoints.down("md")]: {
       flexDirection: "column",
       textAlign: "center",
+      marginBottom: "40px",
+      gap: theme.spacing(4),
     },
   }));
 
   const ImgContainer = styled(Box)(({ theme }) => ({
     width: "100%",
+    borderRadius: "15px",
+    lineHeight: "0",
+    overflow: "hidden",
     [theme.breakpoints.down("md")]: {
       display: "flex",
       flexDirection: "column",
@@ -54,10 +60,10 @@ const Features = () => {
     },
   }));
 
-  const Divider = styled("div")(({ theme }) => ({
+  const Divider = styled(Box)(({ theme }) => ({
     width: "13%",
     height: "5px",
-    backgroundColor: "#000339",
+    backgroundColor: theme.palette.mode === "dark" ? "#fff" : "#121212",
     [theme.breakpoints.down("md")]: {
       marginLeft: "auto",
       marginRight: "auto",
@@ -89,18 +95,22 @@ const Features = () => {
     <Box sx={{ py: 10 }}>
       <Container>
         <CustomBox>
-        {!isSmallScreen && (
-          <ImgContainer>
-            <img src={'images/list.png'} alt="list" style={{ maxWidth: "100%" }} />
-          </ImgContainer>
+          {!isSmallScreen && (
+            <ImgContainer>
+              <img
+                src={"images/list.png"}
+                alt="list"
+                style={{ maxWidth: "100%" }}
+              />
+            </ImgContainer>
           )}
 
           <Box id="lists">
             <Divider />
             <Typography
+              color={"text.primary"}
               sx={{
                 fontSize: "35px",
-                color: "#000339",
                 fontWeight: "700",
                 my: 3,
               }}
@@ -109,31 +119,35 @@ const Features = () => {
             </Typography>
 
             <Typography
+              color={"text.secondary"}
               sx={{
                 fontSize: "16px",
-                color: "#5A6473",
                 lineHeight: "27px",
               }}
             >
-              Share your expertise with your audience, retaining full ownership. Get advice and make your contributions memorable.
+              Share your expertise with your audience, retaining full ownership.
+              Get advice and make your contributions memorable.
             </Typography>
           </Box>
 
           {isSmallScreen && (
-          <ImgContainer>
-            <img src={'images/list.png'} alt="list" style={{ maxWidth: "100%" }} />
-          </ImgContainer>
+            <ImgContainer>
+              <img
+                src={"images/list.png"}
+                alt="list"
+                style={{ maxWidth: "100%" }}
+              />
+            </ImgContainer>
           )}
         </CustomBox>
 
         <CustomBox>
-
           <Box id="suggests">
             <Divider />
             <Typography
+              color={"text.primary"}
               sx={{
                 fontSize: "35px",
-                color: "#000339",
                 fontWeight: "700",
                 my: 3,
               }}
@@ -142,34 +156,43 @@ const Features = () => {
             </Typography>
 
             <Typography
+              color={"text.secondary"}
               sx={{
                 fontSize: "16px",
-                color: "#5A6473",
                 lineHeight: "27px",
               }}
             >
-              Help contributors provide the best possible content and get recognized by the community for your support.
+              Help contributors provide the best possible content and get
+              recognized by the community for your support.
             </Typography>
           </Box>
 
           <ImgContainer>
-            <img src={'images/suggest_edit.png'} alt="suggest_edit" style={{ maxWidth: "100%" }} />
+            <img
+              src={"images/suggest_edit.png"}
+              alt="suggest_edit"
+              style={{ maxWidth: "100%" }}
+            />
           </ImgContainer>
         </CustomBox>
 
         <CustomBox>
-        {!isSmallScreen && (
-          <ImgContainer>
-            <img src={'images/rank.png'} alt="rank" style={{ maxWidth: "100%" }} />
-          </ImgContainer>
-        )}
+          {!isSmallScreen && (
+            <ImgContainer>
+              <img
+                src={"images/rank.png"}
+                alt="rank"
+                style={{ maxWidth: "100%" }}
+              />
+            </ImgContainer>
+          )}
 
           <Box id="ranks">
             <Divider />
             <Typography
+              color={"text.primary"}
               sx={{
                 fontSize: "35px",
-                color: "#000339",
                 fontWeight: "700",
                 my: 3,
               }}
@@ -178,24 +201,28 @@ const Features = () => {
             </Typography>
 
             <Typography
+              color={"text.secondary"}
               sx={{
                 fontSize: "16px",
-                color: "#5A6473",
                 lineHeight: "27px",
               }}
             >
-              Ask for advice to the community and let the vox populi help you fostering new ideas. 
+              Ask for advice to the community and let the vox populi help you
+              fostering new ideas.
             </Typography>
           </Box>
 
           {isSmallScreen && (
-          <ImgContainer>
-            <img src={'images/rank.png'} alt="rank" style={{ maxWidth: "100%" }} />
-          </ImgContainer>
-        )}
+            <ImgContainer>
+              <img
+                src={"images/rank.png"}
+                alt="rank"
+                style={{ maxWidth: "100%" }}
+              />
+            </ImgContainer>
+          )}
         </CustomBox>
-
-         {/* TODO: To Add back after lunch with real statistics */}
+        {/* TODO: To Add back after lunch with real statistics */}
         {/* <TextFlexbox>
           <Box
             sx={{

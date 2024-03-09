@@ -1,46 +1,49 @@
-import React, { useEffect, useState, ChangeEvent } from 'react';
-import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import MenuItem from '@mui/material/MenuItem';
-import InputLabel from '@mui/material/InputLabel';
-import FormControl from '@mui/material/FormControl';
-import Select from '@mui/material/Select';
-import { SelectChangeEvent } from '@mui/material/Select';
-import { Switch } from '@mui/material';
-import dynamic from 'next/dynamic';
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
-import 'react-quill/dist/quill.snow.css';
+import React, { useEffect, useState, ChangeEvent } from "react";
+import Container from "@mui/material/Container";
+import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Checkbox from "@mui/material/Checkbox";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import MenuItem from "@mui/material/MenuItem";
+import InputLabel from "@mui/material/InputLabel";
+import FormControl from "@mui/material/FormControl";
+import Select from "@mui/material/Select";
+import { SelectChangeEvent } from "@mui/material/Select";
+import { Switch } from "@mui/material";
+import dynamic from "next/dynamic";
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+import "react-quill/dist/quill.snow.css";
 
 import AppLayout from "@/components/AppLayout";
 import { getUserIdFromAccessToken, isUserLoggedIn } from "@/utils/auth";
 import { ListForm } from "@/utils/types";
-import ImportList from '@/components/ImportList';
-import {isValidListContent, convertQuillContentToHtml, convertPlainTextToHtml } from "@/utils/html";
+import { topics } from "@/utils/topics";
+import ImportList from "@/components/ImportList";
+import {
+  isValidListContent,
+  convertQuillContentToHtml,
+  convertPlainTextToHtml,
+} from "@/utils/html";
 
 export default function CreateListPage() {
   const [listDetails, setListDetails] = useState<ListForm>({
-    name: '',
-    description: '',
-    content: '',
-    source: '',
+    name: "",
+    description: "",
+    content: "",
+    source: "",
     public: true,
     topic: [],
   });
   const [isUpdateMode, setIsUpdateMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedEditor, setSelectedEditor] = useState('quill'); // Default to 'quill'
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [selectedEditor, setSelectedEditor] = useState("quill"); // Default to 'quill'
 
   const handleImportListChange = (content: string) => {
     // Initialize a local variable to store the updated content
-    let updatedContent = '';
+    let updatedContent = "";
 
     updatedContent = convertPlainTextToHtml(content);
 
@@ -51,13 +54,12 @@ export default function CreateListPage() {
     }));
   };
 
-
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get('id');
+    const id = urlParams.get("id");
 
     if (!isUserLoggedIn()) {
-      window.location.href = '/signin';
+      window.location.href = "/signin";
     }
 
     if (id) {
@@ -69,14 +71,17 @@ export default function CreateListPage() {
 
   const fetchListData = async (id: string) => {
     try {
-      const accessToken = localStorage.getItem('access_token');
-      const response = await fetch(`http://localhost/api/update_list_page/${id}/`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
-        },
-      });
+      const accessToken = localStorage.getItem("access_token");
+      const response = await fetch(
+        `http://localhost/api/update_list_page/${id}/`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -90,15 +95,18 @@ export default function CreateListPage() {
         });
         setIsUpdateMode(true);
       } else {
-        console.error('Error fetching list data:', response.status, response.statusText);
+        console.error(
+          "Error fetching list data:",
+          response.status,
+          response.statusText
+        );
       }
     } catch (error) {
-      console.error('Error fetching list data:', error);
+      console.error("Error fetching list data:", error);
     } finally {
       setIsLoading(false);
     }
   };
-
 
   const handleQuillChange = (value: string) => {
     setListDetails((prevDetails) => ({
@@ -111,10 +119,10 @@ export default function CreateListPage() {
     setSelectedEditor(editor);
 
     // Clear the content when switching to Quill Editor
-    if (editor === 'quill') {
+    if (editor === "quill") {
       setListDetails((prevDetails) => ({
         ...prevDetails,
-        content: '', // Clear the content
+        content: "", // Clear the content
       }));
     }
   };
@@ -123,7 +131,7 @@ export default function CreateListPage() {
     const { name, value, checked, type } = event.target;
     setListDetails((prevDetails) => ({
       ...prevDetails,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -131,7 +139,7 @@ export default function CreateListPage() {
     const value = event.target.value;
     setListDetails((prevDetails) => ({
       ...prevDetails,
-      topic: typeof value === 'string' ? value.split(',') : value,
+      topic: typeof value === "string" ? value.split(",") : value,
     }));
   };
 
@@ -140,14 +148,13 @@ export default function CreateListPage() {
     setError(null);
     let contentHtml: string = listDetails.content;
 
-    if (selectedEditor === 'ImportList') {
+    if (selectedEditor === "ImportList") {
       // Convert the plain text to HTML
       contentHtml = convertPlainTextToHtml(listDetails.content);
-    }
-    else if (selectedEditor === 'quill') {
+    } else if (selectedEditor === "quill") {
       // Validate content
       if (!isValidListContent(listDetails.content)) {
-        setError('Content must be in bullet or numbered list format.');
+        setError("Content must be in bullet or numbered list format.");
         return;
       }
       contentHtml = convertQuillContentToHtml(listDetails.content);
@@ -155,12 +162,12 @@ export default function CreateListPage() {
 
     if (listDetails.name && listDetails.topic && listDetails.topic.length > 0) {
       try {
-        const accessToken = localStorage.getItem('access_token');
-        let url = 'http://localhost/api/create_list_page';
+        const accessToken = localStorage.getItem("access_token");
+        let url = "http://localhost/api/create_list_page";
 
         if (isUpdateMode) {
           const urlParams = new URLSearchParams(window.location.search);
-          const id = urlParams.get('id');
+          const id = urlParams.get("id");
           url = `http://localhost/api/update_list_page/${id}/`;
         }
 
@@ -171,45 +178,47 @@ export default function CreateListPage() {
           topic: listDetails.topic.map((topicName) => ({ name: topicName })),
         };
         const response = await fetch(url, {
-          method: isUpdateMode ? 'PUT' : 'POST',
+          method: isUpdateMode ? "PUT" : "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
           },
           body: JSON.stringify(updatedListDetails),
         });
 
         if (response.ok) {
-          window.location.href = '/list_home';
+          window.location.href = "/list_home";
         } else {
           const responseData = await response.json();
 
-          let errorMessage = '';
+          let errorMessage = "";
 
           if (responseData.name) {
-            errorMessage += responseData.name + ' ';
+            errorMessage += responseData.name + " ";
           }
 
           if (responseData.description) {
-            errorMessage += responseData.description + ' ';
+            errorMessage += responseData.description + " ";
           }
 
           if (responseData.content) {
-            errorMessage += responseData.content + ' ';
+            errorMessage += responseData.content + " ";
           }
 
           if (errorMessage) {
             setError(errorMessage);
           } else {
-            setError('Failed to submit the form');
+            setError("Failed to submit the form");
           }
         }
       } catch (error) {
-        console.error('Error creating/updating list:', error);
-        setError('An unexpected error occurred.');
+        console.error("Error creating/updating list:", error);
+        setError("An unexpected error occurred.");
       }
     } else {
-      setError('Please fill in all mandatory fields (Name, Content, and Topic).');
+      setError(
+        "Please fill in all mandatory fields (Name, Content, and Topic)."
+      );
     }
   };
 
@@ -218,18 +227,14 @@ export default function CreateListPage() {
     return <div>Loading...</div>;
   }
 
-  const topics = [
-    { label: 'Finance', value: 'finance' },
-    { label: 'Technology', value: 'technology' },
-    { label: 'Health', value: 'health' },
-    // TODO: Add more topics as needed
-  ];
-
+  const style = {
+    "& .ql-snow .ql-stroke": { stroke: "white" },
+  };
   return (
     <AppLayout>
-      <Container maxWidth="md">
+      <Container maxWidth="md" sx={{ p: 0, pt: 3 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          {isUpdateMode ? 'Update List' : 'Create List'}
+          {isUpdateMode ? "Update List" : "Create List"}
         </Typography>
         {error && (
           <Typography variant="body1" color="error" gutterBottom>
@@ -260,21 +265,27 @@ export default function CreateListPage() {
               />
             </Grid>
             <Grid item xs={12}>
-              <div style={{ marginBottom: '10px' }}>
+              <div style={{ marginBottom: "10px" }}>
                 <InputLabel id="content-label">Content</InputLabel>
               </div>
               <FormControlLabel
                 control={
                   <Switch
-                    checked={selectedEditor === 'ImportList'}
-                    onChange={() => handleEditorSwitch(selectedEditor === 'quill' ? 'ImportList' : 'quill')}
+                    checked={selectedEditor === "ImportList"}
+                    onChange={() =>
+                      handleEditorSwitch(
+                        selectedEditor === "quill" ? "ImportList" : "quill"
+                      )
+                    }
                   />
                 }
-                label={selectedEditor === 'quill' ? 'Create list' : 'Import list'}
+                label={
+                  selectedEditor === "quill" ? "Create list" : "Import list"
+                }
               />
 
               {/* Conditional Rendering of Editors */}
-              {selectedEditor === 'quill' ? (
+              {selectedEditor === "quill" ? (
                 <FormControl fullWidth>
                   <ReactQuill
                     id="content"
@@ -282,16 +293,14 @@ export default function CreateListPage() {
                     onChange={handleQuillChange}
                     modules={{
                       toolbar: [
-                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                        ['link'] // Only allow bullet and numbered lists
+                        [{ list: "ordered" }, { list: "bullet" }],
+                        ["link"], // Only allow bullet and numbered lists
                       ],
                     }}
                   />
                 </FormControl>
               ) : (
-                <ImportList
-                  onContentChange={handleImportListChange}
-                />
+                <ImportList onContentChange={handleImportListChange} />
               )}
             </Grid>
             <Grid item xs={12}>
@@ -325,7 +334,7 @@ export default function CreateListPage() {
                   value={listDetails.topic}
                   onChange={handleTopicChange}
                   name="topic"
-                  renderValue={(selected) => selected.join(', ')}
+                  renderValue={(selected) => selected.join(", ")}
                   MenuProps={{
                     PaperProps: {
                       style: {
@@ -343,12 +352,16 @@ export default function CreateListPage() {
                 </Select>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-              <Button variant="outlined" color="secondary" href="/list_home">
+            <Grid
+              item
+              xs={12}
+              sx={{ display: "flex", justifyContent: "space-between", mt: 2 }}
+            >
+              <Button variant="outlined" color={"error"} href="/list_home">
                 Cancel
               </Button>
               <Button variant="contained" color="primary" type="submit">
-                {isUpdateMode ? 'Update' : 'Submit'}
+                {isUpdateMode ? "Update" : "Submit"}
               </Button>
             </Grid>
           </Grid>

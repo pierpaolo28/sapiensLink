@@ -1,6 +1,6 @@
 import styled from "@mui/system/styled";
 import Typography from "@mui/material/Typography";
-import { useTheme } from "@mui/material";
+import { Button, useTheme } from "@mui/material";
 import Link from "@mui/material/Link";
 import Box from "@mui/system/Box";
 import Container from "@mui/system/Container";
@@ -11,7 +11,7 @@ import CustomButton from "./CustomButton";
 const GetStarted = () => {
   const theme = useTheme();
   const CustomContainer = styled(Container)(({ theme }) => ({
-    backgroundColor: "#17275F",
+    backgroundColor: theme.palette.text.primary,
     height: "416px",
     borderRadius: "15px",
     display: "flex",
@@ -22,7 +22,8 @@ const GetStarted = () => {
       flexDirection: "column",
       alignItems: "center",
       padding: theme.spacing(3, 3, 0, 3),
-      width: "90%",
+      width: "100%",
+      rowGap: theme.spacing(4),
     },
   }));
 
@@ -31,6 +32,7 @@ const GetStarted = () => {
     margin: theme.spacing(0, 2, 0, 2),
     [theme.breakpoints.down("md")]: {
       padding: "0",
+      margin: theme.spacing(0),
     },
   }));
 
@@ -45,24 +47,33 @@ const GetStarted = () => {
   return (
     <CustomBox>
       <CustomContainer>
-        <Box>
+        <Box
+          sx={() => ({
+            [theme.breakpoints.down("md")]: { textAlign: "center" },
+          })}
+        >
           <Typography
-            sx={{ fontSize: "35px", color: "white", fontWeight: "700" }}
+            color={"background.default"}
+            sx={{ fontSize: "35px", fontWeight: "700" }}
           >
             Explore List & Ranks
           </Typography>
           <Typography
-            sx={{ fontSize: "16px", color: "#ccc", fontWeight: "500", my: 3 }}
+            color={"background.default"}
+            sx={{ fontSize: "16px", fontWeight: "500", my: 3 }}
           >
             No account required!
           </Typography>
           <Link href={`/list_home`}>
-          <CustomButton {...customButtonProps} />
+            <Button variant={"contained"} size={"large"}>
+              Get Started Now
+            </Button>
+            {/* <CustomButton {...customButtonProps} /> */}
           </Link>
         </Box>
 
         <img
-          src={'images/get_started.png'}
+          src={"images/get_started.png"}
           alt="illustration"
           style={{ maxWidth: "100%" }}
         />

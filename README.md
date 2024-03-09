@@ -22,6 +22,7 @@ POSTGRESQL_PASSWORD = 'TODO'
 GOOGLE_CLIENT_ID = 'TODO'
 GOOGLE_CLIENT_SECRET = 'TODO'
 DJANGO_SECRET_KEY = 'TODO'
+CUSTOM_HEADER_VALUE = 'TODO'
 ```
 
 In the frontend folder, make sure instead to have the `.env` file setup:
@@ -47,6 +48,29 @@ python manage.py createsuperuser
 Once created the admin user you can then access the admin panel from [this address](http://localhost/admin/).
 
 To clear resources after usage use: `docker-compose down -v`.
+
+## Initial PGAdmin Setup
+
+To register the PostgreSQL server on the PGAdmin page, follow these steps:
+
+Open your web browser and navigate to [localhost:5051](http://localhost:5051) (assuming you're running PGAdmin on your local machine).
+
+Log in using the email and password set in the docker-compose.yml. In this case, admin@admin.com and the password is ${DB_PASSWORD}.
+
+Once logged in, you should see the PGAdmin dashboard.
+
+To register the PostgreSQL server, follow these steps:
+- Click on the "Add New Server" button (usually found on the left-hand side, under the "Servers" section).
+- In the "General" tab, enter a name for the server (e.g., "PostgreSQL Server").
+- In the "Connection" tab:
+    1. Hostname/address: Enter postgresdb, which is the service name defined in the docker-compose.yml.
+    2. Port: Enter 5432, which is the default port for PostgreSQL.
+    3. Maintenance database: Enter sapiensdb, which is the database specified in the docker-compose.yml.
+    4. Username: Enter ${DB_USER}. This is an environment variable, ensure it's defined and contains the correct username.
+    5. Password: Enter ${DB_PASSWORD}. This is also an environment variable, ensure it's defined and contains the correct password.
+    6. Click on the "Save" button.
+- Once saved, you should see your PostgreSQL server listed under the "Servers" section in PGAdmin.
+- Click on your server's name to expand it and access the databases, schemas, tables, etc., within it.
 
 # Local Setup Option
 
@@ -128,7 +152,6 @@ need to have the celery worker (executing tasks) and beat (scheduling periodic t
 - `celery -A sapiensLink worker --loglevel=info`
 - `celery -A sapiensLink beat --loglevel=info`
 
-
 ## Accessing the API Documentation
 
 The SapiensLink API documentation is available through [Django default interface](http://localhost:8000/api/), [Swagger UI](http://localhost:8000/api/swagger/) and [Redoc](http://localhost:8000/api/redoc/).
@@ -146,3 +169,7 @@ If you need to fetch data from the Django server, you will need to:
 
 - run NextJS with `npm start` from the _frontend_ folder
 - run Django with `python manage.py runserver` from the sapiensLink folder. You might also need to create your local DB as reported above.
+
+## Theme configuration
+
+All theme settings and instructions are available in the AppLayout component.

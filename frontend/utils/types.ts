@@ -86,7 +86,6 @@ export interface RankPageResponse {
   is_subscribed: boolean;
 }
 
-
 export interface User {
   id: number;
   name: string;
@@ -155,10 +154,10 @@ export interface SavedPageResponse {
 
 export interface UserProfilePage {
   pagination: {
-      next_page: null | string;
-      previous_page: null | string;
-      total_pages: number;
-      current_page: number;
+    next_page: null | string;
+    previous_page: null | string;
+    total_pages: number;
+    current_page: number;
   };
   lists: List[];
   user: User;
@@ -172,7 +171,7 @@ export interface UserProfilePage {
 
 export interface ContentItem {
   element: string;
-  user_id: number; 
+  user_id: number;
 }
 
 export interface CreateRankFormData {
