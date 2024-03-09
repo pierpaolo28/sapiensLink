@@ -33,12 +33,12 @@ from drf_yasg import openapi
 from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from django.shortcuts import redirect
-from urllib.parse import urlencode
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth.models import AnonymousUser
 import requests
 from functools import wraps
+from app_secrets import CUSTOM_HEADER_VALUE
+
 
 # TODO: Update Domain
 DOMAIN = 'http://127.0.0.1:8000'
@@ -1003,8 +1003,7 @@ def get_user(request, pk):
     # Check if the request contains a specific header or token
     custom_header_value = request.headers.get('X-NextJS-Application')  # Replace with your custom header name
 
-    # TODO: Replace 'sapiensLink' with new secret token expected. Do same in frontend in hide values.
-    if custom_header_value != 'sapiensLink':
+    if custom_header_value != CUSTOM_HEADER_VALUE:
         return Response({'error': 'Access denied. This view is only accessible from the NextJS application.'}, status=status.HTTP_403_FORBIDDEN)
 
     try:

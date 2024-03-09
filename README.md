@@ -22,6 +22,7 @@ POSTGRESQL_PASSWORD = 'TODO'
 GOOGLE_CLIENT_ID = 'TODO'
 GOOGLE_CLIENT_SECRET = 'TODO'
 DJANGO_SECRET_KEY = 'TODO'
+CUSTOM_HEADER_VALUE = 'TODO'
 ```
 
 In the frontend folder, make sure instead to have the `.env` file setup:

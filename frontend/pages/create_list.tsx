@@ -40,8 +40,6 @@ export default function CreateListPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedEditor, setSelectedEditor] = useState("quill"); // Default to 'quill'
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const handleImportListChange = (content: string) => {
     // Initialize a local variable to store the updated content
