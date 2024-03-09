@@ -39,7 +39,7 @@ const Featured = ({ id, img, title, description }: FeaturedProps) => {
         <ImgContainer>
           <img
             src={img}
-            alt="housePhoto"
+            alt="featuredlist"
             style={{ maxWidth: "100%", transition: "0.3s" }}
           />
         </ImgContainer>

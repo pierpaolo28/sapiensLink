@@ -16,36 +16,31 @@ const TeamMembers = [
   {
     name: "Pier",
     avatar: "",
-    position: "CEO",
-    bio: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla facilisi.",
+    position: "Founder",
     url: "https://ppiconsulting.dev",
   },
   {
     name: "Tiph",
     avatar: "",
-    position: "CMO",
-    bio: "Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.",
+    position: "Marketing",
     url: "",
   },
   {
     name: "Frapa",
     avatar: "",
-    position: "CTO",
-    bio: "Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.",
+    position: "Web Development",
     url: "",
   },
   {
     name: "Serena",
     avatar: "",
-    position: "CPO",
-    bio: "Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.",
+    position: "UX Design",
     url: "",
   },
   {
     name: "Danilo",
     avatar: "",
     position: "DevOps",
-    bio: "Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.",
     url: "",
   },
 ];
@@ -67,7 +62,7 @@ const AboutPage: React.FC = () => {
         </Typography>
 
         <Typography variant="h4" gutterBottom>
-          Our Team
+          Our Contributors
         </Typography>
 
         <Grid container spacing={3} justifyContent="space-around">
@@ -92,9 +87,9 @@ const AboutPage: React.FC = () => {
                 >
                   {member.position}
                 </Typography>
-                <Typography variant="body2" paragraph>
+                {/* <Typography variant="body2" paragraph>
                   {member.bio}
-                </Typography>
+                </Typography> */}
                 <IconButton
                   component="a"
                   color={"primary"}

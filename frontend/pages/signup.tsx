@@ -103,6 +103,9 @@ export default function SignUp() {
           <Typography component="h1" variant="h5">
             Sign up
           </Typography>
+          <Typography variant="body2" align="center">
+          SapiensLink is currently in beta and provided as it is with absolutely no warranty.
+          </Typography>
           <Box
             component="form"
             noValidate

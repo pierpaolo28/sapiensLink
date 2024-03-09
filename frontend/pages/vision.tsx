@@ -44,9 +44,11 @@ const VisionPage: React.FC = () => {
           newly acquired expertise.
         </Typography>
 
-        <Typography variant="h4" gutterBottom>
-          TODO: Roadmap Image
-        </Typography>
+        <img
+          src={"images/roadmap.png"}
+          alt="roadmap"
+          style={{ maxWidth: "100%" }}
+        />
       </Container>
     </AppLayout>
   );

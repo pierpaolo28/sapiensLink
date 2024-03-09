@@ -1,4 +1,4 @@
-import { Box, Button, Container, TextField, Typography } from "@mui/material";
+import { Container, Typography, Link } from "@mui/material";
 
 import AppLayout from "@/components/AppLayout";
 
@@ -12,7 +12,7 @@ const TechStackPage: React.FC = () => {
 
         <Typography variant="body1" paragraph>
           SapiensLink was built using the following technologies: Django, Redis,
-          Celery, NextJS, TypeScript, and Material UI.
+          Celery, NextJS, TypeScript, and Material UI. If you liked this project, feel free to <Link href="https://github.com/pierpaolo28/sapiensLink">star in on Github</Link> and contribute!
         </Typography>
 
         <img
