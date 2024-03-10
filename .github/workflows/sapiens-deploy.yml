@@ -13,7 +13,7 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: app_secrets.py file build
-      workspace: ./backend
+      working-directory: ./backend
       run: |
         echo "SENDGRID_API_KEY = '${{ secrets.SENDGRID_API_KEY }}'" > app_secrets.py
         echo "FROM_EMAIL = '${{ vars.FROM_EMAIL }}'" >> app_secrets.py
@@ -25,12 +25,12 @@ jobs:
         echo "CUSTOM_HEADER_VALUE = '${{ secrets.CUSTOM_HEADER_VALUE }}'" >> app_secrets.py
 
     - name: .env file build
-      workspace: ./frontend
+      working-directory: ./frontend
       run: |
         echo "NEXT_PUBLIC_GOOGLE_CLIENT_ID = '${{ secrets.GOOGLE_CLIENT_ID }}'" > .env
         echo "NEXT_PUBLIC_MAILCHIMP_API_KEY = '${{ secrets.NEXT_PUBLIC_MAILCHIMP_API_KEY }}'" >> .env
         echo "NEXT_PUBLIC_FORMSPREE_API_KEY = '${{ secrets.NEXT_PUBLIC_FORMSPREE_API_KEY }}'" >> .env
-        echo "NEXT_PUBLIC_X_NEXTJS_APPLICATION = '${{ vars.NEXT_PUBLIC_X_NEXTJS_APPLICATION }}'" >> .env
+        echo "NEXT_PUBLIC_X_NEXTJS_APPLICATION = '${{ secrets.CUSTOM_HEADER_VALUE }}'" >> .env
 
     - name: .ssh/id_rsa file build
       run: |
@@ -53,15 +53,15 @@ jobs:
       run: docker build . -f Dockerfile.nginx -t danilocacace/dani966:nginx --platform linux/arm64
 
     - name: Build Django
-      workspace: ./backend
+      working-directory: ./backend
       run: docker build . -f Dockerfile  -t danilocacace/dani966:django --platform linux/arm64
     
     - name: Build Celery
-      workspace: ./backend
+      working-directory: ./backend
       run: docker build . -f Dockerfile.celery  -t danilocacace/dani966:celery --platform linux/arm64
   
     - name: Build NextJS
-      workspace: ./frontend
+      working-directory: ./frontend
       run: docker build . -f Dockerfile  -t danilocacace/dani966:nextjs --platform linux/arm64
 
 # TO-DO
