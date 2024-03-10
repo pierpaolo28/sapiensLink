@@ -34,6 +34,7 @@ jobs:
 
     - name: .ssh/id_rsa file build
       run: |
+        mkdir -p .ssh
         echo "${{ secrets.SSH_PRIVATE_KEY }}" >> .ssh/id_rsa
 
     - name: Set up QEMU
