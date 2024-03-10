@@ -55,41 +55,65 @@ jobs:
         username: ${{ vars.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     
-    - name: Build Nginx
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        file: ./Dockerfile.nginx
-        push: true
-        platforms: linux/arm64
-        tags: danilocacace/dani966:nginx
+    # - name: Build Nginx
+    #   uses: docker/build-push-action@v5
+    #   with:
+    #     context: .
+    #     file: ./Dockerfile.nginx
+    #     push: true
+    #     platforms: linux/arm64
+    #     tags: danilocacace/dani966:nginx
     
-    - name: Build Django
-      uses: docker/build-push-action@v5
-      with:
-        context: ./backend
-        file: ./backend/Dockerfile
-        push: true
-        platforms: linux/arm64
-        tags: danilocacace/dani966:django
+    # - name: Build Django
+    #   uses: docker/build-push-action@v5
+    #   with:
+    #     context: ./backend
+    #     file: ./backend/Dockerfile
+    #     push: true
+    #     platforms: linux/arm64
+    #     tags: danilocacace/dani966:django
 
-    - name: Build Celery
-      uses: docker/build-push-action@v5
-      with:
-        context: ./backend
-        file: ./backend/Dockerfile.celery
-        push: true
-        platforms: linux/arm64
-        tags: danilocacace/dani966:celery
+    # - name: Build Celery
+    #   uses: docker/build-push-action@v5
+    #   with:
+    #     context: ./backend
+    #     file: ./backend/Dockerfile.celery
+    #     push: true
+    #     platforms: linux/arm64
+    #     tags: danilocacace/dani966:celery
     
+    # - name: Build NextJS
+    #   uses: docker/build-push-action@v5
+    #   with:
+    #     context: ./frontend
+    #     file: ./frontend/Dockerfile
+    #     push: true
+    #     platforms: linux/arm64
+    #     tags: danilocacace/dani966:nextjs
+
+    - name: Build Nginx
+      run: |
+        docker build . -f Dockerfile.nginx -t danilocacace/dani966:nginx --platform linux/arm64
+        docker push danilocacace/dani966:nginx
+
+    - name: Build Django
+      working-directory: ./backend
+      run: |
+        docker build . -f Dockerfile  -t danilocacace/dani966:django --platform linux/arm64
+        docker push danilocacace/dani966:django
+    
+    - name: Build Celery
+      working-directory: ./backend
+      run: |
+        docker build . -f Dockerfile.celery  -t danilocacace/dani966:celery --platform linux/arm64
+        docker push danilocacace/dani966:celery
+  
     - name: Build NextJS
-      uses: docker/build-push-action@v5
-      with:
-        context: ./frontend
-        file: ./frontend/Dockerfile
-        push: true
-        platforms: linux/arm64
-        tags: danilocacace/dani966:nextjs
+      working-directory: ./frontend
+      run: |
+        docker build . -f Dockerfile  -t danilocacace/dani966:nextjs --platform linux/arm64
+        docker push danilocacace/dani966:nextjs
+
 
     - name: Update website
       run: |
