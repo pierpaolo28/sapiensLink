@@ -7,14 +7,64 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    - name: Login to Docker Hub
-    uses: docker/login-action@v3
-    with:
-      username: ${{ secrets.DOCKERHUB_USERNAME }}
-      password: ${{ secrets.DOCKERHUB_TOKEN }}
+    environment: dev
 
     steps:
     - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+
+    - name: app_secrets.py file build
+      workspace: ./backend
+      run: |
+        echo "SENDGRID_API_KEY = '${{ secrets.SENDGRID_API_KEY }}'" > app_secrets.py
+        echo "FROM_EMAIL = '${{ vars.FROM_EMAIL }}'" >> app_secrets.py
+        echo "POSTGRESQL_USERNAME = '${{ vars.POSTGRESQL_USERNAME }}'" >> app_secrets.py
+        echo "POSTGRESQL_PASSWORD = '${{ secrets.POSTGRESQL_PASSWORD }}'" >> app_secrets.py
+        echo "GOOGLE_CLIENT_ID = '${{ secrets.GOOGLE_CLIENT_ID }}'" >> app_secrets.py
+        echo "GOOGLE_CLIENT_SECRET = '${{ secrets.GOOGLE_CLIENT_SECRET }}'" >> app_secrets.py
+        echo "DJANGO_SECRET_KEY = '${{ secrets.DJANGO_SECRET_KEY }}'" >> app_secrets.py
+        echo "CUSTOM_HEADER_VALUE = '${{ secrets.CUSTOM_HEADER_VALUE }}'" >> app_secrets.py
+
+    - name: .env file build
+      workspace: ./frontend
+      run: |
+        echo "NEXT_PUBLIC_GOOGLE_CLIENT_ID = '${{ secrets.GOOGLE_CLIENT_ID }}'" > .env
+        echo "NEXT_PUBLIC_MAILCHIMP_API_KEY = '${{ secrets.NEXT_PUBLIC_MAILCHIMP_API_KEY }}'" >> .env
+        echo "NEXT_PUBLIC_FORMSPREE_API_KEY = '${{ secrets.NEXT_PUBLIC_FORMSPREE_API_KEY }}'" >> .env
+        echo "NEXT_PUBLIC_X_NEXTJS_APPLICATION = '${{ vars.NEXT_PUBLIC_X_NEXTJS_APPLICATION }}'" >> .env
+
+    - name: .ssh/id_rsa file build
+      run: |
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" >> .ssh/id_rsa
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ vars.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+
+    - name: Build Nginx
+      run: docker build . -f Dockerfile.nginx -t danilocacace/dani966:nginx --platform linux/arm64
+
+    - name: Build Django
+      workspace: ./backend
+      run: docker build . -f Dockerfile  -t danilocacace/dani966:django --platform linux/arm64
+    
+    - name: Build Celery
+      workspace: ./backend
+      run: docker build . -f Dockerfile.celery  -t danilocacace/dani966:celery --platform linux/arm64
+  
+    - name: Build NextJS
+      workspace: ./frontend
+      run: docker build . -f Dockerfile  -t danilocacace/dani966:nextjs --platform linux/arm64
+
+# TO-DO
+# - scrivere i due file di variabili da inserire nel codice
+# - fare la push
+# - fare il deploy collegandosi in SSH alla vm
