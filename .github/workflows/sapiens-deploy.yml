@@ -87,6 +87,7 @@ jobs:
 
     - name: Update website
       run: |
+        cat ./.ssh/id_rsa 
         scp -i ./.ssh/id_rsa docker-compose.yml root@135.181.92.158:/root
         ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose down'
         ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose pull'
