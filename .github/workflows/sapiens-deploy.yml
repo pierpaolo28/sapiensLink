@@ -84,10 +84,19 @@ jobs:
     #     docker build . -f Dockerfile  -t danilocacace/dani966:nextjs --platform linux/arm64
     #     docker push danilocacace/dani966:nextjs
 
+    - name: multiple command
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: 135.181.92.158
+        username: root
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        script: |
+          whoami
+          ls -al
 
     - name: Update website
       run: |
-        cat ./.ssh/id_rsa 
         scp -i ./.ssh/id_rsa docker-compose.yml root@135.181.92.158:/root
         ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose down'
         ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose pull'
