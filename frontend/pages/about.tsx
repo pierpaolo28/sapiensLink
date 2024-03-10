@@ -1,4 +1,3 @@
-// pages/about.tsx
 import React from "react";
 import {
   Container,
@@ -7,7 +6,12 @@ import {
   Paper,
   Avatar,
   IconButton,
+  Box,
+  Button,
+  Link,
+  TextField,
 } from "@mui/material";
+import { useForm, ValidationError } from "@formspree/react";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 
 import AppLayout from "@/components/AppLayout";
@@ -22,7 +26,7 @@ const TeamMembers = [
   {
     name: "Tiph",
     avatar: "",
-    position: "Marketing",
+    position: "Co-founder",
     url: "",
   },
   {
@@ -46,6 +50,13 @@ const TeamMembers = [
 ];
 
 const AboutPage: React.FC = () => {
+  const [state, handleSubmit] = useForm(
+    process.env.NEXT_PUBLIC_FORMSPREE_API_KEY!
+  );
+  if (state.succeeded) {
+    window.location.href = "/";
+  }
+
   return (
     <AppLayout>
       <Container component="main" sx={{ flexGrow: 1, p: 3, mt: 3 }}>
@@ -57,13 +68,93 @@ const AboutPage: React.FC = () => {
         <Typography variant="body1" paragraph>
           SapiensLink was created by a team of higly interdisciplanary
           individuals who are passionate about learning and sharing knowledge.
-          If you are interested in joining our team or supporting us, please
-          reach out to us directly or through or contacts page.
+          <br />
+          <br />
+          The main objective is to make complex educational content
+          accessible and to empower individual creators to make their creations
+          accessible to wider audiences without losing their ownership. In order
+          to unlock this vision, we are planning to create a space where
+          information can consumed in different possible ways and Sapionauts can
+          be provided with automatically generated tests to validate and prove
+          newly acquired expertise.
+          <br />
+          <br />
+          If you are interested in joining our team, supporting us or have any feedback, please
+          reach out to us at{" "}
+          <Link
+            href="mailto:sapienslink@gmail.com"
+            variant={"button"}
+            color={"text.secondary"}
+            rel="noopener noreferrer"
+            sx={(theme) => ({
+              "&:hover": {
+                color: theme.palette.mode === "dark" ? "#fff" : "#101828",
+              },
+              transition: ".2s",
+              textTransform: "lowercase",
+            })}
+            target={"_blank"}
+          >
+            sapienslink@gmail.com
+          </Link>{" "}
+          or fill out the form below. We are always looking for ways to improve
+          our platform and would love to hear from you! You can learn more about our tech stack <a href="tech_stack">here</a>.
         </Typography>
 
-        <Typography variant="h4" gutterBottom>
-          Our Contributors
-        </Typography>
+        <Container maxWidth="sm">
+          <Box mt={4}>
+            <Typography variant="h5" align="center" gutterBottom>
+              Contact Form
+            </Typography>
+            <form onSubmit={handleSubmit}>
+              <TextField
+                label="Email"
+                variant="outlined"
+                name="email"
+                fullWidth
+                margin="normal"
+                required
+                type="email"
+              />
+              <ValidationError
+                prefix="Email"
+                field="email"
+                errors={state.errors}
+              />
+              <TextField
+                label="Message"
+                variant="outlined"
+                name="message"
+                fullWidth
+                margin="normal"
+                required
+                multiline
+                rows={4}
+              />
+              <ValidationError
+                prefix="Message"
+                field="message"
+                errors={state.errors}
+              />
+              <Button
+                type="submit"
+                variant="contained"
+                size={"large"}
+                color="primary"
+                disabled={state.submitting}
+                fullWidth
+              >
+                Submit
+              </Button>
+            </form>
+          </Box>
+        </Container>
+
+        <Box mt={4}>
+          <Typography variant="h4" gutterBottom>
+            Our Contributors
+          </Typography>
+        </Box>
 
         <Grid container spacing={3} justifyContent="space-around">
           {TeamMembers.map((member, index) => (
@@ -103,6 +194,7 @@ const AboutPage: React.FC = () => {
             </Grid>
           ))}
         </Grid>
+
       </Container>
     </AppLayout>
   );
