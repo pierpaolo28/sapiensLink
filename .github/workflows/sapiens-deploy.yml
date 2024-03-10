@@ -56,9 +56,9 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     
     - run: |
-      ls -al
-      cd .ssh
-      ls -al
+        ls -al
+        cd .ssh
+        ls -al
 
 
     # - name: Build Nginx
