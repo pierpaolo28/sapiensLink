@@ -7,7 +7,6 @@ import ArrowRightAltIcon from "@mui/icons-material/ArrowRightAlt";
 import ListIcon from "@mui/icons-material/List";
 import EditIcon from "@mui/icons-material/Edit";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
-import Link from "next/link";
 import MuiLink from "@mui/material/Link";
 
 const Guide = () => {
@@ -255,10 +254,11 @@ const Guide = () => {
         </GuideBox>
       </GuidesBox>
 
-      {/* <CustomButton {...customButtonProps} /> */}
-      <Button color={"primary"} variant={"contained"} size={"large"}>
-        Our vision
-      </Button>
+      <MuiLink href="/about">
+        <Button color={"primary"} variant={"contained"} size={"large"}>
+          About Us
+        </Button>
+      </MuiLink>
     </Box>
   );
 };
