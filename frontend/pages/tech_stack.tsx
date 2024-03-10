@@ -28,7 +28,7 @@ const TechStackPage: React.FC = () => {
         <img
           src={"images/roadmap.png"}
           alt="roadmap"
-          style={{ maxWidth: "100%" }}
+          style={{ display: "block", margin: "0 auto", maxWidth: "100%" }}
         />
       </Container>
     </AppLayout>
