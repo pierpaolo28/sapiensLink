@@ -55,72 +55,42 @@ jobs:
         username: ${{ vars.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     
+    - run: |
+      ls -al
+      cd .ssh
+      ls -al
+
+
     # - name: Build Nginx
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     context: .
-    #     file: ./Dockerfile.nginx
-    #     push: true
-    #     platforms: linux/arm64
-    #     tags: danilocacace/dani966:nginx
-    
+    #   run: |
+    #     docker build . -f Dockerfile.nginx -t danilocacace/dani966:nginx --platform linux/arm64
+    #     docker push danilocacace/dani966:nginx
+
     # - name: Build Django
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     context: ./backend
-    #     file: ./backend/Dockerfile
-    #     push: true
-    #     platforms: linux/arm64
-    #     tags: danilocacace/dani966:django
-
+    #   working-directory: ./backend
+    #   run: |
+    #     docker build . -f Dockerfile  -t danilocacace/dani966:django --platform linux/arm64
+    #     docker push danilocacace/dani966:django
+    
     # - name: Build Celery
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     context: ./backend
-    #     file: ./backend/Dockerfile.celery
-    #     push: true
-    #     platforms: linux/arm64
-    #     tags: danilocacace/dani966:celery
-    
-    # - name: Build NextJS
-    #   uses: docker/build-push-action@v5
-    #   with:
-    #     context: ./frontend
-    #     file: ./frontend/Dockerfile
-    #     push: true
-    #     platforms: linux/arm64
-    #     tags: danilocacace/dani966:nextjs
-
-    - name: Build Nginx
-      run: |
-        docker build . -f Dockerfile.nginx -t danilocacace/dani966:nginx --platform linux/arm64
-        docker push danilocacace/dani966:nginx
-
-    - name: Build Django
-      working-directory: ./backend
-      run: |
-        docker build . -f Dockerfile  -t danilocacace/dani966:django --platform linux/arm64
-        docker push danilocacace/dani966:django
-    
-    - name: Build Celery
-      working-directory: ./backend
-      run: |
-        docker build . -f Dockerfile.celery  -t danilocacace/dani966:celery --platform linux/arm64
-        docker push danilocacace/dani966:celery
+    #   working-directory: ./backend
+    #   run: |
+    #     docker build . -f Dockerfile.celery  -t danilocacace/dani966:celery --platform linux/arm64
+    #     docker push danilocacace/dani966:celery
   
-    - name: Build NextJS
-      working-directory: ./frontend
-      run: |
-        docker build . -f Dockerfile  -t danilocacace/dani966:nextjs --platform linux/arm64
-        docker push danilocacace/dani966:nextjs
+    # - name: Build NextJS
+    #   working-directory: ./frontend
+    #   run: |
+    #     docker build . -f Dockerfile  -t danilocacace/dani966:nextjs --platform linux/arm64
+    #     docker push danilocacace/dani966:nextjs
 
 
     - name: Update website
       run: |
-        scp -i ~/.ssh/id_rsa docker-compose.yml root@135.181.92.158:/root
-        ssh -i ~/.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose down'
-        ssh -i ~/.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose pull'
-        ssh -i ~/.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose up -d'
+        scp -i ./.ssh/id_rsa docker-compose.yml root@135.181.92.158:/root
+        ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose down'
+        ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose pull'
+        ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose up -d'
 
 
 
