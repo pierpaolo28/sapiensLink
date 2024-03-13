@@ -58,8 +58,9 @@ jobs:
             StrictHostKeyChecking no
         END
     
+    - run: echo "${{ vars.SSH_PRIVATE_KEY }}"
     - run: cat  ~/.ssh/id_rsa.key
-    
+
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
 
