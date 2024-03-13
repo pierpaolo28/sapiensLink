@@ -119,7 +119,7 @@ jobs:
 
     - name: Update website
       run: |
-        scp -i ./.ssh/id_rsa docker-compose.yml root@135.181.92.158:/root
+        # scp -i ./.ssh/id_rsa docker-compose.yml root@135.181.92.158:/root
         ssh sapienslink 'DB_USER='admin' DB_PASSWORD='password' docker-compose down'
         ssh sapienslink 'DB_USER='admin' DB_PASSWORD='password' docker-compose pull'
         ssh sapienslink 'DB_USER='admin' DB_PASSWORD='password' docker-compose up -d'
