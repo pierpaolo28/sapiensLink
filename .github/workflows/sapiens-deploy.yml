@@ -107,11 +107,12 @@ jobs:
       with:
         host: 135.181.92.158
         username: root
-        key: ${{ vars.SSH_PRIVATE_KEY }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22
         script: |
           whoami
           ls -al
+          DB_USER='admin' DB_PASSWORD='password' docker-compose down
 
     - name: Update website
       run: |
