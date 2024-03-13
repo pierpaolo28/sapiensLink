@@ -91,8 +91,6 @@ jobs:
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22
         script: |
-          whoami
-          ls -al
           export DB_USER=${{ vars.POSTGRESQL_USERNAME }}
           export DB_PASSWORD=${{ secrets.POSTGRESQL_PASSWORD }}
           docker-compose down
