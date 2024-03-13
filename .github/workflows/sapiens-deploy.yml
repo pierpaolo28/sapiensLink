@@ -16,7 +16,6 @@ jobs:
     environment: dev
     concurrency:
         group: deploy
-        cancel-in-progress: true
 
     steps:
     - uses: actions/checkout@v4
