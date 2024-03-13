@@ -81,40 +81,52 @@ jobs:
 
     # - name: Build Nginx
     #   run: |
-    #     docker build . -f Dockerfile.nginx -t danilocacace/dani966:nginx --platform linux/arm64
-    #     docker push danilocacace/dani966:nginx
+    #     docker build . -f Dockerfile.nginx -t ${{ vars.DOCKERHUB_REPO }}:nginx --platform linux/arm64
+    #     docker push ${{ vars.DOCKERHUB_REPO }}:nginx
 
     # - name: Build Django
     #   working-directory: ./backend
     #   run: |
-    #     docker build . -f Dockerfile  -t danilocacace/dani966:django --platform linux/arm64
-    #     docker push danilocacace/dani966:django
+    #     docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:django --platform linux/arm64
+    #     docker push ${{ vars.DOCKERHUB_REPO }}:django
     
     # - name: Build Celery
     #   working-directory: ./backend
     #   run: |
-    #     docker build . -f Dockerfile.celery  -t danilocacace/dani966:celery --platform linux/arm64
-    #     docker push danilocacace/dani966:celery
+    #     docker build . -f Dockerfile.celery  -t ${{ vars.DOCKERHUB_REPO }}:celery --platform linux/arm64
+    #     docker push ${{ vars.DOCKERHUB_REPO }}:celery
   
     # - name: Build NextJS
     #   working-directory: ./frontend
     #   run: |
-    #     docker build . -f Dockerfile  -t danilocacace/dani966:nextjs --platform linux/arm64
-    #     docker push danilocacace/dani966:nextjs
+    #     docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:nextjs --platform linux/arm64
+    #     docker push ${{ vars.DOCKERHUB_REPO }}:nextjs
 
-    - name: multiple command
+    - name: Copy docker-compose file
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ vars.SSH_HOST }}
+        username: ${{ var.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        source: "docker-compose.yaml"
+        target: your_server_target_folder_path
+
+    - name: Deploy new website
       uses: appleboy/ssh-action@v1.0.3
       with:
-        host: 135.181.92.158
-        username: root
+        host: ${{ vars.SSH_HOST }}
+        username: ${{ var.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22
         script: |
           whoami
           ls -al
-          DB_USER='admin' DB_PASSWORD='password' docker-compose down
-          DB_USER='admin' DB_PASSWORD='password' docker-compose pull
-          DB_USER='admin' DB_PASSWORD='password' docker-compose up -d
+          export DB_USER=${{ vars.POSTGRESQL_USERNAME }}
+          export DB_PASSWORD=${{ secrets.POSTGRESQL_PASSWORD }}
+          docker-compose down
+          docker-compose pull
+          docker-compose up -d
 
     # - name: Update website
     #   run: |
@@ -132,23 +144,6 @@ jobs:
   
   
 
-
-
-
-    # - name: 
-    #   run: docker build . -f Dockerfile.nginx -t danilocacace/dani966:nginx --platform linux/arm64
-
-    # - name: Build Django
-    #   working-directory: ./backend
-    #   run: docker build . -f Dockerfile  -t danilocacace/dani966:django --platform linux/arm64
-    
-    # - name: Build Celery
-    #   working-directory: ./backend
-    #   run: docker build . -f Dockerfile.celery  -t danilocacace/dani966:celery --platform linux/arm64
-  
-    # - name: Build NextJS
-    #   working-directory: ./frontend
-    #   run: docker build . -f Dockerfile  -t danilocacace/dani966:nextjs --platform linux/arm64
 
 # TO-DO
 # - scrivere i due file di variabili da inserire nel codice
