@@ -49,9 +49,9 @@ jobs:
       run: |
         mkdir -p ~/.ssh/
         echo "$SSH_KEY" > ~/.ssh/id_rsa.key
-        chmod 600 ~/.ssh/staging.key
+        chmod 600 ~/.ssh/id_rsa.key
         cat >>~/.ssh/config <<END
-        Host staging
+        Host sapienslink
             HostName 135.181.92.158
             User root
             IdentityFile ~/.ssh/id_rsa.key
@@ -110,12 +110,21 @@ jobs:
           whoami
           ls -al
 
+    # - name: Update website
+    #   run: |
+    #     scp -i ./.ssh/id_rsa docker-compose.yml root@135.181.92.158:/root
+    #     ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose down'
+    #     ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose pull'
+    #     ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose up -d'
+
     - name: Update website
       run: |
         scp -i ./.ssh/id_rsa docker-compose.yml root@135.181.92.158:/root
-        ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose down'
-        ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose pull'
-        ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose up -d'
+        ssh sapienslink 'DB_USER='admin' DB_PASSWORD='password' docker-compose down'
+        ssh sapienslink 'DB_USER='admin' DB_PASSWORD='password' docker-compose pull'
+        ssh sapienslink 'DB_USER='admin' DB_PASSWORD='password' docker-compose up -d'
+  
+  
 
 
 
