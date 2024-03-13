@@ -38,10 +38,25 @@ jobs:
         echo "NEXT_PUBLIC_FORMSPREE_API_KEY = '${{ secrets.NEXT_PUBLIC_FORMSPREE_API_KEY }}'" >> .env
         echo "NEXT_PUBLIC_X_NEXTJS_APPLICATION = '${{ secrets.CUSTOM_HEADER_VALUE }}'" >> .env
 
-    - name: .ssh/id_rsa file build
+    # - name: .ssh/id_rsa file build
+    #   run: |
+    #     mkdir -p .ssh
+    #     echo "${{ secrets.SSH_PRIVATE_KEY }}" >> .ssh/id_rsa
+
+    - name: ssh file build
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       run: |
-        mkdir -p .ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" >> .ssh/id_rsa
+        mkdir -p ~/.ssh/
+        echo "$SSH_KEY" > ~/.ssh/id_rsa.key
+        chmod 600 ~/.ssh/staging.key
+        cat >>~/.ssh/config <<END
+        Host staging
+            HostName 135.181.92.158
+            User root
+            IdentityFile ~/.ssh/id_rsa.key
+            StrictHostKeyChecking no
+        END
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -55,10 +70,10 @@ jobs:
         username: ${{ vars.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     
-    - run: |
-        ls -al
-        cd .ssh
-        ls -al
+    # - run: |
+    #     ls -al
+    #     cd .ssh
+    #     ls -al
 
 
     # - name: Build Nginx
