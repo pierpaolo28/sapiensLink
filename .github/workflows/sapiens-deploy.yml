@@ -106,7 +106,7 @@ jobs:
       uses: appleboy/scp-action@v0.1.7
       with:
         host: ${{ vars.SSH_HOST }}
-        username: ${{ var.SSH_USERNAME }}
+        username: ${{ vars.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22
         source: "docker-compose.yaml"
@@ -116,7 +116,7 @@ jobs:
       uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ vars.SSH_HOST }}
-        username: ${{ var.SSH_USERNAME }}
+        username: ${{ vars.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22
         script: |
