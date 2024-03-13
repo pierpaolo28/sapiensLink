@@ -26,8 +26,8 @@ services:
       - postgresdb
 
   django:
-    container_name: sapienslink_danilo_django
-    image: danilocacace/dani966:django
+    container_name: sapienslink_django
+    image: sapienslink/images:django
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - static_volume:/app/staticfiles
@@ -45,32 +45,32 @@ services:
       - "6379:6379"
 
   celery_worker:
-    container_name: sapienslink_danilo_celery_worker
-    image: danilocacace/dani966:celery
+    container_name: sapienslink_celery_worker
+    image: sapienslink/images:celery
     command: celery -A sapiensLink worker --loglevel=info
     depends_on:
       - django
       - redis
 
   celery_beat:
-    container_name: sapienslink_danilo_celery_beat
-    image: danilocacace/dani966:celery
+    container_name: sapienslink_celery_beat
+    image: sapienslink/images:celery
     command: celery -A sapiensLink beat --loglevel=info
     depends_on:
       - django
       - redis
 
   nextjs:
-    image: danilocacace/dani966:nextjs
-    container_name: sapienslink_danilo_nextjs
+    image: sapienslink/images:nextjs
+    container_name: sapienslink_nextjs
     ports:
       - 3001:3000
     depends_on:
       - django
 
   nginx:
-    image: danilocacace/dani966:nginx
-    container_name: sapienslink_danilo_nginx
+    image: sapienslink/images:nginx
+    container_name: sapienslink_nginx
     restart: always
     ports:
       - "80:80"
@@ -80,8 +80,6 @@ services:
       - media_volume:/app/mediafiles
       - ./certbot/www:/var/www/certbot/:ro
       - ./certbot/conf/:/etc/nginx/ssl/:ro
-      # - ./backend/static/images:/app/staticfiles/images
-      # - ./frontend/public:/app/nextjs/public
     depends_on:
       - django
       - nextjs

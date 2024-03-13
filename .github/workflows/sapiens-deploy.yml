@@ -3,7 +3,7 @@ name: Docker Image CI
 on:
   push:
     branches: 
-      - "dnl/deploy-on-vm"
+      - "main"
     paths:
       - "backend/**"
       - "frontend/**"
@@ -38,29 +38,6 @@ jobs:
         echo "NEXT_PUBLIC_FORMSPREE_API_KEY = '${{ secrets.NEXT_PUBLIC_FORMSPREE_API_KEY }}'" >> .env
         echo "NEXT_PUBLIC_X_NEXTJS_APPLICATION = '${{ secrets.CUSTOM_HEADER_VALUE }}'" >> .env
 
-    # - name: .ssh/id_rsa file build
-    #   run: |
-    #     mkdir -p .ssh
-    #     echo "${{ vars.SSH_PRIVATE_KEY }}" >> .ssh/id_rsa
-
-    # - name: ssh file build
-    #   env:
-    #     SSH_PRIVATE_KEY: ${{ vars.SSH_PRIVATE_KEY }}
-    #   run: |
-    #     mkdir -p ~/.ssh/
-    #     echo "$SSH_KEY" > ~/.ssh/id_rsa.key
-    #     chmod 600 ~/.ssh/id_rsa.key
-    #     cat >>~/.ssh/config <<END
-    #     Host sapienslink
-    #         HostName 135.181.92.158
-    #         User root
-    #         IdentityFile ~/.ssh/id_rsa.key
-    #         StrictHostKeyChecking no
-    #     END
-    
-    # - run: echo "${{ vars.SSH_PRIVATE_KEY }}"
-    # - run: cat  .ssh/id_rsa
-
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
 
@@ -72,35 +49,29 @@ jobs:
       with:
         username: ${{ vars.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build Nginx
+      run: |
+        docker build . -f backend/Dockerfile.nginx -t ${{ vars.DOCKERHUB_REPO }}:nginx --platform linux/arm64
+        docker push ${{ vars.DOCKERHUB_REPO }}:nginx
+
+    - name: Build Django
+      working-directory: ./backend
+      run: |
+        docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:django --platform linux/arm64
+        docker push ${{ vars.DOCKERHUB_REPO }}:django
     
-    # - run: |
-    #     ls -al
-    #     cd .ssh
-    #     ls -al
-
-
-    # - name: Build Nginx
-    #   run: |
-    #     docker build . -f Dockerfile.nginx -t ${{ vars.DOCKERHUB_REPO }}:nginx --platform linux/arm64
-    #     docker push ${{ vars.DOCKERHUB_REPO }}:nginx
-
-    # - name: Build Django
-    #   working-directory: ./backend
-    #   run: |
-    #     docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:django --platform linux/arm64
-    #     docker push ${{ vars.DOCKERHUB_REPO }}:django
-    
-    # - name: Build Celery
-    #   working-directory: ./backend
-    #   run: |
-    #     docker build . -f Dockerfile.celery  -t ${{ vars.DOCKERHUB_REPO }}:celery --platform linux/arm64
-    #     docker push ${{ vars.DOCKERHUB_REPO }}:celery
+    - name: Build Celery
+      working-directory: ./backend
+      run: |
+        docker build . -f Dockerfile.celery  -t ${{ vars.DOCKERHUB_REPO }}:celery --platform linux/arm64
+        docker push ${{ vars.DOCKERHUB_REPO }}:celery
   
-    # - name: Build NextJS
-    #   working-directory: ./frontend
-    #   run: |
-    #     docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:nextjs --platform linux/arm64
-    #     docker push ${{ vars.DOCKERHUB_REPO }}:nextjs
+    - name: Build NextJS
+      working-directory: ./frontend
+      run: |
+        docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:nextjs --platform linux/arm64
+        docker push ${{ vars.DOCKERHUB_REPO }}:nextjs
 
     - name: Copy docker-compose file
       uses: appleboy/scp-action@v0.1.7
@@ -109,8 +80,8 @@ jobs:
         username: ${{ vars.SSH_USERNAME }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22
-        source: "docker-compose.yaml"
-        target: your_server_target_folder_path
+        source: "docker-compose.remote.yaml"
+        target: .
 
     - name: Deploy new website
       uses: appleboy/ssh-action@v1.0.3
@@ -127,25 +98,3 @@ jobs:
           docker-compose down
           docker-compose pull
           docker-compose up -d
-
-    # - name: Update website
-    #   run: |
-    #     # scp -i ./.ssh/id_rsa docker-compose.yml root@135.181.92.158:/root
-    #     ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose down'
-    #     ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose pull'
-    #     ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose up -d'
-
-    # - name: Update website
-    #   run: |
-    #     # scp -i ./.ssh/id_rsa docker-compose.yml root@135.181.92.158:/root
-    #     ssh sapienslink 'DB_USER='admin' DB_PASSWORD='password' docker-compose down'
-    #     ssh sapienslink 'DB_USER='admin' DB_PASSWORD='password' docker-compose pull'
-    #     ssh sapienslink 'DB_USER='admin' DB_PASSWORD='password' docker-compose up -d'
-  
-  
-
-
-# TO-DO
-# - scrivere i due file di variabili da inserire nel codice
-# - fare la push
-# - fare il deploy collegandosi in SSH alla vm
