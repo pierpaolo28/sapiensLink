@@ -45,7 +45,7 @@ jobs:
 
     - name: ssh file build
       env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_PRIVATE_KEY: ${{ vars.SSH_PRIVATE_KEY }}
       run: |
         mkdir -p ~/.ssh/
         echo "$SSH_KEY" > ~/.ssh/id_rsa.key
@@ -57,7 +57,9 @@ jobs:
             IdentityFile ~/.ssh/id_rsa.key
             StrictHostKeyChecking no
         END
-
+    
+    - run: cat  ~/.ssh/id_rsa.key
+    
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
 
