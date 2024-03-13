@@ -107,25 +107,25 @@ jobs:
       with:
         host: 135.181.92.158
         username: root
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        key: ${{ vars.SSH_PRIVATE_KEY }}
         port: 22
         script: |
           whoami
           ls -al
 
-    # - name: Update website
-    #   run: |
-    #     scp -i ./.ssh/id_rsa docker-compose.yml root@135.181.92.158:/root
-    #     ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose down'
-    #     ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose pull'
-    #     ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose up -d'
-
     - name: Update website
       run: |
         # scp -i ./.ssh/id_rsa docker-compose.yml root@135.181.92.158:/root
-        ssh sapienslink 'DB_USER='admin' DB_PASSWORD='password' docker-compose down'
-        ssh sapienslink 'DB_USER='admin' DB_PASSWORD='password' docker-compose pull'
-        ssh sapienslink 'DB_USER='admin' DB_PASSWORD='password' docker-compose up -d'
+        ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose down'
+        ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose pull'
+        ssh -i ./.ssh/id_rsa root@135.181.92.158 'DB_USER='admin' DB_PASSWORD='password' docker-compose up -d'
+
+    # - name: Update website
+    #   run: |
+    #     # scp -i ./.ssh/id_rsa docker-compose.yml root@135.181.92.158:/root
+    #     ssh sapienslink 'DB_USER='admin' DB_PASSWORD='password' docker-compose down'
+    #     ssh sapienslink 'DB_USER='admin' DB_PASSWORD='password' docker-compose pull'
+    #     ssh sapienslink 'DB_USER='admin' DB_PASSWORD='password' docker-compose up -d'
   
   
 
