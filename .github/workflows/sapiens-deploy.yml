@@ -38,28 +38,28 @@ jobs:
         echo "NEXT_PUBLIC_FORMSPREE_API_KEY = '${{ secrets.NEXT_PUBLIC_FORMSPREE_API_KEY }}'" >> .env
         echo "NEXT_PUBLIC_X_NEXTJS_APPLICATION = '${{ secrets.CUSTOM_HEADER_VALUE }}'" >> .env
 
-    # - name: .ssh/id_rsa file build
-    #   run: |
-    #     mkdir -p .ssh
-    #     echo "${{ secrets.SSH_PRIVATE_KEY }}" >> .ssh/id_rsa
-
-    - name: ssh file build
-      env:
-        SSH_PRIVATE_KEY: ${{ vars.SSH_PRIVATE_KEY }}
+    - name: .ssh/id_rsa file build
       run: |
-        mkdir -p ~/.ssh/
-        echo "$SSH_KEY" > ~/.ssh/id_rsa.key
-        chmod 600 ~/.ssh/id_rsa.key
-        cat >>~/.ssh/config <<END
-        Host sapienslink
-            HostName 135.181.92.158
-            User root
-            IdentityFile ~/.ssh/id_rsa.key
-            StrictHostKeyChecking no
-        END
+        mkdir -p .ssh
+        echo "${{ vars.SSH_PRIVATE_KEY }}" >> .ssh/id_rsa
+
+    # - name: ssh file build
+    #   env:
+    #     SSH_PRIVATE_KEY: ${{ vars.SSH_PRIVATE_KEY }}
+    #   run: |
+    #     mkdir -p ~/.ssh/
+    #     echo "$SSH_KEY" > ~/.ssh/id_rsa.key
+    #     chmod 600 ~/.ssh/id_rsa.key
+    #     cat >>~/.ssh/config <<END
+    #     Host sapienslink
+    #         HostName 135.181.92.158
+    #         User root
+    #         IdentityFile ~/.ssh/id_rsa.key
+    #         StrictHostKeyChecking no
+    #     END
     
     - run: echo "${{ vars.SSH_PRIVATE_KEY }}"
-    - run: cat  ~/.ssh/id_rsa.key
+    - run: cat  .ssh/id_rsa
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
