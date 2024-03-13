@@ -113,6 +113,8 @@ jobs:
           whoami
           ls -al
           DB_USER='admin' DB_PASSWORD='password' docker-compose down
+          DB_USER='admin' DB_PASSWORD='password' docker-compose pull
+          DB_USER='admin' DB_PASSWORD='password' docker-compose up -d
 
     - name: Update website
       run: |
