@@ -18,6 +18,8 @@ jobs:
         group: deploy
 
     steps:
+    - run: git diff --name-only ${{ github.event.before }} ${{ github.sha }}
+    
     - uses: actions/checkout@v4
 
     - name: app_secrets.py file build
@@ -57,6 +59,7 @@ jobs:
     - name: Saving git diff in variable
       id: git_diff
       run: | 
+        git diff --name-only ${{ github.event.before }} ${{ github.sha }}
         diff_output=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
         echo $diff_output
 
