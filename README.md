@@ -32,6 +32,8 @@ NEXT_PUBLIC_GOOGLE_CLIENT_ID = 'TODO'
 NEXT_PUBLIC_MAILCHIMP_API_KEY = 'TODO'
 NEXT_PUBLIC_FORMSPREE_API_KEY = 'TODO'
 NEXT_PUBLIC_X_NEXTJS_APPLICATION = 'TODO'
+NEXT_PUBLIC_API_BASE_URL= 'http://localhost/'
+NEXT_PUBLIC_WEBSOCKET_URL= 'localhost'
 ```
 
 If you want to rebuild everything use: `DB_USER='admin' DB_PASSWORD='password' docker-compose up --build`. Or if need to clear everything use `docker system prune --volumes`.
