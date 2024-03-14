@@ -33,7 +33,7 @@ jobs:
         echo "CUSTOM_HEADER_VALUE = '${{ secrets.CUSTOM_HEADER_VALUE }}'" >> app_secrets.py
 
     - name: .env file build
-      working-directory: ./frontend
+      working-directory: ./frontend 
       run: |
         echo "NEXT_PUBLIC_GOOGLE_CLIENT_ID = '${{ secrets.GOOGLE_CLIENT_ID }}'" > .env
         echo "NEXT_PUBLIC_MAILCHIMP_API_KEY = '${{ secrets.NEXT_PUBLIC_MAILCHIMP_API_KEY }}'" >> .env
@@ -53,6 +53,13 @@ jobs:
       with:
         username: ${{ vars.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+    - name: Saving git diff in variable
+      id: git_diff
+      run: | 
+        diff_output=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+        echo $diff_output >> $GITHUB_ENV
+        echo "::set-output name=git_diff::$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})"
 
     - name: Build Nginx
       run: |
