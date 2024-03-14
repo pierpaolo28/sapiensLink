@@ -65,7 +65,7 @@ jobs:
       run: | 
         git diff --name-only ${{ github.event.before }} ${{ github.sha }}
         diff_output=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
-        echo $diff_output >> $GITHUB_ENV
+        echo "$diff_output" >> $GITHUB_ENV
 
     - name: Build Nginx
       run: |
