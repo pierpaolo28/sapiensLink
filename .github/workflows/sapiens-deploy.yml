@@ -39,6 +39,8 @@ jobs:
         echo "NEXT_PUBLIC_MAILCHIMP_API_KEY = '${{ secrets.NEXT_PUBLIC_MAILCHIMP_API_KEY }}'" >> .env
         echo "NEXT_PUBLIC_FORMSPREE_API_KEY = '${{ secrets.NEXT_PUBLIC_FORMSPREE_API_KEY }}'" >> .env
         echo "NEXT_PUBLIC_X_NEXTJS_APPLICATION = '${{ secrets.CUSTOM_HEADER_VALUE }}'" >> .env
+        echo "NEXT_PUBLIC_API_BASE_URL = '${{ vars.NEXT_PUBLIC_API_BASE_URL }}'" >> .env
+        echo "NEXT_PUBLIC_WEBSOCKET_URL = '${{ vars.NEXT_PUBLIC_WEBSOCKET_URL }}'" >> .env
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v3
@@ -54,29 +56,34 @@ jobs:
 
     - name: Build Nginx
       run: |
-        # if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '<path/to/your/file>'; then
-        #   echo "::set-output name=file_changed::true"
-        # else
-        docker build . -f backend/Dockerfile.nginx -t ${{ vars.DOCKERHUB_REPO }}:nginx --platform linux/arm64
-        docker push ${{ vars.DOCKERHUB_REPO }}:nginx
+        if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep 'nginx'; then
+            docker build . -f backend/Dockerfile.nginx -t ${{ vars.DOCKERHUB_REPO }}:nginx --platform linux/arm64
+            docker push ${{ vars.DOCKERHUB_REPO }}:nginx
+        else
 
-    # - name: Build Django
-    #   working-directory: ./backend
-    #   run: |
-    #     docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:django --platform linux/arm64
-    #     docker push ${{ vars.DOCKERHUB_REPO }}:django
+    - name: Build Django
+      working-directory: ./backend
+      run: |
+        if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep 'backend/'; then
+            docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:django --platform linux/arm64
+            docker push ${{ vars.DOCKERHUB_REPO }}:django
+        else
     
-    # - name: Build Celery
-    #   working-directory: ./backend
-    #   run: |
-    #     docker build . -f Dockerfile.celery  -t ${{ vars.DOCKERHUB_REPO }}:celery --platform linux/arm64
-    #     docker push ${{ vars.DOCKERHUB_REPO }}:celery
+    - name: Build Celery
+      working-directory: ./backend
+      run: |
+        if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep 'backend/'; then
+            docker build . -f Dockerfile.celery  -t ${{ vars.DOCKERHUB_REPO }}:celery --platform linux/arm64
+            docker push ${{ vars.DOCKERHUB_REPO }}:celery
+        else
   
-    # - name: Build NextJS
-    #   working-directory: ./frontend
-    #   run: |
-    #     docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:nextjs --platform linux/arm64
-    #     docker push ${{ vars.DOCKERHUB_REPO }}:nextjs
+    - name: Build NextJS
+      working-directory: ./frontend
+      run: |
+        if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep 'frontend/'; then
+            docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:nextjs --platform linux/arm64
+            docker push ${{ vars.DOCKERHUB_REPO }}:nextjs
+        else
 
     - name: Copy docker-compose file
       uses: appleboy/scp-action@v0.1.7
