@@ -226,16 +226,16 @@ CORS_URLS_REGEX = r"/api/.*"
 
 if ENVIRONMENT == 'production':
     CORS_ALLOWED_ORIGINS = [
+        "https://sapienslink.com",
+    ]
+else:
+    CORS_ALLOWED_ORIGINS = [
         "http://127.0.0.1:8000",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:5500",
         "http://localhost:3000",
         "http://localhost:8000",
         "http://localhost:3001",
-    ]
-else:
-    CORS_ALLOWED_ORIGINS = [
-        "https://sapienslink.com",
     ]
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
