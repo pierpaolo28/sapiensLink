@@ -65,11 +65,11 @@ jobs:
       run: | 
         git diff --name-only ${{ github.event.before }} ${{ github.sha }}
         diff_output=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
-        echo $diff_output
+        echo $diff_output >> $GITHUB_OUTPUT
 
     - name: Build Nginx
       run: |
-        if echo $diff_output | grep 'nginx'; then
+        if echo "$diff_output" | grep 'nginx'; then
             docker build . -f backend/Dockerfile.nginx -t ${{ vars.DOCKERHUB_REPO }}:nginx --platform linux/arm64
             docker push ${{ vars.DOCKERHUB_REPO }}:nginx
         else
@@ -77,7 +77,7 @@ jobs:
     - name: Build Django
       working-directory: ./backend
       run: |
-        if echo $diff_output | grep 'backend/'; then
+        if echo "$diff_output" | grep 'backend/'; then
             docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:django --platform linux/arm64
             docker push ${{ vars.DOCKERHUB_REPO }}:django
         else
@@ -85,7 +85,7 @@ jobs:
     - name: Build Celery
       working-directory: ./backend
       run: |
-        if echo $diff_output | grep 'backend/'; then
+        if echo "$diff_output" | grep 'backend/'; then
             docker build . -f Dockerfile.celery  -t ${{ vars.DOCKERHUB_REPO }}:celery --platform linux/arm64
             docker push ${{ vars.DOCKERHUB_REPO }}:celery
         else
@@ -93,7 +93,7 @@ jobs:
     - name: Build NextJS
       working-directory: ./frontend
       run: |
-        if echo $diff_output | grep 'frontend/'; then
+        if echo "$diff_output" | grep 'frontend/'; then
             docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:nextjs --platform linux/arm64
             docker push ${{ vars.DOCKERHUB_REPO }}:nextjs
         else
