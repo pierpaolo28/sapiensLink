@@ -54,26 +54,29 @@ jobs:
 
     - name: Build Nginx
       run: |
+        # if git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep '<path/to/your/file>'; then
+        #   echo "::set-output name=file_changed::true"
+        # else
         docker build . -f backend/Dockerfile.nginx -t ${{ vars.DOCKERHUB_REPO }}:nginx --platform linux/arm64
         docker push ${{ vars.DOCKERHUB_REPO }}:nginx
 
-    - name: Build Django
-      working-directory: ./backend
-      run: |
-        docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:django --platform linux/arm64
-        docker push ${{ vars.DOCKERHUB_REPO }}:django
+    # - name: Build Django
+    #   working-directory: ./backend
+    #   run: |
+    #     docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:django --platform linux/arm64
+    #     docker push ${{ vars.DOCKERHUB_REPO }}:django
     
-    - name: Build Celery
-      working-directory: ./backend
-      run: |
-        docker build . -f Dockerfile.celery  -t ${{ vars.DOCKERHUB_REPO }}:celery --platform linux/arm64
-        docker push ${{ vars.DOCKERHUB_REPO }}:celery
+    # - name: Build Celery
+    #   working-directory: ./backend
+    #   run: |
+    #     docker build . -f Dockerfile.celery  -t ${{ vars.DOCKERHUB_REPO }}:celery --platform linux/arm64
+    #     docker push ${{ vars.DOCKERHUB_REPO }}:celery
   
-    - name: Build NextJS
-      working-directory: ./frontend
-      run: |
-        docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:nextjs --platform linux/arm64
-        docker push ${{ vars.DOCKERHUB_REPO }}:nextjs
+    # - name: Build NextJS
+    #   working-directory: ./frontend
+    #   run: |
+    #     docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:nextjs --platform linux/arm64
+    #     docker push ${{ vars.DOCKERHUB_REPO }}:nextjs
 
     - name: Copy docker-compose file
       uses: appleboy/scp-action@v0.1.7
