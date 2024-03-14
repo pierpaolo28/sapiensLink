@@ -18,9 +18,13 @@ jobs:
         group: deploy
 
     steps:
-    - run: git diff --name-only ${{ github.event.before }} ${{ github.sha }}
-    
+
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+    
+    - run: git diff --name-only ${{ github.event.before }} ${{ github.sha }}
+
 
     - name: app_secrets.py file build
       working-directory: ./backend
