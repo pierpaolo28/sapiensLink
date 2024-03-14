@@ -32,7 +32,7 @@ export default function EditProfilePage() {
     // Fetch current user data for prepopulating the form
     const fetchUserData = async () => {
       try {
-        const response = await fetch("http://localhost/api/update_user_page/", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/update_user_page/`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -117,7 +117,7 @@ export default function EditProfilePage() {
 
       // Make a PUT request to update the user profile
       const accessToken = localStorage.getItem("access_token");
-      const response = await fetch("http://localhost/api/update_user_page/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/update_user_page/`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -164,7 +164,7 @@ export default function EditProfilePage() {
 
       // Make a DELETE request to delete the user account
       const accessToken = localStorage.getItem("access_token");
-      const response = await fetch("http://localhost/api/delete_user_page/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/delete_user_page/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

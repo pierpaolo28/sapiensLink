@@ -61,7 +61,7 @@ const ListPage = () => {
   const getUserData = async (userId: number) => {
     try {
       const userResponse = await fetch(
-        `http://localhost/api/get_user/${userId}/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/get_user/${userId}/`,
         {
           method: "GET",
           headers: {
@@ -94,7 +94,7 @@ const ListPage = () => {
         headers["Authorization"] = `Bearer ${accessToken}`;
       }
 
-      const response = await fetch(`http://localhost/api/list_page/${id}/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/list_page/${id}/`, {
         method: "GET",
         headers: headers,
       });
@@ -142,7 +142,7 @@ const ListPage = () => {
     if (newComment.trim()) {
       try {
         const accessToken = localStorage.getItem("access_token");
-        const response = await fetch(`http://localhost/api/list_page/${id}/`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/list_page/${id}/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -178,7 +178,7 @@ const ListPage = () => {
       try {
         const accessToken = localStorage.getItem("access_token");
         const response = await fetch(
-          `http://localhost/api/delete_comment_action/${commentId}/`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/delete_comment_action/${commentId}/`,
           {
             method: "DELETE",
             headers: {
@@ -217,7 +217,7 @@ const ListPage = () => {
     try {
       const accessToken = localStorage.getItem("access_token");
       const response = await fetch(
-        `http://localhost/api/list_page/${list!.list.id}/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/list_page/${list!.list.id}/`,
         {
           method: "POST",
           headers: {
@@ -257,7 +257,7 @@ const ListPage = () => {
       const action = isSubscribed ? "unsubscribe" : "subscribe";
 
       const response = await fetch(
-        `http://localhost/api/manage_subscription/list/${list!.list.id}/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/manage_subscription/list/${list!.list.id}/`,
         {
           method: "POST",
           headers: {
@@ -294,7 +294,7 @@ const ListPage = () => {
       try {
         const accessToken = localStorage.getItem("access_token");
         const response = await fetch(
-          `http://localhost/api/vote_action/${id}/upvote/`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/vote_action/${id}/upvote/`,
           {
             method: "POST",
             headers: {
@@ -334,7 +334,7 @@ const ListPage = () => {
       try {
         const accessToken = localStorage.getItem("access_token");
         const response = await fetch(
-          `http://localhost/api/vote_action/${id}/downvote/`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/vote_action/${id}/downvote/`,
           {
             method: "POST",
             headers: {
@@ -374,7 +374,7 @@ const ListPage = () => {
       const accessToken = localStorage.getItem("access_token");
 
       const response = await fetch(
-        `http://localhost/api/update_list_page/${id}/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/update_list_page/${id}/`,
         {
           method: "DELETE",
           headers: {
@@ -491,7 +491,7 @@ const ListPage = () => {
                         sx={{ display: "flex", alignItems: "center", mt: 1 }}
                       >
                         <Avatar
-                          src={`http://localhost/static/${listAuthor.avatar}`}
+                          src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/static/${listAuthor.avatar}`}
                           alt="Profile image"
                           sx={{ marginRight: 2 }}
                         />
@@ -656,7 +656,7 @@ const ListPage = () => {
                           <ListItemAvatar>
                             <Avatar
                               alt={comment.author}
-                              src={"http://localhost/static/" + comment.avatar}
+                              src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/static/` + comment.avatar}
                             />
                           </ListItemAvatar>
                           <Grid container spacing={1} alignItems="center">
@@ -747,7 +747,7 @@ const ListPage = () => {
                 {list.participants.map((participant) => (
                   <ListItem key={participant.name}>
                     <Avatar
-                      src={"http://localhost/static/" + participant.avatar}
+                      src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/static/` + participant.avatar}
                     />
                     <Link
                       href={`/user_profile?id=${participant.id}`}

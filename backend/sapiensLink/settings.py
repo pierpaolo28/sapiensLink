@@ -14,6 +14,10 @@ from pathlib import Path
 from datetime import timedelta
 import app_secrets
 from corsheaders.defaults import default_headers
+import os
+
+# Determine the environment
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,7 +46,10 @@ ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = app_secrets.GOOGLE_CLIENT_ID
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = app_secrets.GOOGLE_CLIENT_SECRET
 # TODO: Update callback URL here and on Google Cloud
-SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = 'http://localhost:8000/api/auth/google/'
+if ENVIRONMENT == 'production':
+    SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = 'https://sapienslink.com/api/auth/google/'
+else:
+    SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = 'http://localhost:8000/api/auth/google/'
 
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin-allow-popups"
@@ -222,7 +229,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:5500",
     "http://localhost:3000",
     "http://localhost:8000",
-    "http://localhost:3001"
+    "http://localhost:3001",
+    "https://sapienslink.com/",
 ]
 
 CORS_ALLOW_HEADERS = list(default_headers) + [

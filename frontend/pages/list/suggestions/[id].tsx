@@ -110,7 +110,7 @@ const ListSuggestionsPage = () => {
   const getUserData = async (userId: number) => {
     try {
       const userResponse = await fetch(
-        `http://localhost/api/get_user/${userId}/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/get_user/${userId}/`,
         {
           method: "GET",
           headers: {
@@ -132,7 +132,7 @@ const ListSuggestionsPage = () => {
     const accessToken = localStorage.getItem("access_token");
 
     try {
-      const response = await fetch(`http://localhost/api/list_pr_page/${id}/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/list_pr_page/${id}/`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -192,7 +192,7 @@ const ListSuggestionsPage = () => {
 
     try {
       const response = await fetch(
-        `http://localhost/api/approve_suggestion_action/${suggestionId}/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/approve_suggestion_action/${suggestionId}/`,
         {
           method: "POST",
           headers: {
@@ -219,7 +219,7 @@ const ListSuggestionsPage = () => {
 
     try {
       const response = await fetch(
-        `http://localhost/api/decline_suggestion_action/${suggestionId}/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/decline_suggestion_action/${suggestionId}/`,
         {
           method: "POST",
           headers: {
@@ -289,7 +289,7 @@ const ListSuggestionsPage = () => {
     };
 
     try {
-      const response = await fetch(`http://localhost/api/list_pr_page/${id}/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/list_pr_page/${id}/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -329,7 +329,7 @@ const ListSuggestionsPage = () => {
     };
 
     try {
-      const response = await fetch(`http://localhost/api/list_pr_page/${id}/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/list_pr_page/${id}/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -357,7 +357,7 @@ const ListSuggestionsPage = () => {
 
     try {
       const response = await fetch(
-        `http://localhost/api/delete_pr_comment_action/${commentId}/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/delete_pr_comment_action/${commentId}/`,
         {
           method: "DELETE",
           headers: {
@@ -466,7 +466,7 @@ const ListSuggestionsPage = () => {
                           },
                         }}
                         src={
-                          "http://localhost/static" +
+                          `${process.env.NEXT_PUBLIC_API_BASE_URL}/static` +
                           listData.suggestions[currentSuggestionIndex]
                             .suggestedByData.avatar
                         }
@@ -590,7 +590,7 @@ const ListSuggestionsPage = () => {
                                 },
                               }}
                               src={
-                                "http://localhost/static" +
+                                `${process.env.NEXT_PUBLIC_API_BASE_URL}/static` +
                                 comment.commenterData.avatar
                               }
                               alt={comment.commenterData.name}

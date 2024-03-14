@@ -39,10 +39,17 @@ import requests
 from functools import wraps
 from django.templatetags.static import static
 from app_secrets import CUSTOM_HEADER_VALUE
+import os
 
+# Determine the environment
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
 
 # TODO: Update Domain
-DOMAIN = 'http://127.0.0.1:8000'
+if ENVIRONMENT == 'production':
+    DOMAIN = 'https://sapienslink.com/'
+else:
+    DOMAIN = 'http://127.0.0.1:8000'
+    
 LISTS_PER_PAGE = 10
 
 @api_view(['GET'])

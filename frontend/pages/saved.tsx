@@ -25,7 +25,7 @@ export default function SavedPage() {
       const url = new URL(currentUrl);
       const userId = url.searchParams.get("id");
       const response = await fetch(
-        `http://localhost/api/saved_content_page/${userId}/?${extraParams}`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/saved_content_page/${userId}/?${extraParams}`,
         {
           method: "GET",
           headers: {

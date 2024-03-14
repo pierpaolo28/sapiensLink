@@ -68,7 +68,7 @@ export default function RankPage() {
         headers["Authorization"] = `Bearer ${accessToken}`;
       }
 
-      const response = await fetch(`http://localhost/api/rank_page/${id}/`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/rank_page/${id}/`, {
         method: "GET",
         headers: headers,
       });
@@ -99,7 +99,7 @@ export default function RankPage() {
 
       // Using the extracted rank ID for the API call
       const response = await fetch(
-        `http://localhost/api/vote_rank/${rank!.rank.id}/${
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/vote_rank/${rank!.rank.id}/${
           rankIds[contentIndex]
         }/${action}/`,
         {
@@ -159,7 +159,7 @@ export default function RankPage() {
         // Using the extracted rank ID for the API call
         const elementIndex = rankIds[index];
         const response = await fetch(
-          `http://localhost/api/rank_page/${rank!.rank.id}/`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/rank_page/${rank!.rank.id}/`,
           {
             method: "POST",
             headers: {
@@ -205,7 +205,7 @@ export default function RankPage() {
       if (event.key === "Enter" && newItemText !== "<p><br></p><p><br></p>") {
         const accessToken = localStorage.getItem("access_token");
         const response = await fetch(
-          `http://localhost/api/rank_page/${rank!.rank.id}/`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/rank_page/${rank!.rank.id}/`,
           {
             method: "POST",
             headers: {
@@ -252,7 +252,7 @@ export default function RankPage() {
       if (newItemText.trim() !== "" && newItemText !== "<p><br></p>") {
         const accessToken = localStorage.getItem("access_token");
         const response = await fetch(
-          `http://localhost/api/rank_page/${rank!.rank.id}/`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/rank_page/${rank!.rank.id}/`,
           {
             method: "POST",
             headers: {
@@ -298,7 +298,7 @@ export default function RankPage() {
       const elementIndex = Object.keys(rank!.rank.content)[index];
       const accessToken = localStorage.getItem("access_token");
       const response = await fetch(
-        `http://localhost/api/rank_page/${rank!.rank.id}/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/rank_page/${rank!.rank.id}/`,
         {
           method: "POST",
           headers: {
@@ -336,7 +336,7 @@ export default function RankPage() {
       const action = isSubscribed ? "unsubscribe" : "subscribe";
 
       const response = await fetch(
-        `http://localhost/api/manage_subscription/rank/${rank!.rank.id}/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/manage_subscription/rank/${rank!.rank.id}/`,
         {
           method: "POST",
           headers: {
@@ -372,7 +372,7 @@ export default function RankPage() {
     try {
       const accessToken = localStorage.getItem("access_token");
       const response = await fetch(
-        `http://localhost/api/rank_page/${rank!.rank.id}/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/rank_page/${rank!.rank.id}/`,
         {
           method: "POST",
           headers: {
@@ -730,7 +730,7 @@ export default function RankPage() {
                   {rank.contributors.map((contributor, index) => (
                     <ListItem key={index}>
                       <Avatar
-                        src={`http://localhost/static/${contributor.avatar}`}
+                        src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/static/${contributor.avatar}`}
                         alt={contributor.name}
                       />
                       <MuiLink

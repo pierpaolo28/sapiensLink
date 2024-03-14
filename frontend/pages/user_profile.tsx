@@ -47,8 +47,8 @@ export default function UserProfilePage() {
     try {
       const apiEndpoint =
         listVisibility === "public"
-          ? `http://localhost/api/user_profile_page/${profileUserId}/`
-          : `http://localhost/api/private_lists_page/${profileUserId}/`;
+          ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user_profile_page/${profileUserId}/`
+          : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/private_lists_page/${profileUserId}/`;
 
       const headers: HeadersInit = {
         "Content-Type": "application/json",
@@ -92,8 +92,8 @@ export default function UserProfilePage() {
     try {
       const apiEndpoint =
         listVisibility === "public"
-          ? `http://localhost/api/user_profile_page/${profileUserId}/?page=${page}`
-          : `http://localhost/api/private_lists_page/${profileUserId}/?page=${page}`;
+          ? `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user_profile_page/${profileUserId}/?page=${page}`
+          : `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/private_lists_page/${profileUserId}/?page=${page}`;
 
       const headers: HeadersInit =
         listVisibility === "public"
@@ -133,7 +133,7 @@ export default function UserProfilePage() {
 
       // Make a POST request to toggle the follow status
       const response = await fetch(
-        `http://localhost/api/user_profile_page/${profileUserId}/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user_profile_page/${profileUserId}/`,
         {
           method: "POST",
           headers: {
@@ -178,7 +178,7 @@ export default function UserProfilePage() {
                 <Paper sx={{ p: 2, textAlign: "center", mb: 2 }}>
                   <Avatar
                     alt={userProfile.user.name}
-                    src={"http://localhost/static" + userProfile.user.avatar}
+                    src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/static` + userProfile.user.avatar}
                     sx={{ width: 80, height: 80, mx: "auto" }}
                   />
                   <Typography variant="h6" sx={{ mt: 2 }}>
