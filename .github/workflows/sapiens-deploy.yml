@@ -8,6 +8,8 @@ on:
       - "backend/**"
       - "frontend/**"
       - ".github/workflows/sapiens-deploy.yml"
+      - "docker-compose.yaml"
+      - "docker-compose.remote.yaml"
 
 env:
   ENVIRONMENT: production
