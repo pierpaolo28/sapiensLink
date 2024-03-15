@@ -9,6 +9,9 @@ on:
       - "frontend/**"
       - ".github/workflows/sapiens-deploy.yml"
 
+env:
+  ENVIRONMENT: production
+
 
 jobs:
   build:
@@ -59,7 +62,7 @@ jobs:
     
     - name: Build Nginx
       run: |
-        docker build . -f backend/Dockerfile.nginx -t ${{ vars.DOCKERHUB_REPO }}:nginx --platform linux/arm64
+        docker build . -f backend/Dockerfile.nginx -t ${{ vars.DOCKERHUB_REPO }}:nginx --platform linux/arm64 --build-arg ENVIRONMENT=${{ env.ENVIRONMENT }}
         docker push ${{ vars.DOCKERHUB_REPO }}:nginx
 
     - name: Build Django

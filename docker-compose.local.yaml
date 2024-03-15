@@ -85,7 +85,9 @@ services:
 
   nginx:
     build:
-      context: ./backend
+      context: .
+      args:
+        - ENVIRONMENT=development
       dockerfile: Dockerfile.nginx
     container_name: sapienslink_nginx
     ports:
@@ -96,7 +98,7 @@ services:
       - ./backend/static/images:/app/staticfiles/images
       - ./frontend/public:/app/nextjs/public
     depends_on:
-      - django
+      - django 
       - nextjs
 
 volumes:
