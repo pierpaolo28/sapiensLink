@@ -68,8 +68,9 @@ jobs:
         DB_USER: ${{ vars.POSTGRESQL_USERNAME }}
         DB_PASSWORD: ${{ secrets.POSTGRESQL_PASSWORD }}
       run: |
-        docker compose build
-        docker compose push
+        # docker compose build
+        echo "ciao"
+        # docker compose push
 
     - name: Copy docker-compose file
       uses: appleboy/scp-action@v0.1.7
