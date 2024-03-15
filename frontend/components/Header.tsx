@@ -100,7 +100,8 @@ export default function Header() {
 
   const initWebSocket = () => {
     if (isLoggedIn && !socketRef.current) {
-      const newSocket = new WebSocket(`wss://${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/ws/notifications/`);
+      const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+      const newSocket = new WebSocket(`${ws_scheme}://${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/ws/notifications/`);
 
       newSocket.onopen = (event) => {
         console.log("WebSocket is connected.");
