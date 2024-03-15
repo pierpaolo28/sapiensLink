@@ -41,7 +41,7 @@ function getExpirationTime(token: string): number | null {
 // It seems that after the token is refreshed, the first notification doesn't work and thereafter works
 async function refreshAccessToken(refreshToken: string): Promise<void> {
   try {
-    const response = await fetch("http://localhost/api/token/refresh/", {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/token/refresh/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

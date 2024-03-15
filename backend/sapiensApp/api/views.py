@@ -37,11 +37,19 @@ from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth.models import AnonymousUser
 import requests
 from functools import wraps
+from django.templatetags.static import static
 from app_secrets import CUSTOM_HEADER_VALUE
+import os
 
+# Determine the environment
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
 
 # TODO: Update Domain
-DOMAIN = 'http://127.0.0.1:8000'
+if ENVIRONMENT == 'production':
+    DOMAIN = 'https://sapienslink.com/'
+else:
+    DOMAIN = 'http://127.0.0.1:8000'
+    
 LISTS_PER_PAGE = 10
 
 @api_view(['GET'])
@@ -376,11 +384,17 @@ def password_reset(request):
         context['reset_url'] = reset_url
 
         # Send email using SendGrid
+        image_url = request.build_absolute_uri(static("images/sapiens_logo.png"))
         message = Mail(
             from_email=app_secrets.FROM_EMAIL,  # Replace with your email
             to_emails=[email],
             subject='SapiensLink Password Reset',
-            html_content=f'Click the following link to reset your password: {reset_url}',
+            html_content=f'''
+            <img src="{image_url}" />
+            <p>Dear {user.name},</p>
+            <p>Thank you for requesting to reset your password. Click the following link to setup a new password: <a href='{reset_url}'>{reset_url}</a>.</p>
+            If you did not request a password reset, please ignore this email and raise a report at sapienslink@gmail.com.
+            ''',
         )
         sg = SendGridAPIClient(app_secrets.SENDGRID_API_KEY)  # Replace with your SendGrid API key
         sg.send(message)

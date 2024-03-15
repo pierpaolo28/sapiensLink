@@ -13,7 +13,7 @@ const GoogleSignIn = () => {
       const id_token = response.getAuthResponse().id_token;
 
       // Send the ID token to the server for verification
-      const serverResponse = await fetch("http://localhost/api/auth/google/", {
+      const serverResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/google/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

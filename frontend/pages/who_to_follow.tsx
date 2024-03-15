@@ -99,7 +99,7 @@ export default function WhoToFollowPage() {
                         <ListItem key={user.id}>
                           <ListItemAvatar>
                             <Avatar
-                              src={"http://localhost/static/" + user.avatar}
+                              src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/static/` + user.avatar}
                               alt={user.name}
                             />
                           </ListItemAvatar>

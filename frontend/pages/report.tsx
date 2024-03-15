@@ -47,7 +47,7 @@ const ReportForm = () => {
 
       if (itemType == "rank") {
         // Perform the API call directly in the component
-        await fetch(`http://localhost/api/report_rank_page/`, {
+        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/report_rank_page/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -62,7 +62,7 @@ const ReportForm = () => {
         window.location.href = "/rank_home";
       } else if (itemType == "list") {
         // Perform the API call directly in the component
-        await fetch(`http://localhost/api/report_list_page/${itemId}/`, {
+        await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/report_list_page/${itemId}/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

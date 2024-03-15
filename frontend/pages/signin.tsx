@@ -23,7 +23,7 @@ export default function SignIn() {
     const data = new FormData(event.currentTarget);
 
     try {
-      const response = await fetch("http://localhost/api/login_user/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/login_user/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -74,7 +74,7 @@ export default function SignIn() {
         const accessToken = localStorage.getItem("access_token");
         query.delete("inactive");
         await fetch(
-          `http://localhost/api/email_unsubscribe/?access_token=${accessToken}&inactive=${inactiveValue}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/email_unsubscribe/?access_token=${accessToken}&inactive=${inactiveValue}`
         )
           .then((response) => {
             if (!response.ok) {
@@ -103,7 +103,7 @@ export default function SignIn() {
         const accessToken = localStorage.getItem("access_token");
         query.delete("unread");
         await fetch(
-          `http://localhost/api/email_unsubscribe/?access_token=${accessToken}&unread=${unreadValue}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/email_unsubscribe/?access_token=${accessToken}&unread=${unreadValue}`
         )
           .then((response) => {
             if (!response.ok) {

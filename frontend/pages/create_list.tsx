@@ -73,7 +73,7 @@ export default function CreateListPage() {
     try {
       const accessToken = localStorage.getItem("access_token");
       const response = await fetch(
-        `http://localhost/api/update_list_page/${id}/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/update_list_page/${id}/`,
         {
           method: "GET",
           headers: {
@@ -163,12 +163,12 @@ export default function CreateListPage() {
     if (listDetails.name && listDetails.topic && listDetails.topic.length > 0) {
       try {
         const accessToken = localStorage.getItem("access_token");
-        let url = "http://localhost/api/create_list_page";
+        let url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/create_list_page`;
 
         if (isUpdateMode) {
           const urlParams = new URLSearchParams(window.location.search);
           const id = urlParams.get("id");
-          url = `http://localhost/api/update_list_page/${id}/`;
+          url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/update_list_page/${id}/`;
         }
 
         const updatedListDetails = {

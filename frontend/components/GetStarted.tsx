@@ -6,8 +6,6 @@ import Box from "@mui/system/Box";
 import Container from "@mui/system/Container";
 import React from "react";
 
-import CustomButton from "./CustomButton";
-
 const GetStarted = () => {
   const theme = useTheme();
   const CustomContainer = styled(Container)(({ theme }) => ({

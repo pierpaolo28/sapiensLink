@@ -105,7 +105,7 @@ const CreateRankForm = () => {
     if (formData.name && formData.topic && formData.topic.length > 0) {
       try {
         const accessToken = localStorage.getItem("access_token");
-        const response = await fetch("http://localhost/api/create_rank_page/", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/create_rank_page/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

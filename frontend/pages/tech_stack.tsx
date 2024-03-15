@@ -20,6 +20,16 @@ const TechStackPage: React.FC = () => {
           alt="architecture_system"
           style={{ maxWidth: "100%" }}
         />
+
+        <Typography variant="h2" gutterBottom>
+          Our Vision
+        </Typography>
+
+        <img
+          src={"images/roadmap.png"}
+          alt="roadmap"
+          style={{ display: "block", margin: "0 auto", maxWidth: "100%" }}
+        />
       </Container>
     </AppLayout>
   );

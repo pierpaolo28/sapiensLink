@@ -10,11 +10,18 @@ from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 import app_secrets
 import markdown
+from django.templatetags.static import static
 from django.urls import reverse
+import os
 
+# Determine the environment
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
 
 # TODO: Update Domain
-DOMAIN = 'http://127.0.0.1:8000'
+if ENVIRONMENT == 'production':
+    DOMAIN = 'https://sapienslink.com/'
+else:
+    DOMAIN = 'http://127.0.0.1:8000'
 
 @shared_task
 def clean_blacklist():
@@ -86,6 +93,7 @@ def send_inactive_user_notifications():
     lists_html = "\n".join([f"<li><a href='{DOMAIN}/list/{post.id}'>{markdown.markdown(post.name)}</a></li>" for post in latest_lists])
     ranks_html = "\n".join([f"<li><a href='{DOMAIN}/rank/{post.id}'>{markdown.markdown(post.name)}</a></li>" for post in latest_ranks])
 
+    image_url = f"{DOMAIN}{static('images/sapiens_logo.png')}"
     # Send email to each inactive user
     for user in inactive_users:
         if user.email_subscription.receive_inactive_user_notifications:
@@ -97,7 +105,8 @@ def send_inactive_user_notifications():
                 to_emails=user.email,
                 subject='Latest from SapiensLink',
                 html_content=f'''
-                    <p>Dear {user.username},</p>
+                    <img src="{image_url}" />
+                    <p>Dear {user.name},</p>
                     <p>Check out the latest posts on SapiensLink:</p>
                     <p>Lists</p>
                     <ul>
@@ -139,6 +148,7 @@ def send_unread_notification_reminders():
         id__in=Subquery(casted_user_ids)
     )
 
+    image_url = f"{DOMAIN}{static('images/sapiens_logo.png')}"
     # Send email to each user with unread notifications
     for user in users_with_unread_notifications:
         if user.email_subscription.receive_unread_notification_reminders:
@@ -155,8 +165,9 @@ def send_unread_notification_reminders():
 
             # Construct the email using SendGrid
             html_content = f'''
-            <p>Dear {user.username},</p>
-            <p>You have unread notifications:</p>
+            <img src="{image_url}" />
+            <p>Dear {user.name},</p>
+            <p>You have unread notifications on SapiensLink:</p>
             <ul>
                 {notifications_html}
             </ul>

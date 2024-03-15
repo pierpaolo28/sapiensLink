@@ -51,7 +51,7 @@ export default function Footer(props: any) {
               Product
             </Typography>
             <Link
-              href="vision"
+              href="about"
               variant="subtitle1"
               color="textSecondary"
               underline={"hover"}
@@ -62,7 +62,7 @@ export default function Footer(props: any) {
                 },
               }}
             >
-              Vision
+              About us
             </Link>
             <br />
             <Link
@@ -83,10 +83,10 @@ export default function Footer(props: any) {
           </Grid>
           <Grid item xs={6} md={4} lg={3}>
             <Typography variant="h6" color="textPrimary" gutterBottom>
-              Company
+              Features
             </Typography>
             <Link
-              href="about"
+              href="list_home"
               variant="subtitle1"
               color="textSecondary"
               underline={"hover"}
@@ -97,11 +97,11 @@ export default function Footer(props: any) {
                 },
               }}
             >
-              About us
+              Lists
             </Link>
             <br />
             <Link
-              href="contacts"
+              href="rank_home"
               variant="subtitle1"
               color="textSecondary"
               underline={"hover"}
@@ -112,7 +112,7 @@ export default function Footer(props: any) {
                 },
               }}
             >
-              Contacts
+              Ranks
             </Link>
             <br />
           </Grid>

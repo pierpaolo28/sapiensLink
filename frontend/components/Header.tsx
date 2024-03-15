@@ -77,7 +77,7 @@ export default function Header() {
         socketRef.current.readyState === WebSocket.OPEN
       ) {
         const accessToken = localStorage.getItem("access_token");
-        const response = await fetch("http://localhost/api/notifications/", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications/`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -100,7 +100,7 @@ export default function Header() {
 
   const initWebSocket = () => {
     if (isLoggedIn && !socketRef.current) {
-      const newSocket = new WebSocket("ws://localhost/ws/notifications/");
+      const newSocket = new WebSocket(`ws://${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/ws/notifications/`);
 
       newSocket.onopen = (event) => {
         console.log("WebSocket is connected.");
@@ -185,7 +185,7 @@ export default function Header() {
       const accessToken = localStorage.getItem("access_token");
       // Send a request to mark the notification as read
       await fetch(
-        `http://localhost/api/notifications/${notificationId}/mark_as_read/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications/${notificationId}/mark_as_read/`,
         {
           method: "POST",
           headers: {
@@ -226,7 +226,7 @@ export default function Header() {
 
       if (accessToken) {
         // Make a POST request to the logout API
-        const response = await fetch("http://localhost/api/logout_user/", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/logout_user/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -272,9 +272,7 @@ export default function Header() {
     "/",
     "/list_home",
     "/rank_home",
-    "/vision",
     "/about",
-    "/contacts",
   ];
   const list = (anchor: any) => (
     <Box
@@ -284,7 +282,7 @@ export default function Header() {
       onKeyDown={toggleDrawer(anchor, false)}
     >
       <List>
-        {["Home", "Lists", "Ranks", "Vision", "About Us", "Contact Us"].map(
+        {["Home", "Lists", "Ranks", "About Us"].map(
           (text, index) => (
             <ListItem key={text} disablePadding>
               <Link
@@ -301,9 +299,7 @@ export default function Header() {
                     {index === 0 && <HomeIcon />}
                     {index === 1 && <ListIcon />}
                     {index === 2 && <TrendingUpIcon />}
-                    {index === 3 && <VisibilityIcon />}
-                    {index === 4 && <InfoIcon />}
-                    {index === 5 && <ContactMailIcon />}
+                    {index === 3 && <InfoIcon />}
                   </ListItemIcon>
                   <ListItemText primary={text} />
                 </ListItemButton>
@@ -417,7 +413,7 @@ export default function Header() {
                             sx={{
                               textTransform: "uppercase",
                               fontWeight: "bold",
-                              marginTop: "6px",
+                              marginTop: "16px",
                               boxShadow: "none",
                               ":hover": {
                                 boxShadow: "none",
@@ -445,7 +441,7 @@ export default function Header() {
                       alignItems: "center",
                     }}
                   >
-                    <Typography>Toggle Theme</Typography>
+                    <Typography>Dark Mode</Typography>
                     <ThemeToggleButton />
                   </Box>
                 </div>
@@ -476,14 +472,8 @@ export default function Header() {
             <Link href="/rank_home" passHref style={{ textDecoration: "none" }}>
               <NavLink variant="body2">Ranks</NavLink>
             </Link>
-            <Link href="/vision" passHref style={{ textDecoration: "none" }}>
-              <NavLink variant="body2">Vision</NavLink>
-            </Link>
             <Link href="/about" passHref style={{ textDecoration: "none" }}>
               <NavLink variant="body2">About Us</NavLink>
-            </Link>
-            <Link href="/contacts" passHref style={{ textDecoration: "none" }}>
-              <NavLink variant="body2">Contacts</NavLink>
             </Link>
           </NavbarLinksBox>
         </Box>
