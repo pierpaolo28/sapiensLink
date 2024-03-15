@@ -65,7 +65,8 @@ jobs:
         DB_USER: ${{ vars.POSTGRESQL_USERNAME }}
         DB_PASSWORD: ${{ secrets.POSTGRESQL_PASSWORD }}
       run: |
-        docker compose -f docker-compose.yaml -f docker-compose.remote.yaml build
+        docker compose build
+        docker compose push
     
     # - name: Build Nginx
     #   run: |
