@@ -28,8 +28,6 @@ services:
   django:
     container_name: sapienslink_django
     image: sapienslink/images:django
-    environment:
-      - ENVIRONMENT=production
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - static_volume:/app/staticfiles
@@ -49,8 +47,6 @@ services:
   celery_worker:
     container_name: sapienslink_celery_worker
     image: sapienslink/images:celery
-    environment:
-      - ENVIRONMENT=production
     command: celery -A sapiensLink worker --loglevel=info
     depends_on:
       - django
@@ -59,8 +55,6 @@ services:
   celery_beat:
     container_name: sapienslink_celery_beat
     image: sapienslink/images:celery
-    environment:
-      - ENVIRONMENT=production
     command: celery -A sapiensLink beat --loglevel=info
     depends_on:
       - django

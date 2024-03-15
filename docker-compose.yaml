@@ -27,7 +27,11 @@ services:
 
   django:
     container_name: sapienslink_django
-    build: ./backend
+    image: sapienslink/images:django
+    build: 
+      context: ./backend
+      args:
+        - ENVIRONMENT=development
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./backend:/app
@@ -46,9 +50,12 @@ services:
 
   celery_worker:
     container_name: sapienslink_celery_worker
+    image: sapienslink/images:celery
     build:
       context: ./backend
       dockerfile: Dockerfile.celery
+      args:
+        - ENVIRONMENT=development
     command: celery -A sapiensLink worker --loglevel=info
     volumes:
       - ./backend:/app
@@ -61,9 +68,12 @@ services:
 
   celery_beat:
     container_name: sapienslink_celery_beat
+    image: sapienslink/images:celery
     build:
       context: ./backend
       dockerfile: Dockerfile.celery
+      args:
+        - ENVIRONMENT=development
     command: celery -A sapiensLink beat --loglevel=info
     volumes:
       - ./backend:/app
@@ -77,6 +87,7 @@ services:
   # Next.js frontend supporting SSR
   nextjs:
     build: ./frontend
+    image: sapienslink/images:nextjs
     container_name: sapienslink_nextjs
     ports:
       - 3001:3000
@@ -88,8 +99,9 @@ services:
       context: .
       args:
         - ENVIRONMENT=development
-      dockerfile: Dockerfile.nginx
+      dockerfile: backend/Dockerfile.nginx
     container_name: sapienslink_nginx
+    image: sapienslink/images:nginx
     ports:
       - "80:80"
     volumes:

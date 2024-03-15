@@ -59,29 +59,36 @@ jobs:
       with:
         username: ${{ vars.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-    
-    - name: Build Nginx
-      run: |
-        docker build . -f backend/Dockerfile.nginx -t ${{ vars.DOCKERHUB_REPO }}:nginx --platform linux/arm64 --build-arg ENVIRONMENT=${{ env.ENVIRONMENT }}
-        docker push ${{ vars.DOCKERHUB_REPO }}:nginx
 
-    - name: Build Django
-      working-directory: ./backend
+    - name: Docker Compose Build
+      env:
+        DB_USER: ${{ vars.POSTGRESQL_USERNAME }}
+        DB_PASSWORD: ${{ secrets.POSTGRESQL_PASSWORD }}
       run: |
-        docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:django --platform linux/arm64
-        docker push ${{ vars.DOCKERHUB_REPO }}:django
+        docker compose -f docker-compose.yaml -f docker-compose.remote.yaml build
     
-    - name: Build Celery
-      working-directory: ./backend
-      run: |
-        docker build . -f Dockerfile.celery  -t ${{ vars.DOCKERHUB_REPO }}:celery --platform linux/arm64
-        docker push ${{ vars.DOCKERHUB_REPO }}:celery
+    # - name: Build Nginx
+    #   run: |
+    #     docker build . -f backend/Dockerfile.nginx -t ${{ vars.DOCKERHUB_REPO }}:nginx --platform linux/arm64 --build-arg ENVIRONMENT=${{ env.ENVIRONMENT }}
+    #     docker push ${{ vars.DOCKERHUB_REPO }}:nginx
+
+    # - name: Build Django
+    #   working-directory: ./backend
+    #   run: |
+    #     docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:django --platform linux/arm64
+    #     docker push ${{ vars.DOCKERHUB_REPO }}:django
+    
+    # - name: Build Celery
+    #   working-directory: ./backend
+    #   run: |
+    #     docker build . -f Dockerfile.celery  -t ${{ vars.DOCKERHUB_REPO }}:celery --platform linux/arm64
+    #     docker push ${{ vars.DOCKERHUB_REPO }}:celery
   
-    - name: Build NextJS
-      working-directory: ./frontend
-      run: |
-        docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:nextjs --platform linux/arm64
-        docker push ${{ vars.DOCKERHUB_REPO }}:nextjs
+    # - name: Build NextJS
+    #   working-directory: ./frontend
+    #   run: |
+    #     docker build . -f Dockerfile  -t ${{ vars.DOCKERHUB_REPO }}:nextjs --platform linux/arm64
+    #     docker push ${{ vars.DOCKERHUB_REPO }}:nextjs
 
     - name: Copy docker-compose file
       uses: appleboy/scp-action@v0.1.7
