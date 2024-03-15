@@ -33,7 +33,7 @@ services:
       platforms:
         - "linux/arm64"
       args:
-        - ENVIRONMENT=development
+        - ENVIRONMENT=${ENVIRONMENT:-development}
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - ./backend:/app
@@ -59,7 +59,7 @@ services:
         - "linux/arm64"
       dockerfile: Dockerfile.celery
       args:
-        - ENVIRONMENT=development
+        - ENVIRONMENT=${ENVIRONMENT:-development}
     command: celery -A sapiensLink worker --loglevel=info
     volumes:
       - ./backend:/app
@@ -79,7 +79,7 @@ services:
         - "linux/arm64"
       dockerfile: Dockerfile.celery
       args:
-        - ENVIRONMENT=development
+        - ENVIRONMENT=${ENVIRONMENT:-development}
     command: celery -A sapiensLink beat --loglevel=info
     volumes:
       - ./backend:/app
@@ -109,7 +109,7 @@ services:
       platforms:
         - "linux/arm64"
       args:
-        - ENVIRONMENT=development
+        - ENVIRONMENT=${ENVIRONMENT:-development}
       dockerfile: backend/Dockerfile.nginx
     container_name: sapienslink_nginx
     image: sapienslink/images:nginx
