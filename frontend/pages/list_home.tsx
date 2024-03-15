@@ -448,7 +448,7 @@ export default function ListHome() {
                       >
                         <ListItemAvatar>
                           <Avatar
-                            src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/static/` + user.avatar}
+                            src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/static` + user.avatar}
                             alt={user.name}
                           />
                         </ListItemAvatar>
