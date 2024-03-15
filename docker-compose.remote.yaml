@@ -31,7 +31,7 @@ services:
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - static_volume:/app/staticfiles
-      - static_volume/static/images:/app/static/images
+      - static_images_volume:/app/static/images
       - media_volume:/app/mediafiles
     ports:
       - "8001:8000"
@@ -78,7 +78,7 @@ services:
       - "443:443"
     volumes:
       - static_volume:/app/staticfiles
-      - static_volume/static/images:/app/staticfiles/images
+      - static_images_volume:/app/staticfiles/images
       - media_volume:/app/mediafiles
       - ./certbot/www/:/var/www/certbot/:ro
       - ./certbot/conf/:/etc/nginx/ssl/:ro
@@ -98,4 +98,4 @@ volumes:
   postgres_data:
   static_volume:
   media_volume:
-  static_volume/static/images:
+  static_images_volume:
