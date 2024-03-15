@@ -30,6 +30,8 @@ services:
     image: sapienslink/images:django
     build: 
       context: ./backend
+      platforms:
+        - "linux/arm64"
       args:
         - ENVIRONMENT=development
     command: python manage.py runserver 0.0.0.0:8000
@@ -53,6 +55,8 @@ services:
     image: sapienslink/images:celery
     build:
       context: ./backend
+      platforms:
+        - "linux/arm64"
       dockerfile: Dockerfile.celery
       args:
         - ENVIRONMENT=development
@@ -71,6 +75,8 @@ services:
     image: sapienslink/images:celery
     build:
       context: ./backend
+      platforms:
+        - "linux/arm64"
       dockerfile: Dockerfile.celery
       args:
         - ENVIRONMENT=development
@@ -86,7 +92,10 @@ services:
 
   # Next.js frontend supporting SSR
   nextjs:
-    build: ./frontend
+    build:
+      context: ./frontend
+      platforms:
+        - "linux/arm64"
     image: sapienslink/images:nextjs
     container_name: sapienslink_nextjs
     ports:
@@ -97,6 +106,8 @@ services:
   nginx:
     build:
       context: .
+      platforms:
+        - "linux/arm64"
       args:
         - ENVIRONMENT=development
       dockerfile: backend/Dockerfile.nginx
