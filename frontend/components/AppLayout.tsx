@@ -254,14 +254,20 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <ErrorBoundary fallback={<FallbackErrorComponent />}>
-          <Head>
-            <title>SapiensLink</title>
-            <link rel="icon" href="logo.svg" />
-            <meta name="description" content="Sharing knowledge one link at the time." />
-            <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover" />
-            <meta name="generator" content="Next.js" />
-            <link rel="manifest" href="manifest.json" />
-          </Head>
+        <Head>
+          <title>SapiensLink</title>
+          <link rel="icon" href="logo.svg" />
+          <meta name="description" content="Sharing knowledge one link at the time." />
+          <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover" />
+          <meta name="generator" content="Next.js" />
+          <link rel="manifest" href="manifest.json" />
+
+          <meta property="og:title" content="SapiensLink" />
+          <meta property="og:description" content="Sharing knowledge one link at the time." />
+          <meta property="og:image" content="https://sapienslink.com/logo.svg" /> 
+          <meta property="og:url" content="https://sapienslink.com" /> 
+          <meta property="og:type" content="website" />
+        </Head>
           <Header />
           <Container maxWidth="lg">{children}</Container>
           <Footer />
