@@ -3,7 +3,7 @@
     "short_name": "SapiensLink",
     "icons": [
           {
-              "src": "public/logo.svg",
+              "src": "logo.svg",
               "type": "image/svg"
           }
     ],
