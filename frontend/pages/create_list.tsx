@@ -266,7 +266,7 @@ export default function CreateListPage() {
             </Grid>
             <Grid item xs={12}>
               <div style={{ marginBottom: "10px" }}>
-                <InputLabel id="content-label">Content</InputLabel>
+                <InputLabel id="content-label">Content *</InputLabel>
               </div>
               <FormControlLabel
                 control={
@@ -310,6 +310,7 @@ export default function CreateListPage() {
                 name="source"
                 value={listDetails.source}
                 onChange={handleInputChange}
+                placeholder="e.g., https://ppiconsulting.dev"
               />
             </Grid>
             <Grid item xs={12}>
@@ -326,7 +327,7 @@ export default function CreateListPage() {
             </Grid>
             <Grid item xs={12}>
               <FormControl fullWidth>
-                <InputLabel id="topic-label">Topic</InputLabel>
+                <InputLabel id="topic-label">Topic *</InputLabel>
                 <Select
                   labelId="topic-label"
                   id="topic-select"
