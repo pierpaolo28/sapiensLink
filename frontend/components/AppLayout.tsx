@@ -9,6 +9,7 @@ import { createTheme } from "@mui/material/styles";
 import Container from "@mui/material/Container";
 import CssBaseline from "@mui/material/CssBaseline";
 import { CircularProgress } from "@mui/material";
+import Head from 'next/head';
 
 import Header from "./Header";
 import Footer from "./Footer";
@@ -25,7 +26,7 @@ export const ThemeModeContext = createContext<{
   toggleMode: () => void;
 }>({
   mode: "light",
-  toggleMode: () => {},
+  toggleMode: () => { },
 });
 
 // You can paste colors in any code formats. For example HEX (#ffffff) or RGB (rgb(255, 255, 255)).
@@ -253,6 +254,14 @@ const AppLayout = ({ children }: AppLayoutProps) => {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <ErrorBoundary fallback={<FallbackErrorComponent />}>
+          <Head>
+            <title>SapiensLink</title>
+            <link rel="icon" href="logo.svg" />
+            <meta name="description" content="Sharing knowledge one link at the time." />
+            <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover" />
+            <meta name="generator" content="Next.js" />
+            <link rel="manifest" href="manifest.json" />
+          </Head>
           <Header />
           <Container maxWidth="lg">{children}</Container>
           <Footer />
