@@ -13,6 +13,7 @@ export default function RootLayout({
     <html lang="en">
       <Head>
         <title>SapiensLink</title>
+        <link rel="icon" href="logo.svg"/>
         <meta name="description" content="Sharing knowledge one link at the time." />
         <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover" />
         <meta name="generator" content="Next.js" />
