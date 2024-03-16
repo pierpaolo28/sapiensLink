@@ -19,7 +19,7 @@ import AppLayout from "@/components/AppLayout";
 const TeamMembers = [
   {
     name: "Pier",
-    avatar: "",
+    avatar: "images/pier.jpeg",
     position: "Founder",
     url: "https://ppiconsulting.dev",
   },
