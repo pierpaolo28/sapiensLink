@@ -12,10 +12,16 @@ import app_secrets
 import markdown
 from django.templatetags.static import static
 from django.urls import reverse
+import os
 
+# Determine the environment
+ENVIRONMENT = os.getenv('ENVIRONMENT', 'development')
 
 # TODO: Update Domain
-DOMAIN = 'http://127.0.0.1:8000'
+if ENVIRONMENT == 'production':
+    DOMAIN = 'https://sapienslink.com/'
+else:
+    DOMAIN = 'http://127.0.0.1:8000'
 
 @shared_task
 def clean_blacklist():

@@ -20,7 +20,7 @@ const ResetPasswordPage = () => {
       event.preventDefault();
       const data = new FormData(event.currentTarget);
       const response = await fetch(
-        `http://localhost/api/password_reset_confirm/${uidb64}/${token}/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/password_reset_confirm/${uidb64}/${token}/`,
         {
           method: "POST",
           headers: {

@@ -20,7 +20,7 @@ export default function SignUp() {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     try {
-      const response = await fetch("http://localhost/api/register_user/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/register_user/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

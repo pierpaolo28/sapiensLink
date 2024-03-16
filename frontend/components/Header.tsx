@@ -77,7 +77,7 @@ export default function Header() {
         socketRef.current.readyState === WebSocket.OPEN
       ) {
         const accessToken = localStorage.getItem("access_token");
-        const response = await fetch("http://localhost/api/notifications/", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications/`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -100,7 +100,8 @@ export default function Header() {
 
   const initWebSocket = () => {
     if (isLoggedIn && !socketRef.current) {
-      const newSocket = new WebSocket("ws://localhost/ws/notifications/");
+      const ws_scheme = window.location.protocol === "https:" ? "wss" : "ws";
+      const newSocket = new WebSocket(`${ws_scheme}://${process.env.NEXT_PUBLIC_WEBSOCKET_URL}/ws/notifications/`);
 
       newSocket.onopen = (event) => {
         console.log("WebSocket is connected.");
@@ -185,7 +186,7 @@ export default function Header() {
       const accessToken = localStorage.getItem("access_token");
       // Send a request to mark the notification as read
       await fetch(
-        `http://localhost/api/notifications/${notificationId}/mark_as_read/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/notifications/${notificationId}/mark_as_read/`,
         {
           method: "POST",
           headers: {
@@ -226,7 +227,7 @@ export default function Header() {
 
       if (accessToken) {
         // Make a POST request to the logout API
-        const response = await fetch("http://localhost/api/logout_user/", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/logout_user/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -26,7 +26,7 @@ async function post<Q, A>(url: string, data: Q): Promise<A> {
   return req("POST", url, data);
 }
 
-const BASE_URL = "http://localhost/api";
+const BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api`;
 
 export const makeGet = <T>(path: string) => {
   return async (extraParams: string = ""): Promise<T> => {

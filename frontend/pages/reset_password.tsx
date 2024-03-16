@@ -17,7 +17,7 @@ export default function ResetPassword() {
     const data = new FormData(event.currentTarget);
 
     try {
-      const response = await fetch("http://localhost/api/password_reset/", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/password_reset/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

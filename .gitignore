@@ -167,3 +167,6 @@ backend/sapiensApp/migrations/0*
 
 # misc
 .DS_Store
+
+# private key
+*.pem

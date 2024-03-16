@@ -105,7 +105,7 @@ const CreateRankForm = () => {
     if (formData.name && formData.topic && formData.topic.length > 0) {
       try {
         const accessToken = localStorage.getItem("access_token");
-        const response = await fetch("http://localhost/api/create_rank_page/", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/create_rank_page/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -291,7 +291,7 @@ const CreateRankForm = () => {
             onChange={(e) => handleFormChange("description", e.target.value)}
           />
           <div style={{ marginBottom: "10px" }}>
-            <InputLabel id="content-label">Content</InputLabel>
+            <InputLabel id="content-label">Content *</InputLabel>
           </div>
           <Box
             sx={{ display: "flex", alignItems: "center", mt: 2, width: "100%" }}
@@ -399,7 +399,7 @@ const CreateRankForm = () => {
           )}
           <Grid item xs={12} sx={{ mt: 2 }}>
               <FormControl fullWidth>
-                <InputLabel id="topic-label">Topic</InputLabel>
+                <InputLabel id="topic-label">Topic *</InputLabel>
                 <Select
                   labelId="topic-label"
                   id="topic"

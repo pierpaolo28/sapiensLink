@@ -45,7 +45,7 @@ export default function ListHome() {
   const getUserData = async (userId: number) => {
     try {
       const userResponse = await fetch(
-        `http://localhost/api/get_user/${userId}/`,
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/get_user/${userId}/`,
         {
           method: "GET",
           headers: {
@@ -68,7 +68,7 @@ export default function ListHome() {
       if (isUserLoggedIn()) {
         const accessToken = localStorage.getItem("access_token");
         const response = await fetch(
-          `http://localhost/api/home_page/?page=${currentPage}&${extraParams}`,
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/home_page/?page=${currentPage}&${extraParams}`,
           {
             method: "GET",
             headers: {
@@ -359,7 +359,7 @@ export default function ListHome() {
                               >
                                 <Avatar
                                   src={
-                                    "http://localhost/static" +
+                                    `${process.env.NEXT_PUBLIC_API_BASE_URL}/static` +
                                     list.authorData.avatar
                                   }
                                   sx={{ width: 32, height: 32 }}
@@ -448,7 +448,7 @@ export default function ListHome() {
                       >
                         <ListItemAvatar>
                           <Avatar
-                            src={"http://localhost/static/" + user.avatar}
+                            src={`${process.env.NEXT_PUBLIC_API_BASE_URL}/static` + user.avatar}
                             alt={user.name}
                           />
                         </ListItemAvatar>
