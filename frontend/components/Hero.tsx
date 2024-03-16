@@ -118,21 +118,21 @@ const Hero = () => {
             >
               <div>
                 <img
-                  src="images/hero1.jpeg"
+                  src="images/hero1.jpg"
                   alt="Image 1"
                   style={{ width: "100%", height: "auto" }}
                 />
               </div>
               <div>
                 <img
-                  src="images/hero2.jpeg"
+                  src="images/hero2.jpg"
                   alt="Image 2"
                   style={{ width: "100%", height: "auto" }}
                 />
               </div>
               <div>
                 <img
-                  src="images/hero3.jpeg"
+                  src="images/hero3.jpg"
                   alt="Image 3"
                   style={{ width: "100%", height: "auto" }}
                 />

@@ -9,14 +9,14 @@ import Featured from "./Featured";
 export const featuredItems = [
   {
     id: "1",
-    img: "images/personal_finance.png",
+    img: "images/personal_finance.jpg",
     title: "Personal Finance",
     description: "Learning how to budget your finances and plan for retirement",
   },
 
   {
     id: "2",
-    img: "images/tech_blogs.png",
+    img: "images/tech_blogs.jpg",
     title: "Tech Blogs",
     description:
       "A collection of interesting tech blogs to learn something new everyday!",
@@ -24,7 +24,7 @@ export const featuredItems = [
 
   {
     id: "3",
-    img: "images/pitch.png",
+    img: "images/pitch.jpg",
     title: "Pitch Decks",
     description:
       "Learn from some of the best tech companies how to make your pitch deck",
