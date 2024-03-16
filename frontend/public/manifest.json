@@ -1,0 +1,20 @@
+{
+    "name": "SapiensLink",
+    "short_name": "SapiensLink",
+    "icons": [
+          {
+              "src": "144px_logo.png",
+              "sizes": "144x144",
+              "type": "image/png",
+              "purpose": "any"
+          }
+    ],
+    "scope": ".",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#303F9F",
+    "theme_color": "#3F51B5",
+    "orientation": "portrait",
+    "splash_pages": null
+  }
+  
