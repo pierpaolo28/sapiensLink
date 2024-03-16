@@ -25,9 +25,15 @@ const TeamMembers = [
   },
   {
     name: "Tiph",
-    avatar: "",
+    avatar: "images/tiph.jpeg",
     position: "Co-founder",
-    url: "",
+    url: "https://www.linkedin.com/in/tiphanie-bent-057633127/",
+  },
+  {
+    name: "Danilo",
+    avatar: "images/danilo.jpg",
+    position: "DevOps",
+    url: "https://www.linkedin.com/in/danilo-cacace-622b4264/",
   },
   {
     name: "Frapa",
@@ -40,13 +46,7 @@ const TeamMembers = [
     avatar: "",
     position: "UX Design",
     url: "",
-  },
-  {
-    name: "Danilo",
-    avatar: "",
-    position: "DevOps",
-    url: "",
-  },
+  }
 ];
 
 const AboutPage: React.FC = () => {
