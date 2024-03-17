@@ -153,7 +153,7 @@ export default function Footer(props: any) {
               <IconButton
                 color="primary"
                 component={Link}
-                href="#"
+                href="https://www.linkedin.com/company/pier-paolo-ippolito-consulting/"
                 target="_blank"
               >
                 <LinkedInIcon />
@@ -161,7 +161,7 @@ export default function Footer(props: any) {
               <IconButton
                 color="primary"
                 component={Link}
-                href="#"
+                href="https://twitter.com/Pier_Paolo_28"
                 target="_blank"
               >
                 <TwitterIcon />
