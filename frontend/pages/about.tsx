@@ -74,7 +74,7 @@ const AboutPage: React.FC = () => {
           accessible and to empower individual creators to make their creations
           accessible to wider audiences without losing their ownership. In order
           to unlock this vision, we are planning to create a space where
-          information can consumed in different possible ways and Sapionauts can
+          information can be consumed in different possible ways and Sapionauts can
           be provided with automatically generated tests to validate and prove
           newly acquired expertise.
           <br />
