@@ -66,7 +66,7 @@ const AboutPage: React.FC = () => {
         </Typography>
 
         <Typography variant="body1" paragraph>
-          SapiensLink was created by a team of higly interdisciplanary
+          SapiensLink was created by a team of highly interdisciplinary
           individuals who are passionate about learning and sharing knowledge.
           <br />
           <br />
