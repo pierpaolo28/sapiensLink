@@ -57,7 +57,7 @@ def getRoutes(request):
     routes = [
         'GET /api/',
         'POST /api/login_user/',
-        'POST /api/revoke_token/'
+        'POST /api/revoke_token/',
         'POST /api/logout_user/',
         'POST /api/register_user/',
         'GET /api/token/',
@@ -91,15 +91,15 @@ def getRoutes(request):
         'POST /api/vote_rank/:pk/:content_index/:action',
         'GET /api/notifications/',
         'GET /api/notifications/:notification_id/mark_as_read/',
-        'GET /api/email_unsubscribe/'
+        'GET /api/email_unsubscribe/',
         'POST /api/manage_subscription/:type/:id/',
         'GET /api/swagger/',
-        'GET /api/redoc/'
-        'GET-POST-DELETE /api/lists_db_setup/',
-        'GET-POST-DELETE /api/users_db_setup/',
-        'PUT-PATCH /api/update_rank/:pk',
-        'DELETE /api/delete_rank/:pk',
-        'POST-DELETE /api/ranks_db_setup/',
+        'GET /api/redoc/',
+        # 'GET-POST-DELETE /api/lists_db_setup/',
+        # 'GET-POST-DELETE /api/users_db_setup/',
+        # 'PUT-PATCH /api/update_rank/:pk',
+        # 'DELETE /api/delete_rank/:pk',
+        # 'POST-DELETE /api/ranks_db_setup/',
     ]
     return Response(routes)
 
