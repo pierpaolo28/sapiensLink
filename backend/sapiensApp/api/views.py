@@ -2112,327 +2112,327 @@ def manage_subscription(request, type, id):
 # Admin Utils
 # TODO Make sure before deployment these are not publicly usable
 
-@swagger_auto_schema(
-    methods=['GET'],
-    tags=['admin'],
-    operation_summary='Get all lists',
-    responses={
-        200: openapi.Response(
-            description="Successful response",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'pagination': openapi.Schema(
-                        type=openapi.TYPE_OBJECT,
-                        properties={
-                            'next_page': openapi.Schema(type=openapi.TYPE_STRING, description='URL for the next page'),
-                            'previous_page': openapi.Schema(type=openapi.TYPE_STRING, description='URL for the previous page'),
-                            'total_pages': openapi.Schema(type=openapi.TYPE_INTEGER, description='Total number of pages'),
-                            'current_page': openapi.Schema(type=openapi.TYPE_INTEGER, description='Current page number'),
-                        },
-                    ),
-                    'lists': openapi.Schema(
-                        type=openapi.TYPE_ARRAY,
-                        items=openapi.Schema(type=openapi.TYPE_OBJECT, description='Serialized List data'),
-                    ),
-                },
-            ),
-        ),
-    }
-)
-@swagger_auto_schema(
-    methods=['POST'],
-    tags=['admin'],
-    operation_summary='Create multiple lists at the same time',
-    request_body=openapi.Schema(
-        type=openapi.TYPE_ARRAY,
-        items=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'author': openapi.Schema(type=openapi.TYPE_INTEGER, description='Author ID'),
-                'topic': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)),
-                'name': openapi.Schema(type=openapi.TYPE_STRING, description='List name'),
-                'description': openapi.Schema(type=openapi.TYPE_STRING, description='List description'),
-                'content': openapi.Schema(type=openapi.TYPE_STRING, description='List content'),
-                'participants': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_INTEGER)),
-                'source': openapi.Schema(type=openapi.TYPE_STRING, description='Source URL'),
-                'public': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Public status'),
-            },
-            required=['name', 'content'],
-        ),
-    ),
-    responses={
-        201: "Successful Upload",
-        400: "Bad Request",
-    }
-)
-@swagger_auto_schema(
-    methods=['DELETE'],
-    tags=['admin'],
-    operation_summary='Delete all lists',
-    responses={
-        204: "All Lists Deleted",
-    }
-)
-@api_view(['GET', 'POST', 'DELETE'])
-# @authentication_classes([JWTAuthentication])
-# # TODO: Uncomment before deployment
-# @permission_classes([IsAdminUser])
-def lists_db_setup(request):
-    """
-        Util to upload many lists at the same time, display them and delete them.
-        This can be useful to populate and empty a local development db.
-    """
-    if request.method == 'GET':
-        paginator = PageNumberPagination()
-        paginator.page_size = LISTS_PER_PAGE  # Set the number of items per page
+# @swagger_auto_schema(
+#     methods=['GET'],
+#     tags=['admin'],
+#     operation_summary='Get all lists',
+#     responses={
+#         200: openapi.Response(
+#             description="Successful response",
+#             schema=openapi.Schema(
+#                 type=openapi.TYPE_OBJECT,
+#                 properties={
+#                     'pagination': openapi.Schema(
+#                         type=openapi.TYPE_OBJECT,
+#                         properties={
+#                             'next_page': openapi.Schema(type=openapi.TYPE_STRING, description='URL for the next page'),
+#                             'previous_page': openapi.Schema(type=openapi.TYPE_STRING, description='URL for the previous page'),
+#                             'total_pages': openapi.Schema(type=openapi.TYPE_INTEGER, description='Total number of pages'),
+#                             'current_page': openapi.Schema(type=openapi.TYPE_INTEGER, description='Current page number'),
+#                         },
+#                     ),
+#                     'lists': openapi.Schema(
+#                         type=openapi.TYPE_ARRAY,
+#                         items=openapi.Schema(type=openapi.TYPE_OBJECT, description='Serialized List data'),
+#                     ),
+#                 },
+#             ),
+#         ),
+#     }
+# )
+# @swagger_auto_schema(
+#     methods=['POST'],
+#     tags=['admin'],
+#     operation_summary='Create multiple lists at the same time',
+#     request_body=openapi.Schema(
+#         type=openapi.TYPE_ARRAY,
+#         items=openapi.Schema(
+#             type=openapi.TYPE_OBJECT,
+#             properties={
+#                 'author': openapi.Schema(type=openapi.TYPE_INTEGER, description='Author ID'),
+#                 'topic': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_STRING)),
+#                 'name': openapi.Schema(type=openapi.TYPE_STRING, description='List name'),
+#                 'description': openapi.Schema(type=openapi.TYPE_STRING, description='List description'),
+#                 'content': openapi.Schema(type=openapi.TYPE_STRING, description='List content'),
+#                 'participants': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Schema(type=openapi.TYPE_INTEGER)),
+#                 'source': openapi.Schema(type=openapi.TYPE_STRING, description='Source URL'),
+#                 'public': openapi.Schema(type=openapi.TYPE_BOOLEAN, description='Public status'),
+#             },
+#             required=['name', 'content'],
+#         ),
+#     ),
+#     responses={
+#         201: "Successful Upload",
+#         400: "Bad Request",
+#     }
+# )
+# @swagger_auto_schema(
+#     methods=['DELETE'],
+#     tags=['admin'],
+#     operation_summary='Delete all lists',
+#     responses={
+#         204: "All Lists Deleted",
+#     }
+# )
+# @api_view(['GET', 'POST', 'DELETE'])
+# # @authentication_classes([JWTAuthentication])
+# # # TODO: Uncomment before deployment
+# # @permission_classes([IsAdminUser])
+# def lists_db_setup(request):
+#     """
+#         Util to upload many lists at the same time, display them and delete them.
+#         This can be useful to populate and empty a local development db.
+#     """
+#     if request.method == 'GET':
+#         paginator = PageNumberPagination()
+#         paginator.page_size = LISTS_PER_PAGE  # Set the number of items per page
 
-        lists = List.objects.all()
-        paginated_queryset = paginator.paginate_queryset(lists, request)
-        serializer = ListSerializer(paginated_queryset, many=True)
+#         lists = List.objects.all()
+#         paginated_queryset = paginator.paginate_queryset(lists, request)
+#         serializer = ListSerializer(paginated_queryset, many=True)
         
-        return paginator.get_paginated_response(serializer.data)
-    elif request.method == 'POST':
-        serializer = ListSerializer(data=request.data, many=True)
+#         return paginator.get_paginated_response(serializer.data)
+#     elif request.method == 'POST':
+#         serializer = ListSerializer(data=request.data, many=True)
 
-        if serializer.is_valid():
-            serializer.save()
+#         if serializer.is_valid():
+#             serializer.save()
 
-            return Response({"message": "Successful Upload"}, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    elif request.method == 'DELETE':
-        lists = List.objects.all()
-        lists.delete()
-        return Response({"message": "All Lists Deleted"}, status=status.HTTP_204_NO_CONTENT)
+#             return Response({"message": "Successful Upload"}, status=status.HTTP_201_CREATED)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     elif request.method == 'DELETE':
+#         lists = List.objects.all()
+#         lists.delete()
+#         return Response({"message": "All Lists Deleted"}, status=status.HTTP_204_NO_CONTENT)
 
 
 
-@swagger_auto_schema(
-    methods=['GET'],
-    tags=['admin'],
-    operation_summary='Get all users',
-    responses={
-        200: openapi.Response(
-            description="Successful response",
-            schema=openapi.Schema(
-                type=openapi.TYPE_OBJECT,
-                properties={
-                    'pagination': openapi.Schema(
-                        type=openapi.TYPE_OBJECT,
-                        properties={
-                            'next_page': openapi.Schema(type=openapi.TYPE_STRING, description='URL for the next page'),
-                            'previous_page': openapi.Schema(type=openapi.TYPE_STRING, description='URL for the previous page'),
-                            'total_pages': openapi.Schema(type=openapi.TYPE_INTEGER, description='Total number of pages'),
-                            'current_page': openapi.Schema(type=openapi.TYPE_INTEGER, description='Current page number'),
-                        },
-                    ),
-                    'users': openapi.Schema(
-                        type=openapi.TYPE_ARRAY,
-                        items=openapi.Schema(type=openapi.TYPE_OBJECT, description='Serialized User data'),
-                    ),
-                },
-            ),
-        ),
-    }
-)
+# @swagger_auto_schema(
+#     methods=['GET'],
+#     tags=['admin'],
+#     operation_summary='Get all users',
+#     responses={
+#         200: openapi.Response(
+#             description="Successful response",
+#             schema=openapi.Schema(
+#                 type=openapi.TYPE_OBJECT,
+#                 properties={
+#                     'pagination': openapi.Schema(
+#                         type=openapi.TYPE_OBJECT,
+#                         properties={
+#                             'next_page': openapi.Schema(type=openapi.TYPE_STRING, description='URL for the next page'),
+#                             'previous_page': openapi.Schema(type=openapi.TYPE_STRING, description='URL for the previous page'),
+#                             'total_pages': openapi.Schema(type=openapi.TYPE_INTEGER, description='Total number of pages'),
+#                             'current_page': openapi.Schema(type=openapi.TYPE_INTEGER, description='Current page number'),
+#                         },
+#                     ),
+#                     'users': openapi.Schema(
+#                         type=openapi.TYPE_ARRAY,
+#                         items=openapi.Schema(type=openapi.TYPE_OBJECT, description='Serialized User data'),
+#                     ),
+#                 },
+#             ),
+#         ),
+#     }
+# )
 
-@swagger_auto_schema(
-    methods=['POST'],
-    tags=['admin'],
-    operation_summary='Create multiple users at the same time',
-    request_body=openapi.Schema(
-        type=openapi.TYPE_ARRAY,
-        items=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                'name': openapi.Schema(type=openapi.TYPE_STRING, description='User name'),
-                'email': openapi.Schema(type=openapi.TYPE_STRING, description='User email'),
-                'password': openapi.Schema(type=openapi.TYPE_STRING, description='User password'),
-                'bio': openapi.Schema(type=openapi.TYPE_STRING, description='User bio'),
-                'avatar': openapi.Schema(type=openapi.TYPE_STRING, description='Avatar image URL'),
-                'social': openapi.Schema(type=openapi.TYPE_STRING, description='Social media information'),
-            },
-            required=['name', 'email', 'password'],  # Define the required fields
-        ),
-    ),
-    responses={
-        201: "Successful Upload",
-        400: "Bad Request",
-    }
-)
-@swagger_auto_schema(
-    methods=['DELETE'],
-    tags=['admin'],
-    operation_summary='Delete all users',
-    responses={
-        204: "All Users Deleted",
-    }
-)
-@api_view(['GET', 'POST', 'DELETE'])
-# @authentication_classes([JWTAuthentication])
-# # TODO: Uncomment before deployment
-# @permission_classes([IsAdminUser])
-def users_db_setup(request):
-    """
-        Util to upload many users at the same time, display them and delete them.
-        This can be useful to populate and empty a local development db.
-    """
-    if request.method == 'GET':
-        paginator = PageNumberPagination()
-        paginator.page_size = LISTS_PER_PAGE  # Set the number of items per page
+# @swagger_auto_schema(
+#     methods=['POST'],
+#     tags=['admin'],
+#     operation_summary='Create multiple users at the same time',
+#     request_body=openapi.Schema(
+#         type=openapi.TYPE_ARRAY,
+#         items=openapi.Schema(
+#             type=openapi.TYPE_OBJECT,
+#             properties={
+#                 'name': openapi.Schema(type=openapi.TYPE_STRING, description='User name'),
+#                 'email': openapi.Schema(type=openapi.TYPE_STRING, description='User email'),
+#                 'password': openapi.Schema(type=openapi.TYPE_STRING, description='User password'),
+#                 'bio': openapi.Schema(type=openapi.TYPE_STRING, description='User bio'),
+#                 'avatar': openapi.Schema(type=openapi.TYPE_STRING, description='Avatar image URL'),
+#                 'social': openapi.Schema(type=openapi.TYPE_STRING, description='Social media information'),
+#             },
+#             required=['name', 'email', 'password'],  # Define the required fields
+#         ),
+#     ),
+#     responses={
+#         201: "Successful Upload",
+#         400: "Bad Request",
+#     }
+# )
+# @swagger_auto_schema(
+#     methods=['DELETE'],
+#     tags=['admin'],
+#     operation_summary='Delete all users',
+#     responses={
+#         204: "All Users Deleted",
+#     }
+# )
+# @api_view(['GET', 'POST', 'DELETE'])
+# # @authentication_classes([JWTAuthentication])
+# # # TODO: Uncomment before deployment
+# # @permission_classes([IsAdminUser])
+# def users_db_setup(request):
+#     """
+#         Util to upload many users at the same time, display them and delete them.
+#         This can be useful to populate and empty a local development db.
+#     """
+#     if request.method == 'GET':
+#         paginator = PageNumberPagination()
+#         paginator.page_size = LISTS_PER_PAGE  # Set the number of items per page
 
-        users = User.objects.all()
-        paginated_queryset = paginator.paginate_queryset(users, request)
-        serializer = UserSerializer(paginated_queryset, many=True)
+#         users = User.objects.all()
+#         paginated_queryset = paginator.paginate_queryset(users, request)
+#         serializer = UserSerializer(paginated_queryset, many=True)
         
-        return paginator.get_paginated_response(serializer.data)
+#         return paginator.get_paginated_response(serializer.data)
     
-    elif request.method == 'POST':
-        serializer = UserSerializer(data=request.data, many=True)
+#     elif request.method == 'POST':
+#         serializer = UserSerializer(data=request.data, many=True)
 
-        if serializer.is_valid():
-            serializer.save()
+#         if serializer.is_valid():
+#             serializer.save()
 
-            return Response({"message": "Successful Upload"}, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#             return Response({"message": "Successful Upload"}, status=status.HTTP_201_CREATED)
+#         else:
+#             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-    elif request.method == 'DELETE':
-        users = User.objects.all()
-        users.delete()
-        return Response({"message": "All Users deleted"}, status=status.HTTP_204_NO_CONTENT)
-    
-
-@swagger_auto_schema(
-    method='PUT',
-    tags=['admin'],
-    operation_summary="Update Rank (Full)",
-    operation_description="Update a rank with full data.",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'topic': openapi.Schema(type=openapi.TYPE_STRING),
-            'name': openapi.Schema(type=openapi.TYPE_STRING),
-            'description': openapi.Schema(type=openapi.TYPE_STRING),
-            # Add other properties from your serializer here
-        },
-        required=['topic', 'name'],
-    ),
-    responses={
-        200: "OK",
-        400: "Bad Request",
-        401: "Unauthorized",
-        405: "Method Not Allowed",
-        # Add other possible responses here
-    }
-)
-@swagger_auto_schema(
-    method='PATCH',
-    tags=['admin'],
-    operation_summary="Update Rank (Partial)",
-    operation_description="Update a rank with partial data.",
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'topic': openapi.Schema(type=openapi.TYPE_STRING),
-            'name': openapi.Schema(type=openapi.TYPE_STRING),
-            'description': openapi.Schema(type=openapi.TYPE_STRING),
-            # Add other properties from your serializer here
-        },
-    ),
-    responses={
-        200: "OK",
-        400: "Bad Request",
-        401: "Unauthorized",
-        405: "Method Not Allowed",
-        # Add other possible responses here
-    }
-)
-@api_view(['PUT', 'PATCH'])
-# @authentication_classes([JWTAuthentication])
-# TODO: Test it works before deployment
-# @permission_classes([IsAdminUser])
-def update_rank(request, pk):
-    rank = get_object_or_404(Rank, id=pk)
-
-    if request.method == 'PUT':
-        serializer = RankSerializer(rank, data=request.data)
-    elif request.method == 'PATCH':
-        serializer = RankSerializer(rank, data=request.data, partial=True)
-    else:
-        return Response({'message': 'Method not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    if serializer.is_valid():
-        # Additional validation or logic can be added here if needed
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    else:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     elif request.method == 'DELETE':
+#         users = User.objects.all()
+#         users.delete()
+#         return Response({"message": "All Users deleted"}, status=status.HTTP_204_NO_CONTENT)
     
 
-@swagger_auto_schema(
-    method='DELETE',
-    tags=['admin'],
-    operation_summary="Delete Rank",
-    operation_description="Delete a rank. Only accessible to administrators.",
-    responses={
-        204: "No Content",
-        401: "Unauthorized",
-        403: "Forbidden",
-        404: "Not Found",
-        405: "Method Not Allowed",
-        # Add other possible responses here
-    }
-)
-@api_view(['DELETE'])
-# @permission_classes([IsAdminUser])
-def delete_rank(request, pk):
-    rank = get_object_or_404(Rank, id=pk)
-    rank.delete()
-    return Response(status=status.HTTP_204_NO_CONTENT)
+# @swagger_auto_schema(
+#     method='PUT',
+#     tags=['admin'],
+#     operation_summary="Update Rank (Full)",
+#     operation_description="Update a rank with full data.",
+#     request_body=openapi.Schema(
+#         type=openapi.TYPE_OBJECT,
+#         properties={
+#             'topic': openapi.Schema(type=openapi.TYPE_STRING),
+#             'name': openapi.Schema(type=openapi.TYPE_STRING),
+#             'description': openapi.Schema(type=openapi.TYPE_STRING),
+#             # Add other properties from your serializer here
+#         },
+#         required=['topic', 'name'],
+#     ),
+#     responses={
+#         200: "OK",
+#         400: "Bad Request",
+#         401: "Unauthorized",
+#         405: "Method Not Allowed",
+#         # Add other possible responses here
+#     }
+# )
+# @swagger_auto_schema(
+#     method='PATCH',
+#     tags=['admin'],
+#     operation_summary="Update Rank (Partial)",
+#     operation_description="Update a rank with partial data.",
+#     request_body=openapi.Schema(
+#         type=openapi.TYPE_OBJECT,
+#         properties={
+#             'topic': openapi.Schema(type=openapi.TYPE_STRING),
+#             'name': openapi.Schema(type=openapi.TYPE_STRING),
+#             'description': openapi.Schema(type=openapi.TYPE_STRING),
+#             # Add other properties from your serializer here
+#         },
+#     ),
+#     responses={
+#         200: "OK",
+#         400: "Bad Request",
+#         401: "Unauthorized",
+#         405: "Method Not Allowed",
+#         # Add other possible responses here
+#     }
+# )
+# @api_view(['PUT', 'PATCH'])
+# # @authentication_classes([JWTAuthentication])
+# # TODO: Test it works before deployment
+# # @permission_classes([IsAdminUser])
+# def update_rank(request, pk):
+#     rank = get_object_or_404(Rank, id=pk)
+
+#     if request.method == 'PUT':
+#         serializer = RankSerializer(rank, data=request.data)
+#     elif request.method == 'PATCH':
+#         serializer = RankSerializer(rank, data=request.data, partial=True)
+#     else:
+#         return Response({'message': 'Method not allowed'}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+#     if serializer.is_valid():
+#         # Additional validation or logic can be added here if needed
+#         serializer.save()
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+#     else:
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+# @swagger_auto_schema(
+#     method='DELETE',
+#     tags=['admin'],
+#     operation_summary="Delete Rank",
+#     operation_description="Delete a rank. Only accessible to administrators.",
+#     responses={
+#         204: "No Content",
+#         401: "Unauthorized",
+#         403: "Forbidden",
+#         404: "Not Found",
+#         405: "Method Not Allowed",
+#         # Add other possible responses here
+#     }
+# )
+# @api_view(['DELETE'])
+# # @permission_classes([IsAdminUser])
+# def delete_rank(request, pk):
+#     rank = get_object_or_404(Rank, id=pk)
+#     rank.delete()
+#     return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-@swagger_auto_schema(
-    methods=['POST', 'DELETE'],
-    tags=['admin'],
-    request_body=openapi.Schema(
-        type=openapi.TYPE_OBJECT,
-        properties={
-            'rank_data_list': openapi.Schema(
-                type=openapi.TYPE_ARRAY,
-                items=openapi.Schema(type=openapi.TYPE_OBJECT),
-                description='List of rank data for creation',
-            ),
-        },
-        required=['rank_data_list'],
-    ),
-    responses={
-        201: 'Created',
-        204: 'No Content',
-        400: 'Bad Request',
-    },
-    operation_summary='Create or delete ranks',
-)
-@api_view(['POST', 'DELETE'])
-# @permission_classes([IsAdminUser])
-def ranks_db_setup(request):
-    if request.method == 'POST':
-        # Create multiple ranks
-        rank_data_list = request.data
-        created_ranks = []
-        for rank_data in rank_data_list:
-            serializer = RankSerializer(data=rank_data)
-            if serializer.is_valid():
-                serializer.save()
-                created_ranks.append(serializer.data)
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+# @swagger_auto_schema(
+#     methods=['POST', 'DELETE'],
+#     tags=['admin'],
+#     request_body=openapi.Schema(
+#         type=openapi.TYPE_OBJECT,
+#         properties={
+#             'rank_data_list': openapi.Schema(
+#                 type=openapi.TYPE_ARRAY,
+#                 items=openapi.Schema(type=openapi.TYPE_OBJECT),
+#                 description='List of rank data for creation',
+#             ),
+#         },
+#         required=['rank_data_list'],
+#     ),
+#     responses={
+#         201: 'Created',
+#         204: 'No Content',
+#         400: 'Bad Request',
+#     },
+#     operation_summary='Create or delete ranks',
+# )
+# @api_view(['POST', 'DELETE'])
+# # @permission_classes([IsAdminUser])
+# def ranks_db_setup(request):
+#     if request.method == 'POST':
+#         # Create multiple ranks
+#         rank_data_list = request.data
+#         created_ranks = []
+#         for rank_data in rank_data_list:
+#             serializer = RankSerializer(data=rank_data)
+#             if serializer.is_valid():
+#                 serializer.save()
+#                 created_ranks.append(serializer.data)
+#             else:
+#                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        return Response(created_ranks, status=status.HTTP_201_CREATED)
+#         return Response(created_ranks, status=status.HTTP_201_CREATED)
 
-    elif request.method == 'DELETE':
-        # Delete all ranks
-        Rank.objects.all().delete()
+#     elif request.method == 'DELETE':
+#         # Delete all ranks
+#         Rank.objects.all().delete()
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+#         return Response(status=status.HTTP_204_NO_CONTENT)
