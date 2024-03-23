@@ -49,6 +49,10 @@ const ListPage = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
+  const config = {
+    ADD_ATTR: ['target'],
+  };  
+
   const handleMenuClick = (event: any) => {
     setAnchorEl(event.currentTarget);
   };
@@ -520,7 +524,7 @@ const ListPage = () => {
                     {list.list.description}
                     <Typography
                       dangerouslySetInnerHTML={{
-                        __html: DOMPurify.sanitize(list.list.content),
+                        __html: DOMPurify.sanitize(list.list.content, config),
                       }}
                     />
                   </Box>

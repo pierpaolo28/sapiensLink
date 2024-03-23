@@ -44,6 +44,10 @@ const CreateRankForm = () => {
   >(null);
   const [currentEditedElement, setCurrentEditedElement] = React.useState("");
 
+  const config = {
+    ADD_ATTR: ['target'],
+  };
+
   React.useEffect(() => {
     // Check if the user is logged in
     if (!isUserLoggedIn()) {
@@ -373,7 +377,7 @@ const CreateRankForm = () => {
                       >
                         <Typography
                           dangerouslySetInnerHTML={{
-                            __html: DOMPurify.sanitize(element),
+                            __html: DOMPurify.sanitize(element, config),
                           }}
                         />
                       </Box>

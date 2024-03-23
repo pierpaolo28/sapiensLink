@@ -78,6 +78,10 @@ const ListSuggestionsPage = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [initialized, setInitialized] = useState(false);
 
+  const config = {
+    ADD_ATTR: ['target'],
+  };
+
   useEffect(() => {
     if (listData && !initialized && num) { // Only execute if listData is available and not initialized
       const numValue = typeof num === 'string' ? num : Array.isArray(num) ? num[0] : "0";
@@ -520,7 +524,8 @@ const ListSuggestionsPage = () => {
                               listData.list.content,
                               suggestion.suggestion_text
                             )
-                          )
+                          ),
+                          config
                         ),
                       }}
                     />
@@ -747,7 +752,8 @@ const ListSuggestionsPage = () => {
                             appendLists(
                               listData.list.content,
                               newSuggestionText
-                            )
+                            ),
+                            config
                           ),
                         }}
                       />
