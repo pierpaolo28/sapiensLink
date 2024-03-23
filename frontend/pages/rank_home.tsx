@@ -202,7 +202,7 @@ export default function RankHome() {
                   {home && home.ranks ? (
                     home.ranks.map((rank, i) => (
                       <Card key={rank.id}>
-                        <CardActionArea>
+                        <CardActionArea href={`/rank/${rank.id}`}>
                           <CardContent>
                             <MuiLink
                               href={`/rank/${rank.id}`}
