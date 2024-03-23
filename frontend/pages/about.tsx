@@ -36,16 +36,10 @@ const TeamMembers = [
     url: "https://www.linkedin.com/in/danilo-cacace-622b4264/",
   },
   {
-    name: "Frapa",
-    avatar: "",
-    position: "Web Development",
-    url: "",
-  },
-  {
     name: "Serena",
-    avatar: "",
+    avatar: "images/serena.jpeg",
     position: "UX Design",
-    url: "",
+    url: "https://www.linkedin.com/in/serena-tomassetti/",
   }
 ];
 

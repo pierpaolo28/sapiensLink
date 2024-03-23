@@ -289,10 +289,10 @@ class CommentSerializer(ModelSerializer):
 class EditSuggestionSerializer(ModelSerializer):
 
     # TODO: Improve profanity detection
-    def validate_suggestion_text(self, data):
-        if profanity.contains_profanity(data):
-            raise ValidationError("Unacceptable language detected in the suggested new list.")
-        return data
+    # def validate_suggestion_text(self, data):
+    #     if profanity.contains_profanity(data):
+    #         raise ValidationError("Unacceptable language detected in the suggested new list.")
+    #     return data
 
     class Meta:
         model = EditSuggestion

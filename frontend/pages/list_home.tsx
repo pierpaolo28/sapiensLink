@@ -333,7 +333,7 @@ export default function ListHome() {
                   {home && home.lists ? (
                     home.lists.map((list, i) => (
                       <Card key={list.id}>
-                        <CardActionArea>
+                        <CardActionArea href={`/list/${list.id}`}>
                           <CardContent>
                             <MuiLink
                               href={`/list/${list.id}`}

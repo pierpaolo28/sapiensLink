@@ -52,6 +52,10 @@ export default function RankPage() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
+  const config = {
+    ADD_ATTR: ['target'],
+  };
+
   // Fetch rank data based on the extracted id
   const fetchRankData = async () => {
     try {
@@ -574,7 +578,7 @@ export default function RankPage() {
                                         <div
                                           dangerouslySetInnerHTML={{
                                             __html: DOMPurify.sanitize(
-                                              sortedElement.element.element
+                                              sortedElement.element.element, config
                                             ),
                                           }}
                                         />
