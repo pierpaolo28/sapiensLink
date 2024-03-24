@@ -526,6 +526,14 @@ const ListPage = () => {
                       dangerouslySetInnerHTML={{
                         __html: DOMPurify.sanitize(list.list.content, config),
                       }}
+                      sx={{
+                        '& img': {
+                          maxWidth: '100%', // Ensure images don't exceed container width
+                          height: 'auto',   // Maintain aspect ratio
+                          display: 'block', // Ensure images don't overflow
+                          margin: 'auto',   // Center align images
+                        },
+                      }}
                     />
                   </Box>
                   {list.list.source && (

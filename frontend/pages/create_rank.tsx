@@ -379,6 +379,14 @@ const CreateRankForm = () => {
                           dangerouslySetInnerHTML={{
                             __html: DOMPurify.sanitize(element, config),
                           }}
+                          sx={{
+                            '& img': {
+                              maxWidth: '100%', // Ensure images don't exceed container width
+                              height: 'auto',   // Maintain aspect ratio
+                              display: 'block', // Ensure images don't overflow
+                              margin: 'auto',   // Center align images
+                            },
+                          }}
                         />
                       </Box>
                       <IconButton

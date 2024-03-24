@@ -528,6 +528,14 @@ const ListSuggestionsPage = () => {
                           config
                         ),
                       }}
+                      sx={{
+                        '& img': {
+                          maxWidth: '100%', // Ensure images don't exceed container width
+                          height: 'auto',   // Maintain aspect ratio
+                          display: 'block', // Ensure images don't overflow
+                          margin: 'auto',   // Center align images
+                        },
+                      }}
                     />
                   </Paper>
                 </Grid>
@@ -746,7 +754,7 @@ const ListSuggestionsPage = () => {
                       <Typography variant="subtitle1" gutterBottom>
                         Preview of your proposal:
                       </Typography>
-                      <div
+                      <Typography
                         dangerouslySetInnerHTML={{
                           __html: DOMPurify.sanitize(
                             appendLists(
@@ -755,6 +763,14 @@ const ListSuggestionsPage = () => {
                             ),
                             config
                           ),
+                        }}
+                        sx={{
+                          '& img': {
+                            maxWidth: '100%', // Ensure images don't exceed container width
+                            height: 'auto',   // Maintain aspect ratio
+                            display: 'block', // Ensure images don't overflow
+                            margin: 'auto',   // Center align images
+                          },
                         }}
                       />
                     </>
