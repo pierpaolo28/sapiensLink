@@ -12,20 +12,26 @@ import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import { SelectChangeEvent } from "@mui/material/Select";
 import { Switch } from "@mui/material";
-import dynamic from "next/dynamic";
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
-import "react-quill/dist/quill.snow.css";
+import { EditorState, RichUtils, convertToRaw, convertFromRaw, DraftEditorCommand, DraftHandleValue, ContentBlock } from "draft-js";
+import "draft-js/dist/Draft.css";
+import { getDefaultKeyBinding, KeyBindingUtil } from 'draft-js';
+const { hasCommandModifier } = KeyBindingUtil;
+import { AtomicBlockUtils } from 'draft-js';
+import createImagePlugin from "draft-js-image-plugin";
+import Editor from "draft-js-plugins-editor";
+import { Resizable } from "react-resizable";
+
+
+const imagePlugin = createImagePlugin();
+import createResizeablePlugin from 'draft-js-resizeable-plugin';
+const resizeablePlugin = createResizeablePlugin();
+const plugins = [imagePlugin, resizeablePlugin];
 
 import AppLayout from "@/components/AppLayout";
 import { getUserIdFromAccessToken, isUserLoggedIn } from "@/utils/auth";
 import { ListForm } from "@/utils/types";
 import { topics } from "@/utils/topics";
-import ImportList from "@/components/ImportList";
-import {
-  isValidListContent,
-  convertQuillContentToHtml,
-  convertPlainTextToHtml,
-} from "@/utils/html";
+import { isValidListContent, convertQuillContentToHtml } from "@/utils/html";
 
 export default function CreateListPage() {
   const [listDetails, setListDetails] = useState<ListForm>({
@@ -39,20 +45,9 @@ export default function CreateListPage() {
   const [isUpdateMode, setIsUpdateMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedEditor, setSelectedEditor] = useState("quill"); // Default to 'quill'
-
-  const handleImportListChange = (content: string) => {
-    // Initialize a local variable to store the updated content
-    let updatedContent = "";
-
-    updatedContent = convertPlainTextToHtml(content);
-
-    // Update the content in listDetails with the local variable
-    setListDetails((prevDetails) => ({
-      ...prevDetails,
-      content: updatedContent,
-    }));
-  };
+  const [editorState, setEditorState] = useState(
+    EditorState.createEmpty()
+  );
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -93,6 +88,7 @@ export default function CreateListPage() {
           public: data.public,
           topic: data.topic.map((topic: any) => topic.name),
         });
+        setEditorState(EditorState.createWithContent(convertFromRaw(JSON.parse(data.content))));
         setIsUpdateMode(true);
       } else {
         console.error(
@@ -108,23 +104,41 @@ export default function CreateListPage() {
     }
   };
 
-  const handleQuillChange = (value: string) => {
-    setListDetails((prevDetails) => ({
-      ...prevDetails,
-      content: value,
-    }));
+  const handleKeyCommand = (
+    command: DraftEditorCommand | string,
+    editorState: EditorState,
+    handleEditorChange: (editorState: EditorState) => void
+  ): DraftHandleValue => {
+    let newState;
+    if (command === "insert-image") {
+      console.log("Insert image command");
+      // Handle image insertion here
+      handleInsertImage();
+      return "handled"; // We handle image insertion separately, so we return 'handled'
+    }
+    else if (command === "toggle-bullet-list") {
+      newState = RichUtils.toggleBlockType(editorState, "unordered-list-item");
+    } else if (command === "toggle-numbered-list") {
+      newState = RichUtils.toggleBlockType(editorState, "ordered-list-item");
+    } else {
+      newState = RichUtils.handleKeyCommand(editorState, command as DraftEditorCommand);
+    }
+
+    if (newState) {
+      handleEditorChange(newState);
+      return "handled";
+    }
+
+    return "not-handled";
   };
 
-  const handleEditorSwitch = (editor: string) => {
-    setSelectedEditor(editor);
-
-    // Clear the content when switching to Quill Editor
-    if (editor === "quill") {
-      setListDetails((prevDetails) => ({
-        ...prevDetails,
-        content: "", // Clear the content
-      }));
-    }
+  const handleEditorChange = (editorState: EditorState) => {
+    setEditorState(editorState);
+    const contentState = editorState.getCurrentContent();
+    setListDetails((prevDetails) => ({
+      ...prevDetails,
+      content: JSON.stringify(convertToRaw(contentState)),
+    }));
   };
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -148,17 +162,12 @@ export default function CreateListPage() {
     setError(null);
     let contentHtml: string = listDetails.content;
 
-    if (selectedEditor === "ImportList") {
-      // Convert the plain text to HTML
-      contentHtml = convertPlainTextToHtml(listDetails.content);
-    } else if (selectedEditor === "quill") {
-      // Validate content
-      if (!isValidListContent(listDetails.content)) {
-        setError("Content must be in bullet or numbered list format.");
-        return;
-      }
-      contentHtml = convertQuillContentToHtml(listDetails.content);
-    }
+    // Validate content
+    // if (!isValidListContent(listDetails.content)) {
+    //   setError("Content must be in bullet or numbered list format.");
+    //   return;
+    // }
+    contentHtml = listDetails.content;
 
     if (listDetails.name && listDetails.topic && listDetails.topic.length > 0) {
       try {
@@ -222,14 +231,99 @@ export default function CreateListPage() {
     }
   };
 
+  const handleBulletList = () => {
+    const newState = RichUtils.toggleBlockType(editorState, 'unordered-list-item');
+    handleEditorChange(newState);
+  };
+
+  const handleNumberedList = () => {
+    const newState = RichUtils.toggleBlockType(editorState, 'ordered-list-item');
+    handleEditorChange(newState);
+  };
+
+  const handleInsertImage = () => {
+    const url = prompt("Enter the URL of the image:");
+    if (url) {
+      const contentState = editorState.getCurrentContent();
+      const contentStateWithEntity = contentState.createEntity(
+        "image",
+        "IMMUTABLE",
+        { src: url }
+      );
+      const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+      const newEditorState = EditorState.push(
+        editorState,
+        contentStateWithEntity,
+        'insert-characters'
+      );
+      setEditorState(AtomicBlockUtils.insertAtomicBlock(
+        newEditorState,
+        entityKey,
+        " "
+      ));
+    }
+  };
+
+  const Media = (props: { block: any }) => {
+    const { block } = props;
+    const contentState = editorState.getCurrentContent();
+    const entity = contentState.getEntity(block.getEntityAt(0));
+    const { src } = entity.getData();
+  
+    const [width, setWidth] = useState<number | string>('auto');
+    const [height, setHeight] = useState<number | string>('auto');
+  
+    const onResize = (event: any, { size }: any) => {
+      setWidth(size.width);
+      setHeight(size.height);
+    };
+  
+    // Define inline styles for the resizable image
+    const imageStyle: React.CSSProperties = {
+      maxWidth: '100%',
+      maxHeight: '100%',
+      width: width === 'auto' ? 'auto' : `${width}px`,
+      height: height === 'auto' ? 'auto' : `${height}px`,
+      cursor: 'pointer', // Add cursor pointer for resize
+      margin: '0 auto', // Center the image horizontally
+      objectFit: 'contain', // Maintain aspect ratio while resizing
+    };
+  
+    return (
+      <Resizable
+        width={Number(width)}
+        height={Number(height)}
+        onResize={onResize}
+        draggableOpts={{ enableUserSelectHack: false }}
+      >
+        <img src={src} style={imageStyle} />
+      </Resizable>
+    );
+  };
+  
+
+  const blockRenderer = (contentBlock: ContentBlock) => {
+    const type = contentBlock.getType();
+    if (type === 'atomic') {
+      const entityKey = contentBlock.getEntityAt(0);
+      if (!entityKey) return null;
+      const entity = editorState.getCurrentContent().getEntity(entityKey);
+      if (entity.getType() === 'IMAGE') {
+        return {
+          component: Media,
+          editable: false,
+        };
+      }
+    }
+    return null;
+  };
+  
+  
   if (isLoading) {
     // Render a loading screen while fetching data
     return <div>Loading...</div>;
   }
 
-  const style = {
-    "& .ql-snow .ql-stroke": { stroke: "white" },
-  };
   return (
     <AppLayout>
       <Container maxWidth="md" sx={{ p: 0, pt: 3 }}>
@@ -265,43 +359,36 @@ export default function CreateListPage() {
               />
             </Grid>
             <Grid item xs={12}>
+              <Grid item xs={12}>
+                <div>
+                  <Button onClick={() => handleBulletList()} variant="outlined">Bullet List</Button>
+                  <Button onClick={() => handleNumberedList()} variant="outlined">Numbered List</Button>
+                  <Button onClick={() => handleInsertImage()} variant="outlined">Insert Image</Button>
+                </div>
+              </Grid>
+
               <div style={{ marginBottom: "10px" }}>
                 <InputLabel id="content-label">Content *</InputLabel>
               </div>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={selectedEditor === "ImportList"}
-                    onChange={() =>
-                      handleEditorSwitch(
-                        selectedEditor === "quill" ? "ImportList" : "quill"
-                      )
-                    }
-                  />
-                }
-                label={
-                  selectedEditor === "quill" ? "Create list" : "Import list"
-                }
-              />
-
-              {/* Conditional Rendering of Editors */}
-              {selectedEditor === "quill" ? (
-                <FormControl fullWidth>
-                  <ReactQuill
-                    id="content"
-                    value={listDetails.content}
-                    onChange={handleQuillChange}
-                    modules={{
-                      toolbar: [
-                        [{ list: "ordered" }, { list: "bullet" }],
-                        ["link"], // Only allow bullet and numbered lists
-                      ],
-                    }}
-                  />
-                </FormControl>
-              ) : (
-                <ImportList onContentChange={handleImportListChange} />
-              )}
+              <FormControl fullWidth>
+              <Editor
+  editorState={editorState}
+  onChange={handleEditorChange}
+  plugins={plugins}
+  blockRendererFn={blockRenderer}
+  handleKeyCommand={(command: string, editorState: EditorState) => {
+    if (command === 'toggle-bullet-list' || command === 'toggle-numbered-list') {
+      handleKeyCommand(command, editorState, handleEditorChange);
+      return 'handled';
+    } else if (command === 'insert-image') { // Handle insert-image command
+      handleInsertImage();
+      return 'handled';
+    }
+    return 'not-handled';
+  }}
+  placeholder="Write something..."
+/>
+              </FormControl>
             </Grid>
             <Grid item xs={12}>
               <TextField
@@ -370,4 +457,26 @@ export default function CreateListPage() {
       </Container>
     </AppLayout>
   );
+}
+
+
+
+
+
+const styleMap = {
+  CODE: {
+    backgroundColor: "rgba(0, 0, 0, 0.05)",
+    fontFamily: '"Inconsolata", "Menlo", "Consolas", monospace',
+    fontSize: 16,
+    padding: 2,
+  },
+};
+
+function getBlockStyle(block: any) {
+  switch (block.getType()) {
+    case "blockquote":
+      return "RichEditor-blockquote";
+    default:
+      return null;
+  }
 }
