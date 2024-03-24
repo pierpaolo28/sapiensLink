@@ -10,6 +10,7 @@ import Container from "@mui/material/Container";
 import CssBaseline from "@mui/material/CssBaseline";
 import { CircularProgress } from "@mui/material";
 import Head from 'next/head';
+import { useRouter } from "next/router";
 
 import Header from "./Header";
 import Footer from "./Footer";
@@ -211,6 +212,8 @@ function getDesignTokens(mode: "light" | "dark") {
 const AppLayout = ({ children }: AppLayoutProps) => {
   const [mode, setMode] = useState<"light" | "dark">("light");
   const [loading, setLoading] = useState<boolean>(true);
+  const router = useRouter();
+  const logoPath = `${router.basePath}/logo.svg`;
 
   // Function to read theme mode from localStorage
   const readThemeFromLocalStorage = useCallback((): "light" | "dark" => {
@@ -256,7 +259,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         <ErrorBoundary fallback={<FallbackErrorComponent />}>
         <Head>
           <title>SapiensLink</title>
-          <link rel="icon" href="logo.svg" />
+          <link rel="icon" href={logoPath} />
           <meta name="description" content="Sharing knowledge one link at the time." />
           <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover" />
           <meta name="generator" content="Next.js" />

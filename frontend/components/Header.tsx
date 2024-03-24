@@ -363,8 +363,6 @@ export default function Header() {
     };
   }, [theme.breakpoints]);
 
-  const logoPath = `${router.basePath}/logo.svg`;
-
   return (
     <AppBar sx={{ borderRadius: "0" }} position="static" elevation={0}>
       <Toolbar>
@@ -454,7 +452,6 @@ export default function Header() {
             ) : (
               // Display the logo on the left for larger screens
               <Link href="/">
-                {/* <img src={logoPath} alt="logo" /> */}
                 <Image src={Logo} alt={"Logo"} />
               </Link>
             )}
