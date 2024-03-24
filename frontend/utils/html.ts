@@ -264,7 +264,10 @@ export const sanitizeContent = (content: any) => {
   if (firstAnchor) {
     const linkMatch = firstAnchor.outerHTML.match(/href="(.*?)"/);
     if (linkMatch && linkMatch[1]) {
-      firstAnchor.textContent = linkMatch[1];
+      // Check if the anchor tag already has text content
+      if (firstAnchor.textContent && !firstAnchor.textContent.trim()) {
+        firstAnchor.textContent = linkMatch[1]; // Set text content to the URL if it's empty
+      }
     }
   }
 
