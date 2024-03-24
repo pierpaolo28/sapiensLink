@@ -183,6 +183,14 @@ function getDesignTokens(mode: "light" | "dark") {
           },
         },
       },
+      MuiCssBaseline: {
+        styleOverrides: {
+          a: {
+            color: 
+              `${mode === "dark" ? textSecondaryDarkThemeColor : textSecondaryLightThemeColor} !important`,
+          },
+        },
+      },      
       // Further component customizations
     },
     transitions: {
