@@ -396,6 +396,7 @@ export default function Header() {
                       {!isLoggedIn && (
                         <>
                           <Button
+                            className="customButton" 
                             sx={{
                               textTransform: "uppercase",
                               fontWeight: "bold",
@@ -409,6 +410,7 @@ export default function Header() {
                             Login
                           </Button>
                           <Button
+                            className="customButton" 
                             sx={{
                               textTransform: "uppercase",
                               fontWeight: "bold",
@@ -657,6 +659,7 @@ export default function Header() {
               {!isSmallScreen ? (
                 <>
                   <Button
+                    className="customButton" 
                     sx={{ fontWeight: "bold", textTransform: "uppercase" }}
                     variant="outlined"
                     color="primary"
@@ -666,6 +669,7 @@ export default function Header() {
                     Login
                   </Button>
                   <Button
+                    className="customButton" 
                     sx={{ fontWeight: "bold", textTransform: "uppercase" }}
                     color="primary"
                     variant="contained"

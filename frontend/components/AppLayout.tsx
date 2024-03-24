@@ -189,6 +189,16 @@ function getDesignTokens(mode: "light" | "dark") {
             color: 
               `${mode === "dark" ? textSecondaryDarkThemeColor : textSecondaryLightThemeColor} !important`,
           },
+          ".customButton": {
+            "&.MuiButton-outlined": {
+              color: mainColor + " !important",
+              borderColor: mainColor + " !important",
+            },
+            "&.MuiButton-contained": {
+              color: "#fff !important",
+              backgroundColor: mainColor + " !important",
+            },
+          },
         },
       },      
       // Further component customizations
