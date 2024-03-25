@@ -294,7 +294,7 @@ export default function CreateListPage() {
                     modules={{
                       toolbar: [
                         [{ list: "ordered" }, { list: "bullet" }],
-                        ["link"], // Only allow bullet and numbered lists
+                        ["link", 'video'], // Only allow bullet and numbered lists
                       ],
                     }}
                   />

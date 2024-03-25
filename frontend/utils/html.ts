@@ -1,32 +1,72 @@
-// Helper function to extract words from HTML
-export const extractWordsFromHTML = (html: string) => {
+export const extractAddedWords = (oldString: string, newString: string) => {
+  const oldWords = extractWordsFromHTML(oldString);
+  const newWords = extractWordsFromHTML(newString);
+
+  // Identify added words and elements
+  const addedWordsAndElements = newWords.filter(item => !oldWords.includes(item));
+
+  return addedWordsAndElements;
+};
+
+const extractWordsFromHTML = (html: string) => {
   const doc = new DOMParser().parseFromString(html, "text/html");
-  const words: string[] = [];
+  const items: (string | undefined)[] = [];
 
   const traverseNodes = (node: Node) => {
     if (node.nodeType === Node.TEXT_NODE) {
       const text = node.textContent?.trim();
       if (text) {
-        words.push(...text.split(/\s+/));
+        items.push(...text.split(/\s+/));
       }
-    } else {
-      node.childNodes.forEach(traverseNodes);
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const element = node as HTMLElement;
+      if (element.tagName.toLowerCase() === "img" || element.tagName.toLowerCase() === "iframe") {
+        items.push(element.outerHTML);
+      }
     }
+    node.childNodes.forEach(traverseNodes);
   };
 
   traverseNodes(doc.body);
 
-  return words;
+  return items as string[];
 };
 
-export const extractAddedWords = (oldString: string, newString: string) => {
-  const oldWords = extractWordsFromHTML(oldString);
-  const newWords = extractWordsFromHTML(newString);
+export const extractItemsFromHTML = (html: string) => {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const items: (string | undefined)[] = [];
 
-  // Identify added words
-  const addedWords = newWords.filter((word) => !oldWords.includes(word));
+  const traverseNodes = (node: Node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent?.trim();
+      if (text) {
+        items.push(...text.split(/\s+/));
+      }
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const element = node as HTMLElement;
+      if (element.tagName.toLowerCase() === "img") {
+        const src = element.getAttribute("src");
+        if (src) {
+          items.push(src);
+        }
+      } else if (element.tagName.toLowerCase() === "iframe") {
+        const src = element.getAttribute("src");
+        if (src) {
+          items.push(src);
+        }
+      } else if (element.tagName.toLowerCase() === "a") {
+        const href = element.getAttribute("href");
+        if (href) {
+          items.push(href);
+        }
+      }
+    }
+    node.childNodes.forEach(traverseNodes);
+  };
 
-  return addedWords;
+  traverseNodes(doc.body);
+
+  return items as string[];
 };
 
 export const highlightWordsInHtml = (
@@ -49,6 +89,18 @@ export const highlightWordsInHtml = (
     textNode.replaceWith(span);
   };
 
+  const highlightElement = (element: HTMLElement) => {
+    const tagName = element.tagName.toLowerCase();
+    if (tagName === "img" || tagName === "iframe") {
+      const outerHTML = element.outerHTML;
+      const matchFound = addedWords.includes(outerHTML);
+      if (matchFound) {
+        element.style.border = "2px solid yellow";
+      }
+    }
+  };
+  
+
   const traverseAndHighlight = (node: any) => {
     if (node.nodeType === Node.TEXT_NODE) {
       highlightWords(
@@ -56,6 +108,7 @@ export const highlightWordsInHtml = (
         addedWords.map((word) => word.toLowerCase())
       );
     } else if (node.nodeType === Node.ELEMENT_NODE) {
+      highlightElement(node);
       if (node.childNodes.length > 0) {
         const childNodes = [...node.childNodes];
         childNodes.forEach(traverseAndHighlight);
@@ -215,25 +268,45 @@ export const appendLists = (oldText: string, newText: string) => {
   const oldDOM = new DOMParser().parseFromString(oldText, "text/html");
   const newDOM = new DOMParser().parseFromString(newText, "text/html");
 
-  // Find the lists in the DOM
-  const oldList = oldDOM.querySelector("ol, ul");
-  const newList = newDOM.querySelector("ol, ul");
+  // Find the last list item in the old content
+  const oldLastListItem = oldDOM.querySelector("ol:last-child > li:last-child, ul:last-child > li:last-child");
 
-  if (oldList && newList) {
-    // Append new list items to the old list
-    Array.from(newList.children).forEach((newItem) => {
-      oldList.appendChild(newItem.cloneNode(true));
-    });
+  // Find the lists and iframes in the new content
+  const newNodes = newDOM.body.childNodes;
 
-    // Return only the modified list HTML
-    const serializer = new XMLSerializer();
-    const modifiedListHtml = serializer.serializeToString(oldList);
+  if (oldLastListItem) {
+    // Get the parent of the last list item
+    const parentElement = oldLastListItem.parentElement;
 
-    return convertQuillContentToHtml(modifiedListHtml);
+    if (parentElement) {
+      // Append new nodes to the last list item's parent
+      Array.from(newNodes).forEach((newNode) => {
+        if (newNode.nodeName === "OL" || newNode.nodeName === "UL") {
+          // If the new node is a list, append its children individually
+          Array.from(newNode.childNodes).forEach((childNode) => {
+            parentElement.appendChild(childNode.cloneNode(true));
+          });
+        } else {
+          // If the new node is not a list, append it directly
+          parentElement.appendChild(newNode.cloneNode(true));
+        }
+      });
+    }
+  } else {
+    // If no lists were found in the old content, append new content directly
+    const oldBody = oldDOM.querySelector("body");
+    if (oldBody) {
+      Array.from(newNodes).forEach((newNode) => {
+        oldBody.appendChild(newNode.cloneNode(true));
+      });
+    }
   }
 
-  // Return the original content if lists are not found
-  return oldText;
+  // Return the modified content
+  const serializer = new XMLSerializer();
+  const modifiedHtml = serializer.serializeToString(oldDOM);
+
+  return convertQuillContentToHtml(modifiedHtml);
 };
 
 const wrapInPTags = (content: string) => {
