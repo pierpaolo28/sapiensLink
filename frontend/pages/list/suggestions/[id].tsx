@@ -79,7 +79,8 @@ const ListSuggestionsPage = () => {
   const [initialized, setInitialized] = useState(false);
 
   const config = {
-    ADD_ATTR: ['target'],
+    ADD_TAGS: ['iframe', 'a'], // Allow iframe and a tags
+    ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'href', 'target'], // Add necessary attributes
   };
 
   useEffect(() => {
@@ -535,6 +536,12 @@ const ListSuggestionsPage = () => {
                           display: 'block', // Ensure images don't overflow
                           margin: 'auto',   // Center align images
                         },
+                        '& iframe': {
+                          maxWidth: '100%',
+                          height: 'auto',
+                          display: 'block',
+                          margin: 'auto',
+                        },
                       }}
                     />
                   </Paper>
@@ -725,7 +732,7 @@ const ListSuggestionsPage = () => {
                       modules={{
                         toolbar: [
                           [{ list: "ordered" }, { list: "bullet" }],
-                          ["link"], // Only allow bullet and numbered lists
+                          ["link", 'video'], // Only allow bullet and numbered lists
                         ],
                       }}
                     />
@@ -770,6 +777,12 @@ const ListSuggestionsPage = () => {
                             height: 'auto',   // Maintain aspect ratio
                             display: 'block', // Ensure images don't overflow
                             margin: 'auto',   // Center align images
+                          },
+                          '& iframe': {
+                            maxWidth: '100%',
+                            height: 'auto',
+                            display: 'block',
+                            margin: 'auto',
                           },
                         }}
                       />

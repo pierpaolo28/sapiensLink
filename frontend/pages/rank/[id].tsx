@@ -53,7 +53,8 @@ export default function RankPage() {
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const config = {
-    ADD_ATTR: ['target'],
+    ADD_TAGS: ['iframe', 'a'], // Allow iframe and a tags
+    ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'href', 'target'], // Add necessary attributes
   };
 
   // Fetch rank data based on the extracted id
@@ -551,7 +552,7 @@ export default function RankPage() {
                                             "underline",
                                             "strike",
                                           ],
-                                          ["link"],
+                                          ["link", 'video'],
                                         ],
                                       }}
                                     />
@@ -587,6 +588,12 @@ export default function RankPage() {
                                               height: 'auto',   // Maintain aspect ratio
                                               display: 'block', // Ensure images don't overflow
                                               margin: 'auto',   // Center align images
+                                            },
+                                            '& iframe': {
+                                              maxWidth: '100%',
+                                              height: 'auto',
+                                              display: 'block',
+                                              margin: 'auto',
                                             },
                                           }}
                                         />
@@ -673,7 +680,7 @@ export default function RankPage() {
                                 modules={{
                                   toolbar: [
                                     ["bold", "italic", "underline", "strike"],
-                                    ["link"],
+                                    ["link", 'video'],
                                   ],
                                 }}
                               />

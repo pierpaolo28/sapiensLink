@@ -50,8 +50,9 @@ const ListPage = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const config = {
-    ADD_ATTR: ['target'],
-  };  
+    ADD_TAGS: ['iframe', 'a'], // Allow iframe and a tags
+    ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'href', 'target'], // Add necessary attributes
+  }; 
 
   const handleMenuClick = (event: any) => {
     setAnchorEl(event.currentTarget);
@@ -532,6 +533,12 @@ const ListPage = () => {
                           height: 'auto',   // Maintain aspect ratio
                           display: 'block', // Ensure images don't overflow
                           margin: 'auto',   // Center align images
+                        },
+                        '& iframe': {
+                          maxWidth: '100%',
+                          height: 'auto',
+                          display: 'block',
+                          margin: 'auto',
                         },
                       }}
                     />

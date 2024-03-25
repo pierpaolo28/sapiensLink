@@ -45,7 +45,8 @@ const CreateRankForm = () => {
   const [currentEditedElement, setCurrentEditedElement] = React.useState("");
 
   const config = {
-    ADD_ATTR: ['target'],
+    ADD_TAGS: ['iframe', 'a'], // Allow iframe and a tags
+    ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'src', 'href', 'target'], // Add necessary attributes
   };
 
   React.useEffect(() => {
@@ -311,7 +312,7 @@ const CreateRankForm = () => {
                 modules={{
                   toolbar: [
                     ["bold", "italic", "underline", "strike"],
-                    ["link"],
+                    ["link", 'video'],
                   ],
                 }}
               />
@@ -349,7 +350,7 @@ const CreateRankForm = () => {
                           modules={{
                             toolbar: [
                               ["bold", "italic", "underline", "strike"],
-                              ["link"],
+                              ["link", 'video'],
                             ],
                           }}
                         />
@@ -385,6 +386,12 @@ const CreateRankForm = () => {
                               height: 'auto',   // Maintain aspect ratio
                               display: 'block', // Ensure images don't overflow
                               margin: 'auto',   // Center align images
+                            },
+                            '& iframe': {
+                              maxWidth: '100%',
+                              height: 'auto',
+                              display: 'block',
+                              margin: 'auto',
                             },
                           }}
                         />
