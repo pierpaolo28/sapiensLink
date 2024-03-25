@@ -199,6 +199,10 @@ function getDesignTokens(mode: "light" | "dark") {
               backgroundColor: mainColor + " !important",
             },
           },
+          ".customSpanClass": {
+            backgroundColor: "yellow",
+            color: mode === "dark" ? "#333" : "#000",
+          },
         },
       },      
       // Further component customizations

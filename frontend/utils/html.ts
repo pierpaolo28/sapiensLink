@@ -80,14 +80,20 @@ export const highlightWordsInHtml = (
     const words = textNode.nodeValue.split(/\s+/);
     const highlightedWords = words.map((word: any) => {
       const isMatch = addedWords.includes(word.toLowerCase());
-      return isMatch
-        ? `<span style="background-color: yellow;">${word}</span>`
-        : word;
+      if (isMatch) {
+        const span = doc.createElement("span");
+        span.textContent = word;
+        span.className = "customSpanClass"; // Use className to set the class
+        return span.outerHTML; // Convert the span to HTML string
+      } else {
+        return word;
+      }
     });
     const span = doc.createElement("span");
     span.innerHTML = highlightedWords.join(" ");
     textNode.replaceWith(span);
   };
+  
 
   const highlightElement = (element: HTMLElement) => {
     const tagName = element.tagName.toLowerCase();
