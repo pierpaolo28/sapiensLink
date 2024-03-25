@@ -8,7 +8,7 @@ export const extractAddedWords = (oldString: string, newString: string) => {
   return addedWordsAndElements;
 };
 
-export const extractWordsFromHTML = (html: string) => {
+const extractWordsFromHTML = (html: string) => {
   const doc = new DOMParser().parseFromString(html, "text/html");
   const items: (string | undefined)[] = [];
 
@@ -22,6 +22,43 @@ export const extractWordsFromHTML = (html: string) => {
       const element = node as HTMLElement;
       if (element.tagName.toLowerCase() === "img" || element.tagName.toLowerCase() === "iframe") {
         items.push(element.outerHTML);
+      }
+    }
+    node.childNodes.forEach(traverseNodes);
+  };
+
+  traverseNodes(doc.body);
+
+  return items as string[];
+};
+
+export const extractItemsFromHTML = (html: string) => {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const items: (string | undefined)[] = [];
+
+  const traverseNodes = (node: Node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent?.trim();
+      if (text) {
+        items.push(...text.split(/\s+/));
+      }
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const element = node as HTMLElement;
+      if (element.tagName.toLowerCase() === "img") {
+        const src = element.getAttribute("src");
+        if (src) {
+          items.push(src);
+        }
+      } else if (element.tagName.toLowerCase() === "iframe") {
+        const src = element.getAttribute("src");
+        if (src) {
+          items.push(src);
+        }
+      } else if (element.tagName.toLowerCase() === "a") {
+        const href = element.getAttribute("href");
+        if (href) {
+          items.push(href);
+        }
       }
     }
     node.childNodes.forEach(traverseNodes);

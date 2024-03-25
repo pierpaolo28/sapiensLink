@@ -40,7 +40,7 @@ import { getUserIdFromAccessToken } from "@/../../utils/auth";
 import {
   appendLists,
   isValidListContent,
-  extractWordsFromHTML,
+  extractItemsFromHTML,
   extractAddedWords,
   highlightWordsInHtml,
 } from "@/../../utils/html";
@@ -273,8 +273,8 @@ const ListSuggestionsPage = () => {
     }
 
     // Check for duplicate items
-    const existingItems = extractWordsFromHTML(listData.list.content);
-    const newItems = extractWordsFromHTML(newSuggestionText);
+    const existingItems = extractItemsFromHTML(listData.list.content);
+    const newItems = extractItemsFromHTML(newSuggestionText);
 
     const duplicateItems = newItems.filter((item: any) =>
       existingItems.includes(item)
