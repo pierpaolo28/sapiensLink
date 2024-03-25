@@ -93,5 +93,6 @@ jobs:
           export DB_USER=${{ vars.POSTGRESQL_USERNAME }}
           export DB_PASSWORD=${{ secrets.POSTGRESQL_PASSWORD }}
           docker-compose -f docker-compose.remote.yaml down --remove-orphans
+          echo y | docker image prune
           docker-compose -f docker-compose.remote.yaml pull
           docker-compose -f docker-compose.remote.yaml up -d
