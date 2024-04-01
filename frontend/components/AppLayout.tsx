@@ -292,6 +292,22 @@ const AppLayout = ({ children }: AppLayoutProps) => {
           <meta property="og:image" content="https://sapienslink.com/logo.svg" /> 
           <meta property="og:url" content="https://sapienslink.com" /> 
           <meta property="og:type" content="website" />
+
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                window.$crisp=[];
+                window.CRISP_WEBSITE_ID="6ac9eee4-fd6d-41e9-ad05-9cd9802e7321";
+                (function(){
+                  var d=document;
+                  var s=d.createElement("script");
+                  s.src="https://client.crisp.chat/l.js";
+                  s.async=1;
+                  d.getElementsByTagName("head")[0].appendChild(s);
+                })();
+              `
+            }}
+          />
         </Head>
           <Header />
           <Container maxWidth="lg">{children}</Container>
