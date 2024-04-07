@@ -20,13 +20,13 @@ const TeamMembers = [
   {
     name: "Pier",
     avatar: "images/pier.jpeg",
-    position: "Founder",
+    position: "Creator",
     url: "https://ppiconsulting.dev",
   },
   {
     name: "Tiph",
     avatar: "images/tiph.jpeg",
-    position: "Co-founder",
+    position: "Co-creator",
     url: "https://www.linkedin.com/in/tiphanie-bent-057633127/",
   },
   {
