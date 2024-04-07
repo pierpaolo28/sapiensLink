@@ -286,7 +286,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
           <meta name="generator" content="Next.js" />
           <meta property="og:title" content="SapiensLink" />
           <meta property="og:description" content="Sharing knowledge one link at the time." />
-          <meta property="og:image" content="https://sapienslink.com/logo.svg" /> 
+          <meta property="og:image" content="https://sapienslink.com/sapiens_logo.png" /> 
           <meta property="og:url" content="https://sapienslink.com" /> 
           <meta property="og:type" content="website" />
           <link rel="icon" href={logoPath} />
