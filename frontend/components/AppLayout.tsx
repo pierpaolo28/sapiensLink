@@ -282,7 +282,9 @@ const AppLayout = ({ children }: AppLayoutProps) => {
         <Head>
           <title>SapiensLink</title>
           <link rel="icon" href={logoPath} />
+          <meta property="title" content="SapiensLink" />
           <meta name="description" content="Sharing knowledge one link at the time." />
+          <meta property="image" content="https://sapienslink.com/logo.svg" /> 
           <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover" />
           <meta name="generator" content="Next.js" />
           <link rel="manifest" href="manifest.json" />
