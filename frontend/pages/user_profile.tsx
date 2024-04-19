@@ -261,7 +261,7 @@ export default function UserProfilePage() {
                   })}
                 >
                   <Typography variant="h6">
-                    Lists Published by the User
+                    Lists Published
                   </Typography>
                   {shouldRenderClientOnly && userMatches && (
                     <ToggleButtonGroup
