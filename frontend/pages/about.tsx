@@ -24,12 +24,6 @@ const TeamMembers = [
     url: "https://ppiconsulting.dev",
   },
   {
-    name: "Tiph",
-    avatar: "images/tiph.jpeg",
-    position: "Co-creator",
-    url: "https://www.linkedin.com/in/tiphanie-bent-057633127/",
-  },
-  {
     name: "Danilo",
     avatar: "images/danilo.jpg",
     position: "DevOps",
