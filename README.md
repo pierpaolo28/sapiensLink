@@ -1,4 +1,12 @@
-# Sapiens link
+# SapiensLink
+
+SapiensLink was created by a team of highly interdisciplinary individuals who are passionate about learning and sharing knowledge.
+
+The main objective is to make complex educational content accessible and to empower individual creators to make their creations accessible to wider audiences without losing their ownership. In order to unlock this vision, we are planning to create a space where information can be consumed in different possible ways and Sapionauts can be provided with automatically generated tests to validate and prove newly acquired expertise.
+
+SapiensLink is an open source project, any contribution is welcome!
+
+[![](docs/images/sapienslink_demo.mp4)](https://github.com/user-attachments/assets/b9c241cb-1513-4d84-adee-8c221593d197)
 
 This project is built with [Next.js](https://nextjs.org/) and [Django](https://www.djangoproject.com/).
 
